@@ -41,7 +41,8 @@
   /* Space and layout */
   --gutter: clamp(16px, 3vw, 40px);
   --gap: clamp(12px, 1.4vw, 20px);
-  --max: 1680px;
+  --max: 2560px; /* the library grid goes up to 4 columns at 2560px */
+  --max-reading: 1680px; /* detail pages */
   --radius: 2px;
 
   /* Motion (Tier 1; see docs/02 motion spec) */

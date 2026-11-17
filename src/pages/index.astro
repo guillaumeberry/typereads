@@ -76,19 +76,15 @@ const pubs = await getPublished();
     padding: 0;
     list-style: none;
   }
-  @media (min-width: 720px) {
+  /* Columns: 2 up to 1023px · 3 from 1024px to 1920px · 4 above (e.g. 2560px). */
+  @media (min-width: 1024px) {
     .grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
-  @media (min-width: 1200px) {
+  @media (min-width: 1921px) {
     .grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-  @media (min-width: 1500px) {
-    .grid {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
     }
   }
   :global(html[data-view='list']) .grid {

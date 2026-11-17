@@ -43,7 +43,7 @@
 | **Grid** (default) | Cover on its publication colour · title · type · format. Hover: the cover lifts slightly. The whole card is the link.                                      |
 | **List**           | One row per publication: title · authors · year · type · languages · format. Very dense and scannable. Layout to be designed ([Q4](07-open-questions.md)). |
 
-The grid is 2 columns on mobile, 3 on tablet and 4–5 on desktop. The list stacks into two lines on mobile.
+The grid is **2 columns up to 1023 px** (phones and small screens), **3 columns from 1024 to 1920 px**, and **4 columns above 1920 px** (e.g. 2560 px). The library can use up to 2560 px of width; detail pages stay at 1680 px. The list stacks into two lines on mobile.
 
 ### Filters
 
