@@ -14,7 +14,8 @@ import {
 } from './library-core';
 
 /** Hook for the motion layer: run `mutate`, optionally animated. */
-export type Animate = (mutate: () => void, kind: 'filter' | 'sort' | 'view') => unknown;
+/** `search` = results changing while the visitor types (must never steal focus). */
+export type Animate = (mutate: () => void, kind: 'filter' | 'search' | 'sort' | 'view') => unknown;
 const instant: Animate = (mutate) => mutate();
 
 const VIEW_KEY = 'rat:view';
@@ -179,7 +180,10 @@ export function init(root: HTMLElement, animate: Animate = instant) {
     state.tr = fd.has('tr');
   }
 
-  function commit(history: 'push' | 'replace' | 'none', kind: 'filter' | 'sort' = 'filter') {
+  function commit(
+    history: 'push' | 'replace' | 'none',
+    kind: 'filter' | 'search' | 'sort' = 'filter',
+  ) {
     syncControls();
     animate(render, kind);
     if (history === 'none') return;
@@ -221,7 +225,7 @@ export function init(root: HTMLElement, animate: Animate = instant) {
       clearTimeout(timer);
       timer = window.setTimeout(() => {
         state.q = search.value;
-        commit('replace');
+        commit('replace', 'search');
       }, 120);
     },
     { signal },
@@ -233,20 +237,28 @@ export function init(root: HTMLElement, animate: Animate = instant) {
         e.preventDefault();
         search.value = '';
         state.q = '';
-        commit('replace');
+        commit('replace', 'search');
       }
     },
     { signal },
   );
-  // "/" focuses search from anywhere (not while typing in another field).
+  // ⌘ / (Mac) or Ctrl / (Windows, Linux) focuses search from anywhere, and selects
+  // what's there so you can type over it. e.code covers layouts where "/" needs Shift.
+  const mac = /mac|iphone|ipad/i.test(
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ??
+      navigator.platform,
+  );
+  const hint = root.querySelector('[data-shortcut]');
+  if (hint) hint.textContent = mac ? '⌘ /' : 'Ctrl /';
+  search.setAttribute('aria-keyshortcuts', mac ? 'Meta+/' : 'Control+/');
   document.addEventListener(
     'keydown',
     (e) => {
-      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
-      const t = e.target;
-      if (t instanceof Element && t.closest('input, textarea, select, [contenteditable]')) return;
+      const slash = e.key === '/' || e.code === 'Slash';
+      if (!slash || !(mac ? e.metaKey : e.ctrlKey) || e.altKey) return;
       e.preventDefault();
       search.focus();
+      search.select();
     },
     { signal },
   );

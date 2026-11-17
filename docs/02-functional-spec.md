@@ -75,7 +75,7 @@ Filter groups, all built from publication metadata:
 - One field. It matches title, subtitle, authors, publishers, ISBN/ISSN and description.
 - **Accent- and case-insensitive**: "a batons rompus" finds _À bâtons rompus_. Works with any script (substring match, so Korean, Thai and so on work).
 - Debounced at about 120 ms. Also updates `?q=`.
-- Keyboard: `/` focuses search, `Esc` clears it.
+- Keyboard: `⌘ /` (Mac) or `Ctrl /` (Windows, Linux) focuses search and selects its text, `Esc` clears it. The hint in the field shows the right one for the platform.
 
 ### Sort
 

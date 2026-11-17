@@ -11,8 +11,19 @@ const near = (el: Element) => {
 
 let running: ViewTransition | null = null;
 
+const typing = () =>
+  document.activeElement instanceof HTMLElement &&
+  document.activeElement.matches(
+    'input:not([type=checkbox]):not([type=radio]), textarea, [contenteditable]',
+  );
+
 export const vtAnimate: Animate = (mutate, kind) => {
-  if (!document.startViewTransition || reduced()) return mutate();
+  // Never during search or while a text field has focus: some browsers (Safari)
+  // move focus away during a view transition, which stopped typing after one key.
+  if (!document.startViewTransition || reduced() || kind === 'search' || typing()) {
+    return mutate();
+  }
+  const focused = document.activeElement as HTMLElement | null;
   running?.skipTransition();
   const named: HTMLElement[] = [];
   const name = () => {
@@ -33,6 +44,10 @@ export const vtAnimate: Animate = (mutate, kind) => {
   t.ready.catch(() => {});
   t.updateCallbackDone.catch(() => {});
   const clear = () => {
+    // If the transition took focus away, give it back.
+    if (focused && focused !== document.body && document.activeElement !== focused) {
+      focused.focus({ preventScroll: true });
+    }
     if (running !== t) return;
     running = null;
     for (const c of named) {
@@ -41,6 +56,5 @@ export const vtAnimate: Animate = (mutate, kind) => {
     }
   };
   t.finished.then(clear, clear);
-  void kind;
   return t;
 };
