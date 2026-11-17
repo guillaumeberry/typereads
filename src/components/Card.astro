@@ -92,6 +92,26 @@ const langs = d.languages.map(languageName).join(', ');
     aspect-ratio: auto;
     filter: none;
   }
+  /* Tier 1: tiles rise in as they enter the viewport (off the main thread). The
+     reveal is on the tile, not the card, so it never fights the Flip transforms. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .tile {
+        animation: tile-in linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 35%;
+      }
+    }
+  }
+  :global(.is-flipping) .tile {
+    animation: none;
+  }
+  @keyframes tile-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.97);
+    }
+  }
   .caption {
     padding-top: 10px;
   }

@@ -81,5 +81,10 @@ const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
       <slot />
     </main>
     <Footer />
+    <!-- Announces page changes made by the client router to screen readers. -->
+    <div class="visually-hidden" aria-live="polite" data-announcer></div>
+    <script>
+      import '../scripts/boot';
+    </script>
   </body>
 </html>

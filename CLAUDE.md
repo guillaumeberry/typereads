@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this sub-project.
 
 ## Status
 
-Phase 3 done (library engine: search, filters, sort, list view); Phase 1 data enrichment still open. Read `README.md` and `docs/` first.
+Phase 4 done (motion: Swup + GSAP layer over native transitions); hand tests on phones/Safari/Firefox and Phase 1 data enrichment still open. Read `README.md` and `docs/` first.
 
 ## Commands
 
@@ -24,6 +24,8 @@ Phase 3 done (library engine: search, filters, sort, list view); Phase 1 data en
 - `src/lib/`: `publications.ts` (only `status: published`, default sort), `color.ts` (contrast), `format.ts` (labels, native language names).
 - `src/layouts/Base.astro`: page shell (meta, OG, JSON-LD, fonts). `src/components/`: Header, Footer, Card, Cover, Logo, Prose.
 - `src/content/pages/about.md`: About copy (FAQ as front-matter fields).
+- `src/scripts/boot.ts`: the one script every page loads (via `Base.astro`): `mount`/`unmount` page scripts, the "←" history helper (capture phase), Tier 1 view transitions (`vt.ts`), and the idle loader for `motion/` (skipped under reduced motion / Save-Data). Page scripts must be started from `mount()`, never from a page-level `<script>`: the router doesn't re-run those.
+- `src/scripts/motion/`: Swup router + GSAP transitions (`index.ts`), Flip for in-page changes (`flip.ts`). Budget ≤ 60 KB gz.
 - `src/scripts/library-core.ts` (pure, tested) + `library.ts` (DOM, `init`/`destroy`, `animate` hook): search, filters, faceted counts, sort, URL state. Cards carry `data-*` attributes; `/search.json` holds descriptions, loaded on first search focus.
 - URLs: pages are built as files (`about.html`) and served at clean URLs (`/about`); canonical URLs strip `.html`.
 - `spike/` is gitignored and throwaway (motion spike, CMS demo with its own `.git`). Don't import from it.

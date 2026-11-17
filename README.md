@@ -2,7 +2,7 @@
 
 A curated, open-source library of publications about type design (books, magazines, websites and posts), across cultures, scripts and languages.
 
-> **Status:** Phase 3, library engine (2026-11-17): search, filters with counts, sort, grid/list view, all in the URL; on top of the Phase 2 static pages (detail, About, Submit, 404). Works without JavaScript. Throwaway spikes live in `spike/` (gitignored).
+> **Status:** Phase 4, motion (2026-11-17): page transitions with the cover flying between the grid and the detail page, animated filtering and grid/list, the 404 numeral cycle. On top of the library (search, filters, sort, list view) and the static pages. Works without JavaScript; motion is skipped under reduced motion. Throwaway spikes live in `spike/` (gitignored).
 > Live: https://typereads.guillaume-berry.workers.dev · Repo: https://github.com/guillaumeberry/typereads · Prototype: https://read-about-type.framer.website/
 
 ## Docs
@@ -38,7 +38,7 @@ Requires Node 22+. Content lives in `src/content/publications/` (one Markdown fi
 - **Sveltia CMS** at `/admin`, with GitHub login (2FA). Edits are commits; the site rebuilds in about 1–2 minutes.
 - **Submissions**: on-site form → Worker → `status: submitted` entry in the CMS Inbox, plus an email to the editor. Submitter emails never touch the public repo.
 - **Cabin** analytics (cookie-free).
-- **Licences**: MIT code · CC BY 4.0 data · covers © publishers.
+- **Licences**: MIT code · CC BY 4.0 data · covers © publishers. The motion layer uses [GSAP](https://gsap.com), installed from npm under its own free but proprietary _Standard No Charge_ licence (not open source); it is not part of this repo's MIT code.
 
 ## Folder
 

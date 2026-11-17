@@ -36,7 +36,7 @@ You can [submit a publication](/submit). I review every submission before adding
 
 ## Colophon: how and what?
 
-The library is a static website built with [Astro](https://astro.build). Each publication is a small text file in a public [GitHub repository](https://github.com/guillaumeberry/typereads), edited through [Sveltia CMS](https://github.com/sveltia/sveltia-cms), and the site is hosted on [Cloudflare](https://www.cloudflare.com). Hosting costs nothing, and the pages are light: no tracking cookies, no ads.
+The library is a static website built with [Astro](https://astro.build). Each publication is a small text file in a public [GitHub repository](https://github.com/guillaumeberry/typereads), edited through [Sveltia CMS](https://github.com/sveltia/sveltia-cms), and the site is hosted on [Cloudflare](https://www.cloudflare.com). Hosting costs nothing, and the pages are light: no tracking cookies, no ads. The motion uses [Swup](https://swup.js.org) and [GSAP](https://gsap.com), loaded after the page is ready and skipped if you prefer reduced motion.
 
 The interim typefaces are Archivo and Archivo Narrow by Omnibus-Type (SIL Open Font License).
 

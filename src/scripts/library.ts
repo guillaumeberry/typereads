@@ -93,10 +93,23 @@ export function init(root: HTMLElement, animate: Animate = instant) {
     }
 
     // Count, badge, active chips, empty state, mobile "Show N" button.
-    countEl.textContent =
+    const countText =
       visible.length === total
         ? `${total} publications`
         : `${visible.length} of ${total} publications`;
+    if (countEl.textContent !== countText) {
+      countEl.textContent = countText;
+      // The number rolls in (skipped under reduced motion).
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        countEl.animate(
+          [
+            { transform: 'translateY(0.4em)', opacity: 0.2 },
+            { transform: 'none', opacity: 1 },
+          ],
+          { duration: 240, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+        );
+      }
+    }
     const nActive = activeFilterCount(state);
     badge.hidden = nActive === 0;
     badge.textContent = String(nActive);
@@ -173,9 +186,11 @@ export function init(root: HTMLElement, animate: Animate = instant) {
     const qs = serializeState(state);
     const url = `${location.pathname}${qs ? `?${qs}` : ''}${location.hash}`;
     if (url === location.pathname + location.search + location.hash) return;
-    // Keep any router's own history state intact.
-    if (history === 'push') window.history.pushState(window.history.state, '', url);
-    else window.history.replaceState(window.history.state, '', url);
+    // Our own state object: the router (Phase 4) ignores back/forward steps that only
+    // change the query on the same page, and the popstate listener below handles them.
+    const st = { source: 'library', url };
+    if (history === 'push') window.history.pushState(st, '', url);
+    else window.history.replaceState({ ...(window.history.state ?? {}), ...st }, '', url);
   }
 
   function resetAll() {
@@ -227,9 +242,9 @@ export function init(root: HTMLElement, animate: Animate = instant) {
   document.addEventListener(
     'keydown',
     (e) => {
-      const t = e.target as HTMLElement;
       if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (t.closest('input, textarea, select, [contenteditable]')) return;
+      const t = e.target;
+      if (t instanceof Element && t.closest('input, textarea, select, [contenteditable]')) return;
       e.preventDefault();
       search.focus();
     },

@@ -16,12 +16,22 @@ const numerals = [
 ---
 
 <Base title="Glyph not found" noindex>
-  <div class="wrap notdef">
-    <p class="tofu" aria-hidden="true">
-      <span></span>
-      <span></span>
-      <span></span>
-    </p>
+  <div class="wrap notdef" data-notdef data-slugs={JSON.stringify(slugs)}>
+    <div class="stage" aria-hidden="true">
+      <p
+        class="cycle display"
+        data-cycle
+        data-steps={JSON.stringify(numerals.map((n) => n.text))}
+        hidden
+      >
+        404
+      </p>
+      <p class="tofu" data-tofu>
+        <span></span>
+        <span></span>
+        <span></span>
+      </p>
+    </div>
     <h1 class="display h1">This glyph isn't in the font.</h1>
     <p class="intro">The page you're looking for doesn't exist (or was never drawn).</p>
     <p class="numerals" lang="und">
@@ -41,18 +51,44 @@ const numerals = [
       </a>
     </p>
   </div>
-  <script is:inline define:vars={{ slugs }}>
-    // Pick a random publication (without JS the link goes to the most recent one).
-    const a = document.querySelector('[data-random]');
-    if (a && slugs.length)
-      a.href = '/publications/' + slugs[Math.floor(Math.random() * slugs.length)];
-  </script>
 </Base>
 
 <style>
   .notdef {
     max-width: 760px;
     padding-block: clamp(24px, 6vw, 80px);
+  }
+  /* The numeral cycle (src/scripts/notdef.ts) plays first, then the tofu boxes appear. */
+  .stage {
+    position: relative;
+    min-height: clamp(110px, 24vw, 230px);
+  }
+  .cycle {
+    font-size: clamp(5rem, 3rem + 10vw, 11rem);
+    line-height: 1;
+  }
+  .cycle[hidden] {
+    display: none;
+  }
+  .tofu.is-waiting {
+    display: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .tofu:not(.is-waiting) span {
+      animation: tofu-in var(--dur-slow) var(--ease-out) backwards;
+    }
+    .tofu span:nth-child(2) {
+      animation-delay: 80ms;
+    }
+    .tofu span:nth-child(3) {
+      animation-delay: 160ms;
+    }
+  }
+  @keyframes tofu-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+    }
   }
   .tofu {
     display: flex;

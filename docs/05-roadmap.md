@@ -99,15 +99,16 @@ Goal: filters, search, sort and view toggle, all reflected in the URL.
 
 Goal: the high-end part: native base plus the GSAP/Swup layer (C, chosen in the spike; see the lessons in [04 · Motion architecture](04-architecture.md#motion-architecture-two-tiers-adr-012)).
 
-- [ ] Tier 1: motion tokens, `linear()` springs, CSS scroll-driven reveals and parallax, native VT fallbacks.
-- [ ] Tier 2 loader: idle dynamic import, skipped under reduced motion or Save-Data; `init`/`destroy` lifecycle for all scripts.
-- [ ] Swup setup: `#swup` container, persistent header, preload, scroll restoration, head plugin.
-- [ ] Signature: card → detail cover morph (Flip + clip-path colour flood + SplitText title), with an exact reverse on Back.
-- [ ] Filtering, sort and search with Flip (viewport cards only, interruptible); grid ↔ list nested Flip.
-- [ ] Type moments: variable-axis wordmark, title reveals (depends on the font, Q2).
-- [ ] Micro-interactions: card hover spring and tilt, filter chips, draggable mobile sheet, rolling result count.
-- [ ] 404: the numeral cycle (٤٠٤ → ४०४ → ๔๐๔ → ༤༠༤ → ☐☐☐) and _Read something random_.
-- [ ] Audit: reduced motion, keyboard focus after transitions, screen-reader announcement of the page change, fps on a mid-range Android phone, Firefox, iOS Safari.
+- [x] Tier 1: motion tokens, `linear()` springs, CSS scroll-driven tile reveals and detail-cover parallax, native cross-document VT (page cross-fade, header stays) and same-document VT for filtering (`src/scripts/vt.ts`). _(2026-11-17)_ The native _cover morph_ between pages was left out: Tier 2 loads within a second or two, and reduced-motion visitors get no morph anyway.
+- [x] Tier 2 loader in `src/scripts/boot.ts`: idle dynamic import, skipped under reduced motion or Save-Data; `mount`/`unmount` for page scripts (library, 404). _(2026-11-17)_
+- [x] Swup setup (`src/scripts/motion/index.ts`): `#main` container, persistent header and footer, preload on hover, scroll restoration, head plugin (titles, canonical, JSON-LD, page CSS). Back/forward between filter states stays with the library. _(2026-11-17)_
+- [x] Signature: card → detail cover flight (a copy of the cover image) + clip-path colour flood from the cover + SplitText title, with an exact reverse on Back (colour shrinks into the card, cover lands on it, focus returns to it). Measured: the cover lands on the hero and back on the card to the pixel. _(2026-11-17)_
+- [x] Filtering, sort and search with Flip (viewport cards only, interruptible); grid ↔ list nested Flip. _(2026-11-17)_
+- [ ] Type moments: variable-axis wordmark (waits for the font, Q2). Title line reveal on detail pages is done.
+- [x] Micro-interactions: card hover spring, filter chips, draggable mobile sheet (drag down to dismiss), rolling result count. _(2026-11-17)_ Pointer tilt left out (optional).
+- [x] 404: the numeral cycle (404 → ٤٠٤ → ४०४ → ৪০৪ → ๔๐๔ → ༤༠༤ → ☐☐☐) and _Read something random_. _(2026-11-17)_
+- [x] Audit, automated: focus moves to the new page's heading (or back to the card), page changes are announced, the header's current-page marker updates, interrupted transitions leave nothing behind; Lighthouse mobile 99–100; core JS 4.8 KB, motion layer 56.4 KB gz. _(2026-11-17)_
+- [ ] Audit, by hand: fps on a mid-range Android phone, iOS Safari (incl. swipe-back), desktop Safari and Firefox, and reduced motion turned on in the OS.
 
 **Exit:** the motion matches the storyboard in **all** browsers; 60 fps on a mid-range Android phone; INP < 150 ms; motion layer ≤ 60 KB gz.
 

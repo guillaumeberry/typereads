@@ -458,6 +458,23 @@ const groups: GroupDef[] = [
       overflow: auto;
       overscroll-behavior: contain;
     }
+    .panel:modal .panel-head {
+      position: relative;
+      padding-top: 20px;
+      touch-action: none;
+      cursor: grab;
+    }
+    .panel:modal .panel-head::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      width: 40px;
+      height: 4px;
+      margin-left: -20px;
+      border-radius: 2px;
+      background: var(--line);
+    }
     .panel::backdrop {
       background: rgb(0 0 0 / 0.6);
     }

@@ -92,9 +92,9 @@ const description = pub.body?.trim().replace(/\s+/g, ' ').slice(0, 155) || undef
   jsonLd={jsonLd}
 >
   <div class="wrap">
-    <article class="sheet" style={`--c:${bg};--tc:${tc}`}>
+    <article class="sheet" data-detail style={`--c:${bg};--tc:${tc}`}>
       <header class="head">
-        <a class="back" href="/" aria-label="Back to the library">
+        <a class="back" href="/" aria-label="Back to the library" data-back>
           ←
         </a>
         <div class="titles">
@@ -146,7 +146,9 @@ const description = pub.body?.trim().replace(/\s+/g, ' ').slice(0, 155) || undef
           )}
           <p class="actions">
             <a href={`/submit?fix=${d.slug}`}>Suggest a correction</a>
-            <a href="/">Back to the library</a>
+            <a href="/" data-back>
+              Back to the library
+            </a>
           </p>
         </div>
       </div>
@@ -196,6 +198,20 @@ const description = pub.body?.trim().replace(/\s+/g, ' ').slice(0, 155) || undef
   }
   .hero-cover {
     width: min(100%, 360px);
+  }
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-cover {
+        animation: cover-parallax linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 600px;
+      }
+    }
+  }
+  @keyframes cover-parallax {
+    to {
+      transform: translateY(-40px);
+    }
   }
   .hero-cover :global(img) {
     width: 100%;
