@@ -6,7 +6,7 @@ type: magazine
 authors: ["Viktor Baltus","OHno Type Co.","Ulrike Rausch","Rutherford Craze","Matthijs Herzberg","Jacob J. Wise","Hoodzpah","Karen Cheng","Jen Wagner","Zetafonts","Future Fonts","Margot Lévêque"]
 publishers: ["Viktor Baltus"]
 formats: ["physical"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2023

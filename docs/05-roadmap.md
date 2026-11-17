@@ -53,7 +53,7 @@ Goal: a repo with valid content and nothing visual yet.
 - [x] Import the 50 entries: done from the spike's data (scraped from the Framer prototype), including your enrichment of _8 Faces_ and _Cyrillize it!_. _(2026-11-17)_
 - [x] Covers downloaded next to the entries (`src/content/publications/covers/`, 50 files, 6.7 MB); the schema now requires local files. _(2026-11-17)_
 - [ ] Optional: export the Framer CMS to CSV and compare, in case it holds fields the scrape missed (languages?).
-- [ ] Enrich the data by hand: `scripts`, `availability`, missing languages and descriptions. Fix typos. Then set `REQUIRE_ENRICHMENT = true` in `src/content.config.ts`.
+- [ ] Enrich the data by hand: `scripts`, `availability`, missing languages and descriptions. Fix typos. Then set `REQUIRE_ENRICHMENT = true` in `src/content.config.ts`. (Languages for 13 more entries and 2 translations were taken from the prototype's detail pages on 2026-11-17: 17 of 50 now have languages.)
 - [x] Connect the repo to Cloudflare (Workers Builds, `wrangler.jsonc`). Live: <https://typereads.guillaume-berry.workers.dev>, every push to `main` deploys. _(2026-11-17)_
 
 **Exit:** `npm run build` is green with 50 valid publications, and a preview URL is live.
@@ -62,16 +62,18 @@ Goal: a repo with valid content and nothing visual yet.
 
 Goal: the full site works with zero JS.
 
-- [ ] Tokens and global CSS (`tokens.css`), fonts self-hosted and subsetted.
-- [ ] `Base` layout: header, footer, skip link, meta/OG, JSON-LD helpers.
-- [ ] Home: server-rendered grid of cards with data attributes, sorted by `addedAt`.
-- [ ] Card component with `<Picture>`, per-publication colour background, lazy loading, first-row priority.
-- [ ] Colour extraction and contrast helper (`src/lib/color.ts`).
-- [ ] Detail page: hero, metadata grid, links, description, JSON-LD, typographic cover fallback.
-- [ ] About page from Markdown (FAQ with `<details>`).
-- [ ] Submit page (form markup only, posting to the placeholder endpoint) and the thanks page.
-- [ ] 404 page (static version first).
-- [ ] Sitemap, robots, canonical URLs.
+- [x] Tokens and global CSS (`src/styles/global.css`); fonts self-hosted (Archivo + Archivo Narrow, OFL, 47 KB in 2 files, interim until Q2). _(2026-11-17)_
+- [x] `Base` layout: header, footer, skip link, meta/OG, JSON-LD. _(2026-11-17)_
+- [x] Home: server-rendered grid of cards with data attributes, sorted by `addedAt`. _(2026-11-17)_
+- [x] Card component with `<Picture>` (AVIF/WebP), per-publication colour background, lazy loading, first-row priority. _(2026-11-17)_
+- [x] Contrast helper (`src/lib/color.ts`). _(2026-11-17)_
+- [ ] Colour extraction from the cover when `color` is empty (all 50 have a colour today; needed for new entries).
+- [x] Detail page: hero, metadata grid, links, description, JSON-LD, typographic cover fallback. _(2026-11-17)_
+- [x] About page from `src/content/pages/about.md` (FAQ as structured fields rendered with `<details>`); copy migrated from the prototype, typos fixed, colophon updated. _(2026-11-17)_
+- [x] Submit page (form markup posting to `/api/submit`, sending disabled until Phase 6) and the thanks page. _(2026-11-17)_
+- [x] 404 page, static ".notdef" version with _Read something random_. _(2026-11-17)_
+- [x] Sitemap, robots, canonical URLs (clean URLs: pages built as `about.html`, served at `/about`). _(2026-11-17)_
+- [x] Checked: Lighthouse mobile 100/100/100/100 on home, a detail page and About; home has no JS, 11.8 KB HTML and 2 KB CSS gzipped. _(2026-11-17)_
 
 **Exit:** the site is browsable and responsive on mobile and desktop with JS disabled; Lighthouse ≥ 95 already.
 

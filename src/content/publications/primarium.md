@@ -6,7 +6,7 @@ type: book
 authors: ["Pooja Saxena & José Scaglione"]
 publishers: ["TypeTogether"]
 formats: ["physical"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2025

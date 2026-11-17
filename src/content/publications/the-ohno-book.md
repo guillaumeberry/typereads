@@ -6,7 +6,7 @@ type: book
 authors: ["James Edmondson"]
 publishers: ["Princeton Architectural Press"]
 formats: ["physical"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2025

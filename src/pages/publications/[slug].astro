@@ -1,0 +1,268 @@
+---
+// Publication detail. Only published entries get a page.
+import { getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Cover from '../../components/Cover.astro';
+import { bgColor, textColorFor } from '../../lib/color';
+import {
+  availabilityLabel,
+  dateLabel,
+  formatsLabel,
+  languageName,
+  scriptLabel,
+  typeLabel,
+} from '../../lib/format';
+import { getPublished, type Publication } from '../../lib/publications';
+
+export async function getStaticPaths() {
+  const pubs = await getPublished();
+  return pubs.map((pub) => ({ params: { slug: pub.data.slug }, props: { pub } }));
+}
+
+const { pub } = Astro.props as { pub: Publication };
+const d = pub.data;
+const { Content } = await render(pub);
+const bg = bgColor(d.color);
+const tc = textColorFor(bg);
+
+// Metadata rows: only fields that have a value are shown.
+type Row = { label: string; value?: string | string[]; href?: string };
+const rows: Row[] = [
+  { label: d.authors.length > 1 ? 'Authors' : 'Author', value: d.authors },
+  { label: d.publishers.length > 1 ? 'Publishers' : 'Publisher', value: d.publishers },
+  { label: 'Type', value: typeLabel(d.type) },
+  { label: 'Format', value: formatsLabel(d.formats) },
+  {
+    label: d.languages.length > 1 ? 'Languages' : 'Language',
+    value: d.languages.map(languageName),
+  },
+  {
+    label: 'Translations',
+    value: d.translations.map((t) =>
+      [languageName(t.language), t.title].filter(Boolean).join(': '),
+    ),
+  },
+  { label: 'Scripts covered', value: d.scripts.map(scriptLabel) },
+  { label: 'Published', value: dateLabel(d.year, d.date) },
+  { label: 'Availability', value: availabilityLabel(d.availability) },
+  { label: 'ISBN', value: d.isbn },
+  { label: 'ISSN', value: d.issn },
+  { label: 'Pages', value: d.pages ? String(d.pages) : undefined },
+].filter((r) => (Array.isArray(r.value) ? r.value.length > 0 : Boolean(r.value)));
+
+const links = [
+  { label: 'Publisher page', href: d.links?.publisher },
+  { label: 'Buy', href: d.links?.buy },
+  { label: 'Read online', href: d.links?.read },
+].filter((l): l is { label: string; href: string } => Boolean(l.href));
+
+// Social preview and structured data.
+const og = d.cover ? await getImage({ src: d.cover, width: 1200, format: 'jpeg' }) : undefined;
+const pageUrl = new URL(`/publications/${d.slug}`, Astro.site).href;
+const schemaType =
+  d.type === 'book' ? 'Book' : d.type === 'magazine' ? 'Periodical' : 'CreativeWork';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': schemaType,
+  name: d.title,
+  ...(d.subtitle && { alternativeHeadline: d.subtitle }),
+  url: pageUrl,
+  author: d.authors.map((name) => ({ '@type': 'Person', name })),
+  ...(d.publishers.length && {
+    publisher: d.publishers.map((name) => ({ '@type': 'Organization', name })),
+  }),
+  datePublished: d.date ? d.date.toISOString().slice(0, 10) : String(d.year),
+  ...(d.languages.length && { inLanguage: d.languages }),
+  ...(d.isbn && { isbn: d.isbn }),
+  ...(d.issn && { issn: d.issn }),
+  ...(d.pages && { numberOfPages: d.pages }),
+  ...(og && { image: new URL(og.src, Astro.site).href }),
+  ...(links[0] && { sameAs: links.map((l) => l.href) }),
+};
+const description = pub.body?.trim().replace(/\s+/g, ' ').slice(0, 155) || undefined;
+---
+
+<Base
+  title={d.title}
+  description={description}
+  image={og?.src}
+  imageAlt={d.cover ? `Cover of ${d.title}` : undefined}
+  ogType={d.type === 'book' ? 'book' : 'website'}
+  jsonLd={jsonLd}
+>
+  <div class="wrap">
+    <article class="sheet" style={`--c:${bg};--tc:${tc}`}>
+      <header class="head">
+        <a class="back" href="/" aria-label="Back to the library">
+          ←
+        </a>
+        <div class="titles">
+          <h1 class="display title">{d.title}</h1>
+          {d.subtitle && <p class="subtitle">{d.subtitle}</p>}
+        </div>
+      </header>
+
+      <div class="hero">
+        <div class="hero-cover">
+          <Cover
+            pub={pub}
+            priority
+            alt={`Cover of ${d.title}`}
+            widths={[320, 480, 640, 960]}
+            sizes="(min-width: 900px) 360px, 60vw"
+          />
+        </div>
+      </div>
+
+      <div class="panel">
+        <dl class="meta">
+          {rows.map((r) => (
+            <div class="row">
+              <dt class="label">{r.label}</dt>
+              <dd>{Array.isArray(r.value) ? r.value.join(', ') : r.value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div class="side">
+          {links.length > 0 && (
+            <ul class="links" role="list">
+              {links.map((l) => (
+                <li>
+                  <a href={l.href} target="_blank" rel="noopener">
+                    {l.label} <span aria-hidden="true">↗</span>
+                    <span class="visually-hidden">(opens in a new tab)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          {pub.body?.trim() && (
+            <div class="desc">
+              <h2 class="label">Description</h2>
+              <Content />
+            </div>
+          )}
+          <p class="actions">
+            <a href={`/submit?fix=${d.slug}`}>Suggest a correction</a>
+            <a href="/">Back to the library</a>
+          </p>
+        </div>
+      </div>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .sheet {
+    background: var(--c);
+    color: var(--tc);
+  }
+  .head {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid color-mix(in srgb, var(--tc) 20%, transparent);
+  }
+  .back {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: clamp(44px, 5vw, 64px);
+    border-right: 1px solid color-mix(in srgb, var(--tc) 20%, transparent);
+    text-decoration: none;
+    font-size: var(--step-1);
+  }
+  .back:hover {
+    background: color-mix(in srgb, var(--tc) 10%, transparent);
+  }
+  .titles {
+    padding: clamp(14px, 2vw, 22px) clamp(16px, 2.5vw, 28px);
+  }
+  .title {
+    font-size: var(--step-3);
+    overflow-wrap: break-word;
+  }
+  .subtitle {
+    margin-top: 6px;
+    font-size: var(--step-1);
+    opacity: 0.85;
+  }
+  .hero {
+    display: grid;
+    place-items: center;
+    padding: clamp(24px, 4vw, 56px) var(--gutter);
+    overflow: clip;
+  }
+  .hero-cover {
+    width: min(100%, 360px);
+  }
+  .hero-cover :global(img) {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 18px 40px rgb(0 0 0 / 0.35));
+  }
+  .panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 clamp(24px, 4vw, 64px);
+    padding: clamp(20px, 3vw, 40px);
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .meta .row {
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) 2fr;
+    gap: 16px;
+    padding-block: 14px;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  dt {
+    color: var(--ink-muted);
+    padding-top: 3px;
+  }
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-top: 14px;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin: 0;
+    padding: 0 0 14px;
+    list-style: none;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  .links a,
+  .actions a {
+    text-underline-offset: 3px;
+  }
+  .desc :global(p) {
+    margin-top: 8px;
+    max-width: 62ch;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  .desc .label {
+    color: var(--ink-muted);
+    font-weight: 400;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+  .panel :focus-visible {
+    outline-color: var(--ink);
+  }
+  @media (max-width: 800px) {
+    .panel {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

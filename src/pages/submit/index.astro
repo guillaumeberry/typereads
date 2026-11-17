@@ -1,0 +1,243 @@
+---
+// Submission form. Plain HTML posting to /api/submit; the endpoint (Cloudflare Worker,
+// Turnstile, GitHub commit) arrives in Phase 6. Until then the form is visible but
+// sending is disabled.
+import Base from '../../layouts/Base.astro';
+import { SCRIPTS } from '../../data/taxonomies';
+
+const nextYear = new Date().getFullYear() + 1;
+const FORM_OPEN = false;
+---
+
+<Base
+  title="Submit a publication"
+  description="Suggest a book, magazine or website about type design for the library."
+>
+  <div class="wrap narrow">
+    <h1 class="display h1">Submit a publication</h1>
+    <p class="intro">
+      Know a publication about type design that belongs here? Tell me about it. I review every
+      submission by hand.
+    </p>
+
+    {!FORM_OPEN && (
+      <p class="notice" role="status">
+        The form opens soon. Until then, send suggestions to{' '}
+        <a href="mailto:hello@read-about-type.info">hello@read-about-type.info</a>.
+      </p>
+    )}
+
+    <form method="post" action="/api/submit" class="form">
+      <fieldset>
+        <legend class="label">The publication</legend>
+        <label>
+          <span>
+            Title <abbr title="required">*</abbr>
+          </span>
+          <input name="title" required maxlength="300" autocomplete="off" />
+        </label>
+        <label>
+          <span>
+            Author(s) <abbr title="required">*</abbr>
+          </span>
+          <input name="authors" required maxlength="300" placeholder="Comma-separated" />
+        </label>
+        <label>
+          <span>
+            Type <abbr title="required">*</abbr>
+          </span>
+          <select name="type" required>
+            <option value="">Choose…</option>
+            <option value="book">Book</option>
+            <option value="magazine">Magazine</option>
+            <option value="web">Website &amp; post</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <label>
+          <span>
+            Link <abbr title="required">*</abbr>
+          </span>
+          <input
+            name="link"
+            type="url"
+            required
+            maxlength="500"
+            placeholder="https://"
+            inputmode="url"
+          />
+          <small>The publisher, shop or web page.</small>
+        </label>
+        <label>
+          <span>Publisher</span>
+          <input name="publisher" maxlength="200" />
+        </label>
+        <label class="short">
+          <span>Year</span>
+          <input name="year" type="number" min="1450" max={nextYear} inputmode="numeric" />
+        </label>
+        <label>
+          <span>Language(s)</span>
+          <input name="languages" maxlength="200" placeholder="e.g. English, French" />
+        </label>
+        <fieldset class="scripts">
+          <legend>Script(s) covered</legend>
+          <div class="checks">
+            {Object.entries(SCRIPTS).map(([code, s]) => (
+              <label class="check">
+                <input type="checkbox" name="scripts" value={code} />
+                <span>
+                  {s.label} <span aria-hidden="true">{s.glyph}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <label>
+          <span>Why it belongs here</span>
+          <textarea name="why" rows="4" maxlength="1000"></textarea>
+          <small>Up to 1,000 characters.</small>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend class="label">You (optional)</legend>
+        <label>
+          <span>Your name, for public credit</span>
+          <input name="name" maxlength="100" autocomplete="name" />
+        </label>
+        <label class="check">
+          <input type="checkbox" name="consent" value="yes" />
+          <span>I agree my name may be shown as a contributor.</span>
+        </label>
+        <label>
+          <span>Your email</span>
+          <input name="email" type="email" maxlength="200" autocomplete="email" />
+          <small>Only so I can reply. Never published or stored with the publication.</small>
+        </label>
+      </fieldset>
+
+      <div class="hp" aria-hidden="true">
+        <label>
+          Leave this empty <input name="website" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
+
+      <button type="submit" disabled={!FORM_OPEN}>
+        Send the suggestion
+      </button>
+    </form>
+  </div>
+</Base>
+
+<style>
+  .narrow {
+    max-width: 720px;
+  }
+  .h1 {
+    font-size: var(--step-3);
+    margin-top: clamp(16px, 4vw, 48px);
+  }
+  .intro {
+    margin-top: 16px;
+    font-size: var(--step-1);
+    line-height: 1.45;
+  }
+  .notice {
+    margin-top: 24px;
+    padding: 14px 18px;
+    border-left: 3px solid var(--focus);
+    background: var(--surface);
+  }
+  .form {
+    display: grid;
+    gap: 32px;
+    margin-top: 32px;
+  }
+  fieldset {
+    display: grid;
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  legend {
+    margin-bottom: 4px;
+    padding: 0;
+    color: var(--muted);
+  }
+  label {
+    display: grid;
+    gap: 6px;
+  }
+  label > span {
+    font-weight: 600;
+  }
+  abbr {
+    text-decoration: none;
+    color: var(--muted);
+  }
+  input:not([type='checkbox']),
+  select,
+  textarea {
+    width: 100%;
+    padding: 11px 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline-offset: 0;
+    border-color: var(--fg);
+  }
+  .short input {
+    max-width: 10ch;
+  }
+  small {
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+  .scripts legend {
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 8px 16px;
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .check span {
+    font-weight: 400;
+  }
+  .check input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--fg);
+  }
+  .hp {
+    position: absolute;
+    left: -9999px;
+  }
+  button {
+    justify-self: start;
+    padding: 12px 22px;
+    background: var(--fg);
+    color: var(--bg);
+    border: 0;
+    border-radius: var(--radius);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+</style>

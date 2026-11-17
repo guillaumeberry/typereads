@@ -6,7 +6,7 @@ type: book
 authors: ["Kevin King"]
 publishers: ["Typotheque"]
 formats: ["physical","digital"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2023

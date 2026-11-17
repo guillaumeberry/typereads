@@ -1,32 +1,72 @@
 ---
-// Phase 1 placeholder: proves the content pipeline end to end. Replaced by the real
-// home page (grid, filters) in Phases 2–3.
-import { getCollection } from 'astro:content';
-import { TYPES } from '../data/taxonomies';
+import Base from '../layouts/Base.astro';
+import Card from '../components/Card.astro';
+import { getPublished } from '../lib/publications';
 
-const pubs = (await getCollection('publications', ({ data }) => data.status === 'published')).sort(
-  (a, b) =>
-    b.data.addedAt.getTime() - a.data.addedAt.getTime() || a.data.title.localeCompare(b.data.title),
-);
+const pubs = await getPublished();
+// Phase 3 adds search, filters, sort and the list view on top of this server-rendered grid.
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Read About Type</title>
-    <meta name="description" content="A curated library of publications about type design." />
-  </head>
-  <body>
-    <h1>Read About Type</h1>
-    <p>{pubs.length} publications</p>
-    <ol>
-      {pubs.map(({ data }) => (
-        <li>
-          {data.title} — {TYPES[data.type]}, {data.year}
-        </li>
+<Base>
+  <div class="wrap">
+    <div class="intro">
+      <h1 class="lede">
+        A collection of books, essays, magazines and more about type design, across cultures,
+        scripts and languages.
+      </h1>
+      <p class="count" aria-live="polite">
+        {pubs.length} publications
+      </p>
+    </div>
+    <ul class="grid" role="list">
+      {pubs.map((pub, i) => (
+        <Card pub={pub} priority={i < 4} />
       ))}
-    </ol>
-  </body>
-</html>
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .intro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px 32px;
+    margin-bottom: clamp(20px, 3vw, 32px);
+  }
+  .lede {
+    max-width: 52ch;
+    font-size: var(--step-1);
+    font-weight: 400;
+    line-height: 1.35;
+    color: var(--muted);
+  }
+  .count {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 720px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1200px) {
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1500px) {
+    .grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+  }
+</style>

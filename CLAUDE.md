@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this sub-project.
 
 ## Status
 
-Phase 1 in progress (scaffold and content). Read `README.md` and `docs/` first.
+Phase 2 done (static pages, zero JS); Phase 1 data enrichment still open. Read `README.md` and `docs/` first.
 
 ## Commands
 
@@ -21,6 +21,10 @@ Phase 1 in progress (scaffold and content). Read `README.md` and `docs/` first.
 - `src/content.config.ts`: Zod schema. `REQUIRE_ENRICHMENT` is `false` until every entry has `languages` and `scripts`; then flip it to `true`.
 - `src/data/taxonomies.ts`: controlled vocabularies (types, formats, scripts, availability, date buckets).
 - `src/lib/identifiers.ts`: ISBN/ISSN checksums (`977…` barcodes are ISSNs, not ISBNs).
+- `src/lib/`: `publications.ts` (only `status: published`, default sort), `color.ts` (contrast), `format.ts` (labels, native language names).
+- `src/layouts/Base.astro`: page shell (meta, OG, JSON-LD, fonts). `src/components/`: Header, Footer, Card, Cover, Logo, Prose.
+- `src/content/pages/about.md`: About copy (FAQ as front-matter fields).
+- URLs: pages are built as files (`about.html`) and served at clean URLs (`/about`); canonical URLs strip `.html`.
 - `spike/` is gitignored and throwaway (motion spike, CMS demo with its own `.git`). Don't import from it.
 
 ## Source of truth

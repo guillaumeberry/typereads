@@ -1,0 +1,114 @@
+---
+// 404 ".notdef": a missing page is a missing glyph. Static version (Phase 2); the
+// numeral cycle arrives with the motion pass (Phase 4).
+import Base from '../layouts/Base.astro';
+import { getPublished } from '../lib/publications';
+
+const slugs = (await getPublished()).map((p) => p.data.slug);
+const fallback = slugs[0] ?? '';
+const numerals = [
+  { text: '٤٠٤', script: 'Arabic-Indic' },
+  { text: '४०४', script: 'Devanagari' },
+  { text: '৪০৪', script: 'Bengali' },
+  { text: '๔๐๔', script: 'Thai' },
+  { text: '༤༠༤', script: 'Tibetan' },
+];
+---
+
+<Base title="Glyph not found" noindex>
+  <div class="wrap notdef">
+    <p class="tofu" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </p>
+    <h1 class="display h1">This glyph isn't in the font.</h1>
+    <p class="intro">The page you're looking for doesn't exist (or was never drawn).</p>
+    <p class="numerals" lang="und">
+      {numerals.map((n) => (
+        <span title={n.script}>
+          {n.text}
+          <span class="visually-hidden"> ({n.script})</span>
+        </span>
+      ))}
+    </p>
+    <p class="actions">
+      <a class="primary" href="/">
+        Back to the library
+      </a>
+      <a href={`/publications/${fallback}`} data-random>
+        Read something random
+      </a>
+    </p>
+  </div>
+  <script is:inline define:vars={{ slugs }}>
+    // Pick a random publication (without JS the link goes to the most recent one).
+    const a = document.querySelector('[data-random]');
+    if (a && slugs.length)
+      a.href = '/publications/' + slugs[Math.floor(Math.random() * slugs.length)];
+  </script>
+</Base>
+
+<style>
+  .notdef {
+    max-width: 760px;
+    padding-block: clamp(24px, 6vw, 80px);
+  }
+  .tofu {
+    display: flex;
+    gap: clamp(10px, 2vw, 20px);
+  }
+  .tofu span {
+    width: clamp(64px, 14vw, 140px);
+    aspect-ratio: 0.62;
+    border: 3px solid var(--fg);
+    position: relative;
+  }
+  /* The classic .notdef glyph: a box with a cross. */
+  .tofu span::before,
+  .tofu span::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top right,
+      transparent calc(50% - 1px),
+      var(--line) 50%,
+      transparent calc(50% + 1px)
+    );
+  }
+  .tofu span::after {
+    transform: scaleX(-1);
+  }
+  .h1 {
+    margin-top: clamp(24px, 4vw, 40px);
+    font-size: var(--step-3);
+  }
+  .intro {
+    margin-top: 12px;
+    font-size: var(--step-1);
+    color: var(--muted);
+  }
+  .numerals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-top: 24px;
+    font-size: var(--step-2);
+    color: var(--muted);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    align-items: center;
+    margin-top: 32px;
+  }
+  .primary {
+    padding: 10px 18px;
+    background: var(--fg);
+    color: var(--bg);
+    font-weight: 700;
+    text-decoration: none;
+  }
+</style>

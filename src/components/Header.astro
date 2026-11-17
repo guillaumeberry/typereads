@@ -1,0 +1,76 @@
+---
+import Logo from './Logo.astro';
+const path = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
+const nav = [
+  { href: '/about', label: 'About' },
+  { href: '/submit', label: 'Submit', strong: true },
+];
+---
+
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="brand" href="/">
+      <Logo />
+      <span class="wordmark display">Read about Type Design</span>
+    </a>
+    <nav aria-label="Main">
+      <ul>
+        {nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class:list={{ strong: item.strong }}
+              aria-current={path.startsWith(item.href) ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: clamp(20px, 3vw, 36px);
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--fg);
+  }
+  .wordmark {
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    white-space: nowrap;
+  }
+  ul {
+    display: flex;
+    gap: clamp(12px, 2vw, 24px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  nav a {
+    text-decoration: none;
+    text-underline-offset: 4px;
+  }
+  nav a:hover,
+  nav a[aria-current='page'] {
+    text-decoration: underline;
+  }
+  .strong {
+    font-weight: 700;
+  }
+  @media (max-width: 420px) {
+    .wordmark {
+      font-size: 1.125rem;
+    }
+  }
+</style>

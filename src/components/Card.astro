@@ -1,0 +1,107 @@
+---
+// Grid card: cover on its colour; title, type and format revealed on hover/focus
+// (pointer devices) and always shown under the tile on touch screens.
+import Cover from './Cover.astro';
+import { bgColor, textColorFor } from '../lib/color';
+import { formatsLabel, typeLabel } from '../lib/format';
+import { publicationUrl, type Publication } from '../lib/publications';
+
+interface Props {
+  pub: Publication;
+  priority?: boolean;
+}
+const { pub, priority = false } = Astro.props;
+const bg = bgColor(pub.data.color);
+---
+
+<li class="card" data-slug={pub.data.slug}>
+  <a href={publicationUrl(pub)} style={`--c:${bg};--tc:${textColorFor(bg)}`}>
+    <div class="tile">
+      <Cover
+        pub={pub}
+        priority={priority}
+        widths={[200, 300, 400, 600]}
+        sizes="(min-width: 1680px) 260px, (min-width: 1200px) 16vw, (min-width: 720px) 23vw, 36vw"
+      />
+    </div>
+    <div class="caption">
+      <h2 class="display title">{pub.data.title}</h2>
+      <p class="label meta">
+        {typeLabel(pub.data.type)} • {formatsLabel(pub.data.formats)}
+      </p>
+    </div>
+  </a>
+</li>
+
+<style>
+  .card a {
+    position: relative;
+    display: block;
+    text-decoration: none;
+    color: var(--fg);
+  }
+  .tile {
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--c);
+    color: var(--tc);
+    overflow: hidden;
+  }
+  /* The cover fits inside the square, whatever its proportions. */
+  .tile :global(img),
+  .tile :global(.type-cover) {
+    position: absolute;
+    inset: 9% 12%;
+    width: 76%;
+    height: 82%;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 14px rgb(0 0 0 / 0.3));
+  }
+  .tile :global(.type-cover) {
+    aspect-ratio: auto;
+    filter: none;
+  }
+  .caption {
+    padding-top: 10px;
+  }
+  .title {
+    font-size: var(--step-1);
+  }
+  .meta {
+    margin-top: 4px;
+    color: var(--muted);
+  }
+
+  /* Pointer devices: caption overlays the tile on hover/focus, as in the prototype. */
+  @media (hover: hover) and (pointer: fine) {
+    .caption {
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: 48px 16px 14px;
+      background: linear-gradient(to top, rgb(0 0 0 / 0.78), transparent);
+      opacity: 0;
+      transform: translateY(6px);
+      transition:
+        opacity var(--dur-base) var(--ease-out),
+        transform var(--dur-base) var(--ease-out);
+    }
+    .meta {
+      color: rgb(255 255 255 / 0.8);
+    }
+    .tile :global(img) {
+      transition:
+        transform var(--dur-slow) var(--spring),
+        filter var(--dur-slow) var(--ease-out);
+    }
+    a:hover .caption,
+    a:focus-visible .caption {
+      opacity: 1;
+      transform: none;
+    }
+    a:hover .tile :global(img),
+    a:focus-visible .tile :global(img) {
+      transform: translateY(-4px) scale(1.02);
+      filter: drop-shadow(0 14px 24px rgb(0 0 0 / 0.4));
+    }
+  }
+</style>

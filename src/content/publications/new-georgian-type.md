@@ -6,7 +6,7 @@ type: book
 authors: ["Sophia Kintsurashvili","Peter Biľak"]
 publishers: ["Typotheque"]
 formats: ["physical","digital"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2023

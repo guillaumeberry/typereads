@@ -6,7 +6,7 @@ type: book
 authors: ["Adrian Frutiger"]
 publishers: ["Atelier Perrousseaux"]
 formats: ["physical","digital"]
-languages: []
+languages: ["fr"]
 translations: []
 scripts: []
 year: 2001

@@ -6,7 +6,7 @@ type: book
 authors: ["TypeTogether"]
 publishers: ["TypeTogether"]
 formats: ["physical","digital"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2022

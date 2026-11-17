@@ -6,7 +6,7 @@ type: book
 authors: ["Céline Hurka & Nóra Békés"]
 publishers: []
 formats: ["physical"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2019

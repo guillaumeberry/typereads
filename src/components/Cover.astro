@@ -1,0 +1,51 @@
+---
+// A publication cover on its colour, or a typographic cover when no image exists,
+// so there is never a broken image.
+import { Picture } from 'astro:assets';
+import type { Publication } from '../lib/publications';
+
+interface Props {
+  pub: Publication;
+  /** Responsive `sizes` for the image. */
+  sizes: string;
+  widths: number[];
+  /** Above the fold: load eagerly with high priority. */
+  priority?: boolean;
+  alt?: string;
+}
+const { pub, sizes, widths, priority = false, alt = '' } = Astro.props;
+const { cover, title } = pub.data;
+---
+
+{cover ? (
+  <Picture
+    src={cover}
+    alt={alt}
+    widths={widths}
+    sizes={sizes}
+    formats={['avif', 'webp']}
+    fallbackFormat="jpeg"
+    loading={priority ? 'eager' : 'lazy'}
+    decoding="async"
+    fetchpriority={priority ? 'high' : 'auto'}
+    class="cover-img"
+  />
+) : (
+  <div class="type-cover display" role={alt ? 'img' : undefined} aria-label={alt || undefined}>
+    <span>{title}</span>
+  </div>
+)}
+
+<style>
+  .type-cover {
+    aspect-ratio: 2 / 3;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    padding: 12%;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+    font-size: clamp(1rem, 0.6rem + 1.4vw, 1.75rem);
+    overflow-wrap: anywhere;
+  }
+</style>

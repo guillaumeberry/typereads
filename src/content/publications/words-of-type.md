@@ -6,7 +6,7 @@ type: web
 authors: ["Lisa Huang"]
 publishers: ["Lisa Huang"]
 formats: ["digital"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2025

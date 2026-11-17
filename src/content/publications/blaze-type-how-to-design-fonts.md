@@ -6,8 +6,8 @@ type: book
 authors: ["Matthieu Salvaggio & Léon Hugues"]
 publishers: ["Blaze Type"]
 formats: ["physical","digital"]
-languages: []
-translations: []
+languages: ["en"]
+translations: [{"language": "fr"}]
 scripts: []
 year: 2023
 date: 2023-02-24

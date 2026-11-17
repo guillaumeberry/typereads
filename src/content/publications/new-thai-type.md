@@ -6,7 +6,7 @@ type: magazine
 authors: ["Peter Biľak","Héctor Mangas Afonso","Pracha Suveeranont"]
 publishers: ["Typotheque"]
 formats: ["physical"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2025

@@ -1,0 +1,21 @@
+---
+// Renders a short plain-text answer: blank lines split paragraphs, and lines
+// starting with "- " become a bulleted list. Text is escaped (no raw HTML).
+interface Props {
+  text: string;
+}
+const blocks = Astro.props.text.trim().split(/\n\s*\n/);
+---
+
+{blocks.map((block) => {
+  const lines = block.split('\n').map((l) => l.trim());
+  return lines.every((l) => l.startsWith('- ')) ? (
+    <ul>
+      {lines.map((l) => (
+        <li>{l.slice(2)}</li>
+      ))}
+    </ul>
+  ) : (
+    <p>{lines.join(' ')}</p>
+  );
+})}

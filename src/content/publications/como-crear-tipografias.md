@@ -6,8 +6,8 @@ type: book
 authors: ["Cristóbal Henestrosa","Laura Meseguer & José Scaglione"]
 publishers: ["Tipo e"]
 formats: ["physical"]
-languages: []
-translations: []
+languages: ["es"]
+translations: [{"language": "en"}, {"language": "pl"}]
 scripts: []
 year: 2012
 date: 2012-04-01

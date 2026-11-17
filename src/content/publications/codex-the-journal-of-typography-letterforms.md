@@ -6,7 +6,7 @@ type: magazine
 authors: ["John Broadley"]
 publishers: ["CODEX"]
 formats: ["physical"]
-languages: []
+languages: ["en"]
 translations: []
 scripts: []
 year: 2011
