@@ -1,0 +1,16 @@
+// Cloudflare deploy config: a Worker with no code that serves the static build
+// (Workers static assets, ADR-003). Workers Builds runs `npm run build`, then
+// `npx wrangler deploy` on every push to main.
+// The Worker name in the Cloudflare dashboard must match "name" below.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "typereads",
+  "compatibility_date": "2026-11-17",
+  // No anonymous usage telemetry from wrangler.
+  "send_metrics": false,
+  "assets": {
+    "directory": "./dist",
+    // Serve dist/404.html for unknown URLs (the ".notdef" 404 page arrives in Phase 2).
+    "not_found_handling": "404-page",
+  },
+}
