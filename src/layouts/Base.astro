@@ -70,6 +70,7 @@ const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
     <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
 
     {ld && <script type="application/ld+json" set:html={ld} />}
+    <slot name="head" />
   </head>
   <body>
     <a class="skip-link" href="#main">

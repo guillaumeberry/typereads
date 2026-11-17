@@ -81,15 +81,17 @@ Goal: the full site works with zero JS.
 
 Goal: filters, search, sort and view toggle, all reflected in the URL.
 
-- [ ] `library.ts`: a pure `computeVisible(state, items)` and `computeCounts(state, items)`, with unit tests (Vitest).
-- [ ] URL ↔ state sync (`replaceState` for typing, `pushState` for filter changes); back/forward support.
-- [ ] Filter panel (desktop) and `<dialog>` bottom sheet (mobile) with faceted counts and disabled zero-result options.
-- [ ] Language filter with _Include translations_; script chips with glyphs; date presets; availability.
-- [ ] Accent-insensitive search with debounce and keyboard shortcuts.
-- [ ] Sort menu with the 4 options.
-- [ ] Grid/list toggle, persisted in `localStorage`. Build the **list view** from the new design.
-- [ ] Active-filter chips, _Reset_, live result count (`aria-live`), empty state.
-- [ ] Keep the page bfcache-eligible and check that scroll is restored when coming back from a detail page.
+- [x] `src/scripts/library-core.ts`: pure `computeVisible` / `computeCounts` / sort / URL state, with 15 Vitest tests (`npm test`, also in CI); `library.ts` wires the DOM with `init`/`destroy` and an `animate` hook for Phase 4. _(2026-11-17)_
+- [x] URL ↔ state sync (`replaceState` for typing, `pushState` for filter changes); back/forward support. _(2026-11-17)_
+- [x] Filter panel (desktop: non-modal `<dialog>` under the toolbar; mobile: modal bottom sheet with _Show N results_) with faceted counts and disabled zero-result options. Only values present in the data are offered. _(2026-11-17)_
+- [x] Language filter with _Include translations_; script chips with glyphs; date presets; availability (hidden while every entry is `unknown`). _(2026-11-17)_
+- [x] Accent-insensitive, multi-word search with debounce, `/` and `Esc`. Descriptions load from `/search.json` (1.6 KB gz) on first focus. _(2026-11-17)_
+- [x] Sort menu with the 4 options. _(2026-11-17)_
+- [x] Grid/list toggle, persisted in `localStorage` (`rat:view`, applied before first paint). List view built from the Q4 default: title · authors · year · type · languages · format; two lines on mobile. _(2026-11-17)_
+- [x] Active-filter chips, _Reset_, live result count (`aria-live`), empty state. _(2026-11-17)_
+- [x] Page is bfcache-eligible (Lighthouse audit passes); scroll restoration is the browser's own. Not yet checked by hand on a phone. _(2026-11-17)_
+- [x] Measured: library JS 3.1 KB gz (budget 15); Lighthouse mobile 99/100/100/100; works without JS (controls hidden, full grid). _(2026-11-17)_
+- [ ] **Watch:** home HTML is 16.9 KB gz for 50 entries, about 85 KB at 300 (budget 60), mostly image `srcset`s. Options when it matters: fewer image widths, or render the first N cards and the rest from JSON.
 
 **Exit:** every filter combination works, is shareable by URL and survives back/forward; core JS ≤ 15 KB gz (motion layer excluded).
 

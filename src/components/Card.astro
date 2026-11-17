@@ -1,20 +1,43 @@
 ---
-// Grid card: cover on its colour; title, type and format revealed on hover/focus
-// (pointer devices) and always shown under the tile on touch screens.
+// One publication in the library. The same markup serves both views:
+// - grid: cover tile on its colour; title and type/format on hover (pointer) or
+//   under the tile (touch);
+// - list: a row with a small cover, title, authors, year, type, languages, format.
+// Data attributes feed the client-side filters (src/scripts/library.ts).
 import Cover from './Cover.astro';
 import { bgColor, textColorFor } from '../lib/color';
-import { formatsLabel, typeLabel } from '../lib/format';
+import { formatsLabel, languageName, typeLabel } from '../lib/format';
 import { publicationUrl, type Publication } from '../lib/publications';
+import { normalize } from '../scripts/library-core';
 
 interface Props {
   pub: Publication;
+  index: number;
   priority?: boolean;
 }
-const { pub, priority = false } = Astro.props;
-const bg = bgColor(pub.data.color);
+const { pub, index, priority = false } = Astro.props;
+const d = pub.data;
+const bg = bgColor(d.color);
+const searchText = normalize(
+  [d.title, d.subtitle, ...d.authors, ...d.publishers, d.isbn, d.issn].filter(Boolean).join(' '),
+);
+const langs = d.languages.map(languageName).join(', ');
 ---
 
-<li class="card" data-slug={pub.data.slug}>
+<li
+  class="card"
+  data-id={d.slug}
+  data-i={index}
+  data-title={d.title}
+  data-type={d.type}
+  data-formats={d.formats.join(' ')}
+  data-langs={d.languages.join(' ')}
+  data-tlangs={d.translations.map((t) => t.language).join(' ')}
+  data-scripts={d.scripts.join(' ')}
+  data-year={d.year}
+  data-avail={d.availability}
+  data-s={searchText}
+>
   <a href={publicationUrl(pub)} style={`--c:${bg};--tc:${textColorFor(bg)}`}>
     <div class="tile">
       <Cover
@@ -25,15 +48,23 @@ const bg = bgColor(pub.data.color);
       />
     </div>
     <div class="caption">
-      <h2 class="display title">{pub.data.title}</h2>
+      <h2 class="display title">{d.title}</h2>
       <p class="label meta">
-        {typeLabel(pub.data.type)} • {formatsLabel(pub.data.formats)}
+        {typeLabel(d.type)} • {formatsLabel(d.formats)}
       </p>
+      <p class="col authors">{d.authors.join(', ')}</p>
+      <p class="col year">{d.year}</p>
+      <p class="col type">{typeLabel(d.type)}</p>
+      <p class="col langs">{langs || '—'}</p>
+      <p class="col formats">{formatsLabel(d.formats)}</p>
     </div>
   </a>
 </li>
 
 <style>
+  .card[hidden] {
+    display: none;
+  }
   .card a {
     position: relative;
     display: block;
@@ -71,10 +102,13 @@ const bg = bgColor(pub.data.color);
     margin-top: 4px;
     color: var(--muted);
   }
+  .col {
+    display: none;
+  }
 
-  /* Pointer devices: caption overlays the tile on hover/focus, as in the prototype. */
+  /* Grid view on pointer devices: caption overlays the tile on hover/focus. */
   @media (hover: hover) and (pointer: fine) {
-    .caption {
+    :global(html:not([data-view='list'])) .caption {
       position: absolute;
       inset: auto 0 0 0;
       padding: 48px 16px 14px;
@@ -85,7 +119,7 @@ const bg = bgColor(pub.data.color);
         opacity var(--dur-base) var(--ease-out),
         transform var(--dur-base) var(--ease-out);
     }
-    .meta {
+    :global(html:not([data-view='list'])) .meta {
       color: rgb(255 255 255 / 0.8);
     }
     .tile :global(img) {
@@ -98,10 +132,81 @@ const bg = bgColor(pub.data.color);
       opacity: 1;
       transform: none;
     }
-    a:hover .tile :global(img),
-    a:focus-visible .tile :global(img) {
+    :global(html:not([data-view='list'])) a:hover .tile :global(img),
+    :global(html:not([data-view='list'])) a:focus-visible .tile :global(img) {
       transform: translateY(-4px) scale(1.02);
       filter: drop-shadow(0 14px 24px rgb(0 0 0 / 0.4));
+    }
+  }
+
+  /* List view: one dense row per publication. */
+  :global(html[data-view='list']) .card a {
+    display: grid;
+    grid-template-columns:
+      56px minmax(0, 2.4fr) minmax(0, 1.6fr) 4ch minmax(0, 0.9fr) minmax(0, 0.9fr)
+      minmax(0, 0.9fr);
+    gap: 16px;
+    align-items: center;
+    padding-block: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  :global(html[data-view='list']) .tile :global(img) {
+    inset: 8%;
+    width: 84%;
+    height: 84%;
+    filter: none;
+  }
+  :global(html[data-view='list']) .caption {
+    display: contents;
+  }
+  :global(html[data-view='list']) .title {
+    font-size: var(--step-0);
+    font-family: var(--font-text);
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.3;
+  }
+  :global(html[data-view='list']) .meta {
+    display: none;
+  }
+  :global(html[data-view='list']) .col {
+    display: block;
+    color: var(--muted);
+    font-size: var(--step--1);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  :global(html[data-view='list']) .year {
+    font-variant-numeric: tabular-nums;
+  }
+  :global(html[data-view='list']) a:hover .title {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  /* Mobile list: two lines (title, then authors · year). */
+  @media (max-width: 720px) {
+    :global(html[data-view='list']) .card a {
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      grid-template-areas: 'thumb title year' 'thumb authors authors';
+      gap: 2px 12px;
+    }
+    :global(html[data-view='list']) .tile {
+      grid-area: thumb;
+    }
+    :global(html[data-view='list']) .title {
+      grid-area: title;
+    }
+    :global(html[data-view='list']) .authors {
+      grid-area: authors;
+    }
+    :global(html[data-view='list']) .year {
+      grid-area: year;
+    }
+    :global(html[data-view='list']) .type,
+    :global(html[data-view='list']) .langs,
+    :global(html[data-view='list']) .formats {
+      display: none;
     }
   }
 </style>

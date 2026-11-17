@@ -2,7 +2,7 @@
 
 A curated, open-source library of publications about type design (books, magazines, websites and posts), across cultures, scripts and languages.
 
-> **Status:** Phase 2, static pages (2026-11-17): home grid, detail pages, About, Submit (sending disabled until Phase 6), 404, sitemap. Works without JavaScript. Throwaway spikes live in `spike/` (gitignored).
+> **Status:** Phase 3, library engine (2026-11-17): search, filters with counts, sort, grid/list view, all in the URL; on top of the Phase 2 static pages (detail, About, Submit, 404). Works without JavaScript. Throwaway spikes live in `spike/` (gitignored).
 > Live: https://typereads.guillaume-berry.workers.dev · Repo: https://github.com/guillaumeberry/typereads · Prototype: https://read-about-type.framer.website/
 
 ## Docs
@@ -24,6 +24,7 @@ npm install
 npm run dev      # http://localhost:4321
 npm run build    # static site in dist/
 npm run check    # type-check
+npm test         # unit tests
 ```
 
 Requires Node 22+. Content lives in `src/content/publications/` (one Markdown file per publication); the schema is `src/content.config.ts`.

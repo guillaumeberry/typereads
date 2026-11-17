@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this sub-project.
 
 ## Status
 
-Phase 2 done (static pages, zero JS); Phase 1 data enrichment still open. Read `README.md` and `docs/` first.
+Phase 3 done (library engine: search, filters, sort, list view); Phase 1 data enrichment still open. Read `README.md` and `docs/` first.
 
 ## Commands
 
@@ -13,7 +13,7 @@ Phase 2 done (static pages, zero JS); Phase 1 data enrichment still open. Read `
 - `npm run check`: type-check (`astro check`)
 - `npm run format` / `npm run format:check`: Prettier
 - CI (`.github/workflows/ci.yml`) runs format:check, check and build on every push and PR.
-- No unit tests yet (Vitest arrives with the library engine, Phase 3).
+- `npm test`: Vitest unit tests (`src/scripts/*.test.ts`); also run in CI.
 
 ## Layout
 
@@ -24,6 +24,7 @@ Phase 2 done (static pages, zero JS); Phase 1 data enrichment still open. Read `
 - `src/lib/`: `publications.ts` (only `status: published`, default sort), `color.ts` (contrast), `format.ts` (labels, native language names).
 - `src/layouts/Base.astro`: page shell (meta, OG, JSON-LD, fonts). `src/components/`: Header, Footer, Card, Cover, Logo, Prose.
 - `src/content/pages/about.md`: About copy (FAQ as front-matter fields).
+- `src/scripts/library-core.ts` (pure, tested) + `library.ts` (DOM, `init`/`destroy`, `animate` hook): search, filters, faceted counts, sort, URL state. Cards carry `data-*` attributes; `/search.json` holds descriptions, loaded on first search focus.
 - URLs: pages are built as files (`about.html`) and served at clean URLs (`/about`); canonical URLs strip `.html`.
 - `spike/` is gitignored and throwaway (motion spike, CMS demo with its own `.git`). Don't import from it.
 
