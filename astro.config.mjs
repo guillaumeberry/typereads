@@ -2,8 +2,8 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  // Replace with the real URL once the Cloudflare project exists (Phase 1, last step).
-  site: 'https://read-about-type.pages.dev',
+  // Live URL (Cloudflare Workers static assets). Change when a custom domain is added.
+  site: 'https://typereads.guillaume-berry.workers.dev',
   trailingSlash: 'ignore',
   devToolbar: { enabled: false },
 });

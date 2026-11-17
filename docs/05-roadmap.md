@@ -54,7 +54,7 @@ Goal: a repo with valid content and nothing visual yet.
 - [ ] Covers: download them next to the entries (they currently point to the Framer CDN; the schema accepts both).
 - [ ] Optional: export the Framer CMS to CSV and compare, in case it holds fields the scrape missed (languages?).
 - [ ] Enrich the data by hand: `scripts`, `availability`, missing languages and descriptions. Fix typos. Then set `REQUIRE_ENRICHMENT = true` in `src/content.config.ts`.
-- [ ] Connect the repo to Cloudflare. The first deploy is a bare page listing titles.
+- [x] Connect the repo to Cloudflare (Workers Builds, `wrangler.jsonc`). Live: <https://typereads.guillaume-berry.workers.dev>, every push to `main` deploys. _(2026-11-17)_
 
 **Exit:** `npm run build` is green with 50 valid publications, and a preview URL is live.
 

@@ -3,7 +3,7 @@
 A curated, open-source library of publications about type design (books, magazines, websites and posts), across cultures, scripts and languages.
 
 > **Status:** Phase 1, scaffold and content (2026-11-17). Astro project with the content schema and the 50 publications; a bare page lists them. Throwaway spikes live in `spike/` (gitignored).
-> Repo: https://github.com/guillaumeberry/typereads · Prototype: https://read-about-type.framer.website/
+> Live: https://typereads.guillaume-berry.workers.dev · Repo: https://github.com/guillaumeberry/typereads · Prototype: https://read-about-type.framer.website/
 
 ## Docs
 
