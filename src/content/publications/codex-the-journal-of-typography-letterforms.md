@@ -1,0 +1,21 @@
+---
+title: "Codex: The Journal of Typography/Letterforms"
+slug: codex-the-journal-of-typography-letterforms
+status: published
+type: magazine
+authors: ["John Broadley"]
+publishers: ["CODEX"]
+formats: ["physical"]
+languages: []
+translations: []
+scripts: []
+year: 2011
+date: 2011-05-01
+availability: unknown
+issn: "2186-0947"
+cover: "https://framerusercontent.com/images/NPRa77p94B7kK3JEI4UDIZDrJng.jpg"
+color: "#393939"
+addedAt: 2026-11-15
+---
+
+

@@ -1,0 +1,20 @@
+---
+title: "Reviving Type"
+slug: reviving-type
+status: published
+type: book
+authors: ["Céline Hurka & Nóra Békés"]
+publishers: []
+formats: ["physical"]
+languages: []
+translations: []
+scripts: []
+year: 2019
+date: 2019-09-01
+availability: unknown
+cover: "https://framerusercontent.com/images/5zk9LkCaRyr69oIXndR2VzZqGE.jpg"
+color: "#1a2151"
+addedAt: 2026-11-15
+---
+
+

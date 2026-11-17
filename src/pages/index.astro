@@ -1,0 +1,32 @@
+---
+// Phase 1 placeholder: proves the content pipeline end to end. Replaced by the real
+// home page (grid, filters) in Phases 2–3.
+import { getCollection } from 'astro:content';
+import { TYPES } from '../data/taxonomies';
+
+const pubs = (await getCollection('publications', ({ data }) => data.status === 'published')).sort(
+  (a, b) =>
+    b.data.addedAt.getTime() - a.data.addedAt.getTime() || a.data.title.localeCompare(b.data.title),
+);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Read About Type</title>
+    <meta name="description" content="A curated library of publications about type design." />
+  </head>
+  <body>
+    <h1>Read About Type</h1>
+    <p>{pubs.length} publications</p>
+    <ol>
+      {pubs.map(({ data }) => (
+        <li>
+          {data.title} — {TYPES[data.type]}, {data.year}
+        </li>
+      ))}
+    </ol>
+  </body>
+</html>

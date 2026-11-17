@@ -1,0 +1,23 @@
+---
+title: "Mono Moment—Monospace Type Design"
+slug: mono-moment
+status: published
+type: book
+authors: ["Christina Wunderlich"]
+publishers: ["Slanted Publishers"]
+formats: ["physical"]
+languages: []
+translations: []
+scripts: []
+year: 2022
+date: 2022-02-01
+availability: unknown
+isbn: "9783948440329"
+links:
+  publisher: "https://www.slanted.de/product/mono-moment/"
+cover: "https://framerusercontent.com/images/BJyCPS5bxQCjdBKfkOTZAz1s.jpg"
+color: "#591065"
+addedAt: 2026-11-15
+---
+
+
