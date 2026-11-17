@@ -3,7 +3,7 @@ title: "Codex: The Journal of Typography/Letterforms"
 slug: codex-the-journal-of-typography-letterforms
 status: published
 type: magazine
-authors: ["John Broadley"]
+authors: ["John Boardley"]
 publishers: ["CODEX"]
 formats: ["physical"]
 languages: ["en"]
@@ -18,4 +18,4 @@ color: "#393939"
 addedAt: 2026-11-15
 ---
 
-
+A large-format print journal on typography and letterforms, founded by John Boardley, creator of the I Love Typography website. Launched in 2011 as a hybrid of magazine and journal, it published three issues between 2011 and 2013.

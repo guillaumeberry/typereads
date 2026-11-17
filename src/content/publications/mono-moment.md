@@ -20,4 +20,4 @@ color: "#591065"
 addedAt: 2026-11-15
 ---
 
-
+A guide to monospaced type: 45 monospace typefaces from 1955 to 2020, from Courier to IBM Plex Mono, plus interviews with four type designers. Designed by Christina Wunderlich, it began as her undergraduate thesis. 208 pages, Slanted Publishers.

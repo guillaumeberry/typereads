@@ -20,4 +20,4 @@ color: "#2c5c00"
 addedAt: 2026-11-15
 ---
 
-
+Type designer Hendrik Weber's study of the italic: why slanted letters give typography its emphasis, how their forms and functions work, and how they developed from handwriting to digital typesetting. 128 pages, published by Niggli.

@@ -19,4 +19,4 @@ color: "#694326"
 addedAt: 2026-11-15
 ---
 
-
+A specimen book from DSType, the Portuguese type foundry of Dino dos Santos, presenting the typefaces it released over its first fifteen years, from 2004 to 2019.

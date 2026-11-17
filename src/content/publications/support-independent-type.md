@@ -20,4 +20,4 @@ color: "#860007"
 addedAt: 2026-11-15
 ---
 
-
+A book on the culture of type specimens made by independent foundries: the printed and digital showcases in which small foundries present their typefaces. Edited by Marian Misiak and Lars Harmsen, published by Slanted in 2020.

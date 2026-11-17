@@ -20,4 +20,4 @@ color: "#7d0400"
 addedAt: 2026-11-15
 ---
 
-
+Case studies of newly designed accents for contemporary typefaces, by type designer and teacher Radek Sidun, co-founder of Briefcase Type Foundry. Based on research he began with his diploma thesis in 2009, it looks closely at how diacritics for European languages are designed. In English, published by UMPRUM in Prague.

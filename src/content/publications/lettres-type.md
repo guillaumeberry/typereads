@@ -20,4 +20,4 @@ color: "#5f5800"
 addedAt: 2026-11-15
 ---
 
-
+Jean-Baptiste Levée presents 37 typefaces and type families designed in France in recent years, each born from a specific commission, and makes the case for custom-made type design financed by commissions. In French.

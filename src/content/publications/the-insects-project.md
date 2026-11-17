@@ -20,4 +20,4 @@ color: "#a81e21"
 addedAt: 2026-11-15
 ---
 
-
+The outcome of a 2013–2016 research programme on Central European typography at the Academy of Fine Arts in Katowice. For Czech, Hungarian, Polish and Slovak, each chapter gives a historical overview and a guide to good diacritic design, based on old prints. Edited by Agnieszka Małecka and Zofia Oslislo.

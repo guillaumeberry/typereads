@@ -20,4 +20,4 @@ color: "#1c1966"
 addedAt: 2026-11-15
 ---
 
-
+An introduction to professional type design by Chris Campe and Ulrike Rausch that takes readers from sketched letters to a finished font. Written in German (216 pages), it is also available in English as Designing Fonts (Thames & Hudson) and Making Fonts (Gingko Press).

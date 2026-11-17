@@ -19,4 +19,4 @@ color: "#983400"
 addedAt: 2026-11-15
 ---
 
-
+TYPEONE, the biannual print magazine of the online type design publication TYPE01. Its first issue (November 2020) combined type design with the global issues of that year. Published with People of Print and printed in the UK.

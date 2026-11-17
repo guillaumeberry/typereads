@@ -20,4 +20,4 @@ color: "#0c6567"
 addedAt: 2026-11-15
 ---
 
-
+Stephen Coles looks at 100 traditional and modern typefaces, one spread each, with enlarged, annotated characters that reveal their key features and explain how those features affect mood and readability.

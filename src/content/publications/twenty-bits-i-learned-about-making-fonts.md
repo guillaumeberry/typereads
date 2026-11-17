@@ -20,4 +20,4 @@ color: "#403a7c"
 addedAt: 2026-11-15
 ---
 
-
+Designer Dan Cederholm's short hardcover account of twenty lessons he learned while teaching himself to make fonts properly during the pandemic. Written for other designers taking their first steps in type design, not as a theory book.

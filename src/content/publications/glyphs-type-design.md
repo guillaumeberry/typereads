@@ -20,4 +20,4 @@ color: "#282828"
 addedAt: 2026-11-15
 ---
 
-
+A Korean guide to designing fonts in the Glyphs app, by type designers Eunyou Noh and Minjoo Ham. It comes in three volumes: an introductory supplement, a course in Hangul and Latin type design, and a Glyphs manual. Written for beginners as well as working designers.

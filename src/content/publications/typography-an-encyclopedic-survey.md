@@ -18,4 +18,4 @@ color: "#000023"
 addedAt: 2026-11-15
 ---
 
-
+A 592-page survey of the Western world's alphabetic culture, with more than 2,000 illustrations of typefaces, type designers and techniques throughout history, organised around when, who and how. Edited by Friedrich Friedl, Nicolaus Ott and Bernard Stein; the Könemann edition is trilingual (English, German, French).

@@ -20,4 +20,4 @@ color: "#6c0159"
 addedAt: 2026-11-15
 ---
 
-
+Gerard Unger's comprehensive theory of type design in 24 short chapters, covering how language shapes letterforms, how the eye and brain read them, and digital developments, with over 200 illustrations and a glossary. Published shortly before the Dutch designer's death in 2018.

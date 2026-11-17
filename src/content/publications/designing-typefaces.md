@@ -18,4 +18,4 @@ color: "#7c0016"
 addedAt: 2026-11-15
 ---
 
-
+An introduction to type design that profiles contemporary designers including Jonathan Hoefler, Zuzana Licko and Matthew Carter, with a 12-page type design tutorial and a glossary. First published by RotoVision in 2002 (160 pages), with a later paperback edition.

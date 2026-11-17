@@ -13,11 +13,9 @@ year: 2004
 date: 2004-06-01
 availability: unknown
 isbn: "9783982003702"
-links:
-  publisher: "http://janmiddendorp.com/work/books/books-written/dutch-type"
 cover: ./covers/dutch-type.jpg
 color: "#1b3247"
 addedAt: 2026-11-15
 ---
 
-
+Jan Middendorp's study of the typefaces and letterforms developed by Dutch designers, with profiles of the designers and their work. First published by 010 Publishers in Rotterdam in 2004 (320 pages, set in Peter Verheul's Versa), it was reprinted almost unchanged by the author's own Druk Editions in 2018.

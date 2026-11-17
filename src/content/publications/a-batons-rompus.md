@@ -18,4 +18,4 @@ color: "#5b4f3e"
 addedAt: 2026-11-15
 ---
 
-
+A short book (96 pages) by Adrian Frutiger, the Swiss designer of Univers and Frutiger. As its title says, it is an informal conversation about what one should know about typefaces, from one of the most influential type designers of the twentieth century. In French.

@@ -18,4 +18,4 @@ color: "#005051"
 addedAt: 2026-11-15
 ---
 
-
+Pages from the private sketchbooks of type designers, letterers and logo makers, including Milton Glaser, Erik Spiekermann, Peter Bilak and Jean-Baptiste Levée. A follow-up to Steven Heller and Lita Talarico's book on the sketchbooks of graphic designers.

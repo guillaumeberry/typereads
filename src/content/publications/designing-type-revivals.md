@@ -20,4 +20,4 @@ color: "#a88300"
 addedAt: 2026-11-15
 ---
 
-
+A manual on what a type revival is and how to design one, by Riccardo Olocco and Michele Patanè. Using Francesco Griffo's roman for De Aetna (1496) as its case study, it moves from analysing the historical model to designing a contemporary typeface, with a method that applies to any revival project.

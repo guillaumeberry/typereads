@@ -19,4 +19,4 @@ color: "#484217"
 addedAt: 2026-11-15
 ---
 
-
+A guide by Viktor Baltus of Type Design Class and the Old Type Foundry for type designers who want to sell their fonts online and run their own small foundry.

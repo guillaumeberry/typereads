@@ -19,4 +19,4 @@ color: "#282828"
 addedAt: 2026-11-15
 ---
 
-
+James Edmondson of OH no Type Co. explains the terms, conventions and optical tricks of drawing type, letter by letter from A to Z, drawing on his teaching. Designed by Carina Huynh and edited by Tânia Raposo.

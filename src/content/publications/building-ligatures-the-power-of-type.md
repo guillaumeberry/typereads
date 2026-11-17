@@ -18,4 +18,4 @@ color: "#aa0009"
 addedAt: 2026-11-15
 ---
 
-
+Published for TypeTogether's 15th anniversary, this book gathers essays and practical texts by the foundry's team and invited writers on design themes, type history and the process of making type. Edited by Linda Kudrnovská and designed by Filip Blažek, it runs to 248 full-colour pages set in TypeTogether's Bely and Lektorat.

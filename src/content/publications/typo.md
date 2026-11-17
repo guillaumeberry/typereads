@@ -17,4 +17,4 @@ color: "#332b18"
 addedAt: 2026-11-15
 ---
 
-
+A bilingual Czech and English magazine on typography, graphic design and visual communication, published since 2003. Type designer Filip Blažek was among its founders and editors.

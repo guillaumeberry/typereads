@@ -20,4 +20,4 @@ color: "#0a437d"
 addedAt: 2026-11-15
 ---
 
-
+What does the name Garamond actually refer to? Stéphane Darricau, a lecturer in applied arts, traces the history of the most famous typeface name and of its many modern and contemporary versions. Published in French by Bureau Brut in Toulouse, in an edition of 750 copies.

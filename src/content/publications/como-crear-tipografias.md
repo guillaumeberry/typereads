@@ -20,4 +20,4 @@ color: "#a37d00"
 addedAt: 2026-11-15
 ---
 
-
+A guide to the basic principles of type design by three practising type designers, Cristóbal Henestrosa, Laura Meseguer and José Scaglione. It answers questions such as how a typeface is designed, which characters a font needs, and how roman, oblique and italic styles differ. Written in Spanish; an English translation, How to Create Typefaces: From Sketch to Screen, followed in 2017.

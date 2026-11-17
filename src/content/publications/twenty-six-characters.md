@@ -18,4 +18,4 @@ color: "#00427d"
 addedAt: 2026-11-15
 ---
 
-
+An alphabetical book about Nokia Pure, the corporate typeface Dalton Maag designed for Nokia with the user interface in mind. With contributions from Bruno Maag and Ron Carpenter and from Nokia's branding, marketing and design teams. Edited by Aapo Bovellan and Chris Merrick.
