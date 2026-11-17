@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9788898030484"
 links:
   publisher: "https://www.designingtyperevivals.com/"
-cover: "https://framerusercontent.com/images/Q0uxYxY5iKfnDSnu7667BcJ6BKM.jpg"
+cover: ./covers/designing-type-revivals.jpg
 color: "#a88300"
 addedAt: 2026-11-15
 ---

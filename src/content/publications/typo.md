@@ -12,7 +12,7 @@ scripts: []
 year: 2003
 date: 2003-01-01
 availability: unknown
-cover: "https://framerusercontent.com/images/qcm2s0qlcpVpFp0l4VxpBU4YPYo.jpg"
+cover: ./covers/typo.jpg
 color: "#332b18"
 addedAt: 2026-11-15
 ---

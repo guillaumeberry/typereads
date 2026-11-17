@@ -12,7 +12,7 @@ scripts: []
 year: 2023
 date: 2023-01-01
 availability: unknown
-cover: "https://framerusercontent.com/images/h0mPjhUMda01EwYUniSRoZdcmS4.png"
+cover: ./covers/indigenous-north-american-type.png
 color: "#99967d"
 addedAt: 2026-11-15
 ---

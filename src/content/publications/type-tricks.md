@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9789063694586"
 links:
   publisher: "https://www.bispublishers.com/type-tricks.html"
-cover: "https://framerusercontent.com/images/nnIKb0CzN6UVaKjPHzEji0vcKnU.jpg"
+cover: ./covers/type-tricks.jpg
 color: "#304f78"
 addedAt: 2026-11-15
 ---

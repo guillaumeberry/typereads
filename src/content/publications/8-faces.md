@@ -15,7 +15,7 @@ availability: unknown
 issn: "2043-7692"
 links:
   publisher: "https://8faces.com/"
-cover: "https://framerusercontent.com/images/Re5ASeKC7ewozBaCkb3aOrsLxs.jpg"
+cover: ./covers/8-faces.jpg
 color: "#3d332b"
 addedAt: 2026-11-15
 ---

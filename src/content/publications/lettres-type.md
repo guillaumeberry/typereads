@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9782356540218"
 links:
   publisher: "https://ypsilonediteur.com/catalogue/lettres-type"
-cover: "https://framerusercontent.com/images/H2Guz9rzFhiwzRU5tZRHhb0Qm4.jpg"
+cover: ./covers/lettres-type.jpg
 color: "#5f5800"
 addedAt: 2026-11-15
 ---

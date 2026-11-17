@@ -51,7 +51,7 @@ Goal: a repo with valid content and nothing visual yet.
 - [x] `LICENSE` (MIT), `LICENSE-CONTENT.md`, README, `CLAUDE.md`. _(2026-11-17)_
 - [x] Write `src/content.config.ts` (Zod schema from [03](03-content-model.md), with ISBN/ISSN checksums; `''`/`null` count as missing) and `src/data/taxonomies.ts`. _(2026-11-17)_
 - [x] Import the 50 entries: done from the spike's data (scraped from the Framer prototype), including your enrichment of _8 Faces_ and _Cyrillize it!_. _(2026-11-17)_
-- [ ] Covers: download them next to the entries (they currently point to the Framer CDN; the schema accepts both).
+- [x] Covers downloaded next to the entries (`src/content/publications/covers/`, 50 files, 6.7 MB); the schema now requires local files. _(2026-11-17)_
 - [ ] Optional: export the Framer CMS to CSV and compare, in case it holds fields the scrape missed (languages?).
 - [ ] Enrich the data by hand: `scripts`, `availability`, missing languages and descriptions. Fix typos. Then set `REQUIRE_ENRICHMENT = true` in `src/content.config.ts`.
 - [x] Connect the repo to Cloudflare (Workers Builds, `wrangler.jsonc`). Live: <https://typereads.guillaume-berry.workers.dev>, every push to `main` deploys. _(2026-11-17)_

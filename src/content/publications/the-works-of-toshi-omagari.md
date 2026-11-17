@@ -14,7 +14,7 @@ date: 2023-09-08
 availability: unknown
 links:
   publisher: "http://www.idea-mag.com/en/idea_magazine/idea-no-403/"
-cover: "https://framerusercontent.com/images/FfdhK5Ln1jeOGJVZ5m6oMSJpZ8.jpg"
+cover: ./covers/the-works-of-toshi-omagari.jpg
 color: "#7a7057"
 addedAt: 2026-11-15
 ---

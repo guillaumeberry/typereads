@@ -14,7 +14,7 @@ date: 2025-01-17
 availability: unknown
 links:
   publisher: "https://wiki.wordsoftype.com/"
-cover: "https://framerusercontent.com/images/SaQFqKjgQB9k1nLiDUiSvZcM.png"
+cover: ./covers/words-of-type.png
 color: "#baa100"
 addedAt: 2026-11-15
 ---

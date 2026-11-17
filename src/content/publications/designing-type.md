@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9781786277480"
 links:
   publisher: "https://www.laurenceking.com/products/designing-type-second-edition"
-cover: "https://framerusercontent.com/images/axIaTzGbymsuRLUZMBBoeskLO8.jpg"
+cover: ./covers/designing-type.jpg
 color: "#7a0018"
 addedAt: 2026-11-15
 ---

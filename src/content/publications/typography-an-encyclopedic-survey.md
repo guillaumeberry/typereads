@@ -13,7 +13,7 @@ year: 1998
 date: 1998-03-01
 availability: unknown
 isbn: "9783895084737"
-cover: "https://framerusercontent.com/images/oDbVRZt1IxUwMNbptyIA0NhoknA.jpg"
+cover: ./covers/typography-an-encyclopedic-survey.jpg
 color: "#000023"
 addedAt: 2026-11-15
 ---

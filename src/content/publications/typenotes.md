@@ -13,7 +13,7 @@ year: 2017
 date: 2017-01-01
 availability: unknown
 issn: "2399-2913"
-cover: "https://framerusercontent.com/images/Ulp11RAruqFpK8fUAQHkDy05lMY.jpg"
+cover: ./covers/typenotes.jpg
 color: "#23253e"
 addedAt: 2026-11-15
 ---

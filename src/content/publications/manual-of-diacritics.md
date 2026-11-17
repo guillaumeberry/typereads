@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9788088308171"
 links:
   publisher: "https://manualofdiacritics.eu/"
-cover: "https://framerusercontent.com/images/hcbfBgcwHQnqTZzCZmtqpQff3Y.jpg"
+cover: ./covers/manual-of-diacritics.jpg
 color: "#7d0400"
 addedAt: 2026-11-15
 ---

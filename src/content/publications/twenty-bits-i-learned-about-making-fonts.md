@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9780578895345"
 links:
   publisher: "https://simplebits.com/products/twenty-bits-fonts"
-cover: "https://framerusercontent.com/images/xIEoN5HmQd9hmg7wfSR2YOwUEY.jpg"
+cover: ./covers/twenty-bits-i-learned-about-making-fonts.jpg
 color: "#403a7c"
 addedAt: 2026-11-15
 ---

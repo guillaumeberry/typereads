@@ -14,7 +14,7 @@ date: 2023-01-01
 availability: unknown
 links:
   publisher: "https://www.typotheque.com/books/new-georgian-type"
-cover: "https://framerusercontent.com/images/FuMttYL5SrOv5OlBp7Dqr8OSQ.png"
+cover: ./covers/new-georgian-type.png
 color: "#763e34"
 addedAt: 2026-11-15
 ---

@@ -12,7 +12,7 @@ scripts: []
 year: 2019
 date: 2019-09-01
 availability: unknown
-cover: "https://framerusercontent.com/images/5zk9LkCaRyr69oIXndR2VzZqGE.jpg"
+cover: ./covers/reviving-type.jpg
 color: "#1a2151"
 addedAt: 2026-11-15
 ---

@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9783721210187"
 links:
   publisher: "https://www.niggli.ch/Produkt/cyrillize-it/"
-cover: "https://framerusercontent.com/images/3KchU2xCbMx8BjjeILMCLRdijk.jpg"
+cover: ./covers/cyrillize-it.jpg
 color: "#b52800"
 addedAt: 2026-11-15
 ---

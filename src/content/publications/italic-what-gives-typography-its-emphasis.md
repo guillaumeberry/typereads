@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9783721210095"
 links:
   publisher: "https://www.niggli.ch/en/produkt/italic/"
-cover: "https://framerusercontent.com/images/bYDdUylTdTFXPnteEhFJvIi8.jpg"
+cover: ./covers/italic-what-gives-typography-its-emphasis.jpg
 color: "#2c5c00"
 addedAt: 2026-11-15
 ---

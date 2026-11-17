@@ -13,7 +13,7 @@ year: 2025
 date: 2025-05-01
 availability: unknown
 isbn: "9788090845435"
-cover: "https://framerusercontent.com/images/Ync8TAkxEhjW2GLPyUSdtKTpk5U.png"
+cover: ./covers/primarium.png
 color: "#3b3b40"
 addedAt: 2026-11-15
 ---

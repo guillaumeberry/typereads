@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9782958053116"
 links:
   publisher: "https://bureaubrut.com/product/de-quoi-garamond-est-il-le-nom/"
-cover: "https://framerusercontent.com/images/IONtv2lIRSXsCdRiQWYwChmZtU.jpg"
+cover: ./covers/de-quoi-garamond-est-il-le-nom.jpg
 color: "#0a437d"
 addedAt: 2026-11-15
 ---

@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9783874399098"
 links:
   publisher: "https://typografie.de/produkt/making-fonts/"
-cover: "https://framerusercontent.com/images/WAZeuSBzRcqfTwuraUy54RGdc.jpg"
+cover: ./covers/making-fonts.jpg
 color: "#1c1966"
 addedAt: 2026-11-15
 ---

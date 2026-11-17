@@ -13,7 +13,7 @@ year: 2011
 date: 2011-05-01
 availability: unknown
 issn: "2186-0947"
-cover: "https://framerusercontent.com/images/NPRa77p94B7kK3JEI4UDIZDrJng.jpg"
+cover: ./covers/codex-the-journal-of-typography-letterforms.jpg
 color: "#393939"
 addedAt: 2026-11-15
 ---

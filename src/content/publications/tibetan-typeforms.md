@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9789490913953"
 links:
   publisher: "https://www.studiotype.be/studiotypestore/p/tibetan-typeforms"
-cover: "https://framerusercontent.com/images/eYfj7DEvi70GvZb0YT9eh9EScA.jpg"
+cover: ./covers/tibetan-typeforms.jpg
 color: "#84001b"
 addedAt: 2026-11-15
 ---

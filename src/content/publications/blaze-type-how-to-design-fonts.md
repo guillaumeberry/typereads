@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9782958774004"
 links:
   publisher: "https://learntype.eu/"
-cover: "https://framerusercontent.com/images/1UR9IZ0dtUPyo5qOP1OkcehK3Y.jpg"
+cover: ./covers/blaze-type-how-to-design-fonts.jpg
 color: "#720d0d"
 addedAt: 2026-11-15
 ---

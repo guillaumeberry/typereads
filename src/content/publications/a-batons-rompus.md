@@ -13,7 +13,7 @@ year: 2001
 date: 2001-10-17
 availability: unknown
 isbn: "9782911220081"
-cover: "https://framerusercontent.com/images/5p9QMfZcrw6kueMOjyOuNrJo2zs.jpg"
+cover: ./covers/a-batons-rompus.jpg
 color: "#5b4f3e"
 addedAt: 2026-11-15
 ---

@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9789462084407"
 links:
   publisher: "https://www.nai010.com/en/publicaties/theory-of-type-design/186086"
-cover: "https://framerusercontent.com/images/2tOeBWFQFwsrrJrpSv9HSgjfYA.jpg"
+cover: ./covers/theory-of-type-design.jpg
 color: "#6c0159"
 addedAt: 2026-11-15
 ---

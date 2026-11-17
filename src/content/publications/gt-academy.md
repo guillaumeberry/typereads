@@ -14,7 +14,7 @@ date: 2020-11-20
 availability: unknown
 links:
   publisher: "https://www.grillitype.com/blog/guides/gt-academy"
-cover: "https://framerusercontent.com/images/EV85B468geuGH41DS3v9bWmQ8.jpg"
+cover: ./covers/gt-academy.jpg
 color: "#007c26"
 addedAt: 2026-11-15
 ---

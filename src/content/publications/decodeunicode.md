@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9783874398138"
 links:
   publisher: "https://decodeunicode.org/"
-cover: "https://framerusercontent.com/images/wC1YgKlYp3bRJjQkOSBVqHNCFeA.jpg"
+cover: ./covers/decodeunicode.jpg
 color: "#989898"
 addedAt: 2026-11-15
 ---

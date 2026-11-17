@@ -14,7 +14,7 @@ date: 2023-09-23
 availability: unknown
 links:
   publisher: "https://www.typedesignclass.com/magazine"
-cover: "https://framerusercontent.com/images/ipUmxaE8Rv4TNgZCv831z6MU.png"
+cover: ./covers/ss01-a-novel-magazine-about-type-design.png
 color: "#e85341"
 addedAt: 2026-11-15
 ---

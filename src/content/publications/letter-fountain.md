@@ -13,7 +13,7 @@ year: 2011
 date: 2011-05-25
 availability: unknown
 isbn: "9783836525091"
-cover: "https://framerusercontent.com/images/eSAq4gcHcUVeQvzCKJv5enMhlSg.jpg"
+cover: ./covers/letter-fountain.jpg
 color: "#92001b"
 addedAt: 2026-11-15
 ---

@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9783948440121"
 links:
   publisher: "https://www.slanted.de/product/support-independent-type/"
-cover: "https://framerusercontent.com/images/p3Oo0y9XVHuVLAfE6Xo2GF71lkA.jpg"
+cover: ./covers/support-independent-type.jpg
 color: "#860007"
 addedAt: 2026-11-15
 ---

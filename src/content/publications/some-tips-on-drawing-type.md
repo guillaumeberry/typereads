@@ -14,7 +14,7 @@ date: 2021-11-01
 availability: unknown
 links:
   publisher: "https://ohnotype.co/collections/ohno-type-school"
-cover: "https://framerusercontent.com/images/ZWYW5G6nTsQwnNNYGPqfss3dKzc.jpg"
+cover: ./covers/some-tips-on-drawing-type.jpg
 color: "#282828"
 addedAt: 2026-11-15
 ---

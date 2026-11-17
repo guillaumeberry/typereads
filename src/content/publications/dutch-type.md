@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9783982003702"
 links:
   publisher: "http://janmiddendorp.com/work/books/books-written/dutch-type"
-cover: "https://framerusercontent.com/images/BBhaGF04EFJLZkRzRHY60o5cR8.jpg"
+cover: ./covers/dutch-type.jpg
 color: "#1b3247"
 addedAt: 2026-11-15
 ---

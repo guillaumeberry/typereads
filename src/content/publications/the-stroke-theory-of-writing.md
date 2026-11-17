@@ -14,7 +14,7 @@ date: 2006-01-01
 availability: unknown
 links:
   publisher: "https://hyphenpress.co.uk/products/books/978-0-907259-30-5/"
-cover: "https://framerusercontent.com/images/B1QnwmQi9vReB0JC5TM0GnzWLic.jpg"
+cover: ./covers/the-stroke-theory-of-writing.jpg
 color: "#062d58"
 addedAt: 2026-11-15
 ---

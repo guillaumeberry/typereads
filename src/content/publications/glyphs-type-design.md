@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9791189356774"
 links:
   publisher: "http://www.workroompress.kr/books/glyphs-type-design"
-cover: "https://framerusercontent.com/images/xbo91d93hp7VVHkIi2YvvyXb0I.jpg"
+cover: ./covers/glyphs-type-design.jpg
 color: "#282828"
 addedAt: 2026-11-15
 ---

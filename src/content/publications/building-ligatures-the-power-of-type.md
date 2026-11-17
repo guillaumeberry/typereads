@@ -13,7 +13,7 @@ year: 2022
 date: 2022-04-22
 availability: unknown
 isbn: "9788090845404"
-cover: "https://framerusercontent.com/images/kTwcCJSANV6nnKuXnrPinJCFME.jpg"
+cover: ./covers/building-ligatures-the-power-of-type.jpg
 color: "#aa0009"
 addedAt: 2026-11-15
 ---

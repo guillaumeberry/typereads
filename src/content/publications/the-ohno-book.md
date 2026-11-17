@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9781797234199"
 links:
   publisher: "https://papress.com/collections/books/products/the-ohno-book"
-cover: "https://framerusercontent.com/images/gp5cY0ltzyuYcjZhW6XQS5bsd2Q.jpg"
+cover: ./covers/the-ohno-book.jpg
 color: "#454041"
 addedAt: 2026-11-15
 ---

@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9788493865412"
 links:
   publisher: "https://www.tipo-e.com/publicaciones/como-crear-tipografias.html"
-cover: "https://framerusercontent.com/images/lys3GuFlSHFVP7PwslSGWI1DJ9I.jpg"
+cover: ./covers/como-crear-tipografias.jpg
 color: "#a37d00"
 addedAt: 2026-11-15
 ---

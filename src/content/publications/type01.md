@@ -14,7 +14,7 @@ date: 2020-11-01
 availability: unknown
 links:
   publisher: "https://type-01.com/"
-cover: "https://framerusercontent.com/images/DGN0idOMBfwViqxOoAaiUm6EHQ.jpg"
+cover: ./covers/type01.jpg
 color: "#983400"
 addedAt: 2026-11-15
 ---

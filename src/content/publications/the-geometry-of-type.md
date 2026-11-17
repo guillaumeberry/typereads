@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9780500292457"
 links:
   publisher: "https://thamesandhudson.com/the-geometry-of-type-9780500292457"
-cover: "https://framerusercontent.com/images/liUSS4rTRym10YyJMMbj6XQiU.jpg"
+cover: ./covers/the-geometry-of-type.jpg
 color: "#0c6567"
 addedAt: 2026-11-15
 ---

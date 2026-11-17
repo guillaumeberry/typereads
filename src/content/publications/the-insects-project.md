@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9788361424871"
 links:
   publisher: "https://theinsectsproject.eu/"
-cover: "https://framerusercontent.com/images/kSZgdpBBUJHRt5LNysFqWkhBw.jpg"
+cover: ./covers/the-insects-project.jpg
 color: "#a81e21"
 addedAt: 2026-11-15
 ---

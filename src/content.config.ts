@@ -67,9 +67,8 @@ const publications = defineCollection({
           read: opt(url),
         }),
       ),
-      // Local file next to the entry (optimised at build), or, until covers are downloaded,
-      // a remote URL.
-      cover: opt(z.union([url, image()])),
+      // Image file in ./covers/ next to the entries; optimised at build. A missing file fails the build.
+      cover: opt(image()),
       color: opt(z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Hex colour like #1a2b3c')),
       addedAt: z.coerce.date(),
       credit: opt(z.string()),

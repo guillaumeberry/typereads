@@ -13,7 +13,7 @@ year: 2025
 date: 2025-02-16
 availability: unknown
 isbn: "9789083420219"
-cover: "https://framerusercontent.com/images/SQheW1o7pPbZKbMjuh5XAmJVqJY.png"
+cover: ./covers/new-thai-type.png
 color: "#6b4351"
 addedAt: 2026-11-15
 ---

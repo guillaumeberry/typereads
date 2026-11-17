@@ -13,7 +13,7 @@ year: 2018
 date: 2018-04-10
 availability: unknown
 isbn: "9781419731075"
-cover: "https://framerusercontent.com/images/9UbTjXVLTHE5NEd6FKfgkXfJYc.jpg"
+cover: ./covers/free-hand-new-typography-sketchbooks.jpg
 color: "#005c76"
 addedAt: 2026-11-15
 ---

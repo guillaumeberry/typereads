@@ -14,7 +14,7 @@ date: 2019-01-01
 availability: unknown
 links:
   publisher: "https://www.dstype.com/products/the-complete-library"
-cover: "https://framerusercontent.com/images/EBTtgMntUv72rTyrwCq8ps5g8HA.jpg"
+cover: ./covers/dstype-the-complete-library.jpg
 color: "#694326"
 addedAt: 2026-11-15
 ---

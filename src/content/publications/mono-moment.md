@@ -15,7 +15,7 @@ availability: unknown
 isbn: "9783948440329"
 links:
   publisher: "https://www.slanted.de/product/mono-moment/"
-cover: "https://framerusercontent.com/images/BJyCPS5bxQCjdBKfkOTZAz1s.jpg"
+cover: ./covers/mono-moment.jpg
 color: "#591065"
 addedAt: 2026-11-15
 ---
