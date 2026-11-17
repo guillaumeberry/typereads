@@ -13,17 +13,20 @@
 }
 
 :root {
-  /* Colour */
-  --bg: #1a1a1a;
-  --surface: #0d0d0d;
-  --fg: #ffffff;
-  --muted: #a6a29a;
-  --line: #333333;
-  --paper: #f4f2ed;
+  /* Colour: light by default; dark follows the visitor's system preference (below).
+     --paper/--ink are the detail page's metadata panel. --accent is the filter badge. */
+  --bg: #f4f2ed;
+  --surface: #ffffff;
+  --fg: #141414;
+  --muted: #5f5b53;
+  --line: #d6d2c8;
+  --paper: #ffffff;
   --ink: #141414;
   --ink-muted: #5c5a55;
-  --paper-line: #d8d5cd;
-  --focus: #ffd84d;
+  --paper-line: #e2dfd8;
+  --focus: #0b5fff;
+  --accent: #ffd84d;
+  --on-accent: #141414;
 
   /* Type */
   --font-text: 'Archivo Variable', 'Archivo Fallback', system-ui, sans-serif;
@@ -66,7 +69,22 @@
     1
   );
 
-  color-scheme: dark;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a1a;
+    --surface: #0d0d0d;
+    --fg: #ffffff;
+    --muted: #a6a29a;
+    --line: #333333;
+    --paper: #f4f2ed;
+    --ink: #141414;
+    --ink-muted: #5c5a55;
+    --paper-line: #d8d5cd;
+    --focus: #ffd84d;
+  }
 }
 
 *,

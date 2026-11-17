@@ -27,7 +27,7 @@ npm run check    # type-check
 npm test         # unit tests
 ```
 
-Requires Node 22+. Content lives in `src/content/publications/` (one Markdown file per publication); the schema is `src/content.config.ts`.
+Requires Node 22+. The site's typeface, HEX Franklin, is licensed and not in this repo: put the `.woff2` files in `assets/fonts/` (or set `FONTS_BASE_URL`), otherwise the build falls back to Archivo. Content lives in `src/content/publications/` (one Markdown file per publication); the schema is `src/content.config.ts`.
 
 ## TL;DR
 

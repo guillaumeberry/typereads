@@ -112,6 +112,12 @@ Goal: the high-end part: native base plus the GSAP/Swup layer (C, chosen in the 
 
 **Exit:** the motion matches the storyboard in **all** browsers; 60 fps on a mid-range Android phone; INP < 150 ms; motion layer ≤ 60 KB gz.
 
+### Design updates (2026-11-17)
+
+- [x] Light theme by default; dark follows the system preference (A12).
+- [x] HEX Franklin (licensed) via `scripts/fonts.mjs`, Archivo fallback (A11). Lighthouse light mode: accessibility 100, no contrast issues.
+- [ ] Deliver the HEX Franklin files to the Cloudflare build privately (until then the live site shows Archivo), after checking the licence covers web use.
+
 ## Phase 5 — Backend (CMS) · **M**
 
 Goal: Guillaume edits content from `/admin` with GitHub login.

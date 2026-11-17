@@ -5,6 +5,7 @@ import '@fontsource/archivo-narrow/latin-700.css';
 import '../styles/global.css';
 import textFont from '@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2?url';
 import displayFont from '@fontsource/archivo-narrow/files/archivo-narrow-latin-700-normal.woff2?url';
+import { existsSync } from 'node:fs';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
@@ -21,6 +22,17 @@ interface Props {
 }
 
 const SITE_NAME = 'Read About Type';
+
+// HEX Franklin (licensed) when scripts/fonts.mjs found the files; Archivo otherwise.
+const HEX = ['regular', 'bold'].every((w) => existsSync(`public/fonts/hex-franklin-${w}.woff2`));
+const hexFaces = `
+@font-face { font-family: 'HEX Franklin'; src: url('/fonts/hex-franklin-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'HEX Franklin'; src: url('/fonts/hex-franklin-bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+/* html:root outranks global.css's :root, whatever the order in <head>. */
+html:root {
+  --font-text: 'HEX Franklin', 'Archivo Fallback', system-ui, sans-serif;
+  --font-display: 'HEX Franklin', 'Archivo Fallback', system-ui, sans-serif;
+}`;
 const {
   title,
   description = 'A curated library of books, magazines and websites about type design, across cultures, scripts and languages.',
@@ -55,10 +67,33 @@ const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
-    <link rel="preload" href={textFont} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+    {HEX ? (
+      <>
+        <link
+          rel="preload"
+          href="/fonts/hex-franklin-regular.woff2"
+          as="font"
+          type="font/woff2"
+          crossorigin
+        />
+        <link
+          rel="preload"
+          href="/fonts/hex-franklin-bold.woff2"
+          as="font"
+          type="font/woff2"
+          crossorigin
+        />
+        <style is:inline set:html={hexFaces} />
+      </>
+    ) : (
+      <>
+        <link rel="preload" href={textFont} as="font" type="font/woff2" crossorigin />
+        <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+      </>
+    )}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#1a1a1a" />
+    <meta name="theme-color" content="#f4f2ed" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
 
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:type" content={ogType} />

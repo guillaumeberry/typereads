@@ -38,7 +38,7 @@ You can [submit a publication](/submit). I review every submission before adding
 
 The library is a static website built with [Astro](https://astro.build). Each publication is a small text file in a public [GitHub repository](https://github.com/guillaumeberry/typereads), edited through [Sveltia CMS](https://github.com/sveltia/sveltia-cms), and the site is hosted on [Cloudflare](https://www.cloudflare.com). Hosting costs nothing, and the pages are light: no tracking cookies, no ads. The motion uses [Swup](https://swup.js.org) and [GSAP](https://gsap.com), loaded after the page is ready and skipped if you prefer reduced motion.
 
-The interim typefaces are Archivo and Archivo Narrow by Omnibus-Type (SIL Open Font License).
+The typeface is HEX Franklin by Nick Sherman (HEX Projects).
 
 ## Licences
 

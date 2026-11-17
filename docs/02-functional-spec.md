@@ -21,7 +21,7 @@
 - **Header**: logo/wordmark (→ home), _About_, _Submit_. It stays the same on every page, and the view transition keeps it still during navigation.
 - **Footer**: one-line mission, _Submit a publication_, credits, licence links, contact.
 - **Skip link** to the main content, and visible focus styles everywhere.
-- **Theme**: dark, as in the prototype. Whether to add a light theme or follow the system setting is still open ([Q8](07-open-questions.md)).
+- **Theme**: light by default; dark when the visitor's system prefers it (A12 in [open questions](07-open-questions.md)). Publication colours, covers and the detail panel look the same in both.
 
 ---
 
