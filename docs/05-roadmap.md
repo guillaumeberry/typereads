@@ -116,7 +116,8 @@ Goal: the high-end part: native base plus the GSAP/Swup layer (C, chosen in the 
 
 - [x] Light theme by default; dark follows the system preference (A12).
 - [x] HEX Franklin (licensed) via `scripts/fonts.mjs`, Archivo fallback (A11). Lighthouse light mode: accessibility 100, no contrast issues.
-- [ ] Deliver the HEX Franklin files to the Cloudflare build privately (until then the live site shows Archivo), after checking the licence covers web use.
+- [x] Private repo `guillaumeberry/typereads-fonts` with the two files; `scripts/fonts.mjs` downloads them through the GitHub API (tested: byte-identical files; wrong token → fallback, or build failure with `FONTS_REQUIRED=1`). _(2026-11-17)_
+- [ ] Fine-grained token (Contents: read-only on `typereads-fonts`, with an expiry) and Cloudflare build variables `FONTS_BASE_URL`, `FONTS_TOKEN` (secret), `FONTS_REQUIRED=1`. Set a reminder to renew the token before it expires: deploys fail (and the previous version stays live) once it does.
 
 ## Phase 5 — Backend (CMS) · **M**
 
