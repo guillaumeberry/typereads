@@ -140,10 +140,10 @@ Goal: Guillaume edits content from `/admin` with GitHub login.
 
 Goal: public submissions land in the CMS Inbox and in your email.
 
-- [ ] Turnstile site (widget on `/submit`, secret on the Worker). Code done (`SubmitForm.astro`, `submit.ts`; test key until the real site key is set). **Setup pending.**
+- [x] Turnstile site (widget on `/submit`, secret on the Worker). _(2026-11-18)_
 - [x] Worker `/api/submit` (`worker/index.ts` + tested `src/lib/submission.ts`): size limit, honeypot, rate limit, Turnstile, validation, YAML via the `yaml` serialiser, HTML escaped in the body, GitHub commit with `[skip ci]`, 303 redirect or JSON. Submitted entries can't fail the build (schema placeholders). _(2026-11-18)_
 - [ ] Fine-grained GitHub token (one repo, contents only, with an expiry) as the `GITHUB_TOKEN` secret. Set a calendar reminder to rotate it. **Setup pending.**
-- [ ] Email notification via Cloudflare Email Service (`send_email`; sending-only onboarding keeps the Gandi mailbox) to your verified address (`NOTIFY_TO` secret). Code done; **setup pending.**
+- [ ] Email notification via Resend's free tier (Cloudflare Email Service sending needs a paid plan; Resend's DNS records keep the Gandi mailbox) to `NOTIFY_TO`, with the `RESEND_API_KEY` secret. Code done; **setup pending.**
 - [x] Rate limit on `/api/submit`: Workers rate-limiting binding, 5 per minute per IP (instead of a WAF rule). _(2026-11-18)_
 - [x] Progressive enhancement: native form + redirects; with JS, inline errors and no page reload. Turnstile itself needs JS (no-JS note with the email address; ADR-005). _(2026-11-18)_
 - [x] Correction mode: `/submit/fix/<slug>` (static per publication), emailed only. _(2026-11-18)_

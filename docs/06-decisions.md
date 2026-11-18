@@ -57,7 +57,7 @@ Lightweight ADRs (architecture decision records). Each one records what was deci
 - **Alternatives:** Tally → spreadsheet (simplest, nothing to build; a fine **interim fallback** if Phase 6 slips), GitHub issue forms (excludes non-GitHub contributors), private queue in KV/D1 with an accept button (more private, more code; the escalation path).
 - **Implemented (2026-11-18):**
   - The site's own Worker (`worker/index.ts`, `main` in `wrangler.jsonc`) handles `/api/*`; everything else is served as static files without invoking it (`run_worker_first`). Validation is a pure, tested module (`src/lib/submission.ts`).
-  - Notifications use **Cloudflare Email Service** (`send_email` binding), not Email Routing: the domain is onboarded for sending only (records on `cf-bounce` + DMARC), so the Gandi mailbox and its MX records stay. Sends go only to a verified destination address (free plan).
+  - Notifications use **Resend** (free tier: 3,000 emails a month, 100 a day) through its HTTP API. Cloudflare Email Service was the first choice, but its sending needs a paid Workers plan; Email Routing would have replaced the Gandi mailbox's MX records. Resend's records sit on the `send` subdomain plus DKIM, so the Gandi mailbox stays. Secrets `RESEND_API_KEY` and `NOTIFY_TO`.
   - Rate limit: the Workers rate-limiting binding (5 per minute per IP and location) instead of a WAF rule.
   - **Corrections** (`/submit/fix/<slug>`, one static page per publication so it works without JS) are emailed only, never committed.
   - Submitted entries carry only what a visitor knows (no formats, maybe no year or type). The schema gives `status: submitted` entries in-memory placeholders, so a bare suggestion can't fail the build; the admin requires the real values before publishing.

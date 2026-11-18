@@ -9,9 +9,9 @@ interface Props {
 }
 const { fix } = Astro.props;
 const nextYear = new Date().getFullYear() + 1;
-// Turnstile site key (public). Cloudflare's "always passes" test key until the real one
-// is set; a local build can override it with PUBLIC_TURNSTILE_SITEKEY.
-const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY || '1x00000000000000000000AA';
+// Turnstile site key (public, not a secret). A local build can override it with
+// PUBLIC_TURNSTILE_SITEKEY, e.g. Cloudflare's test key 1x00000000000000000000AA.
+const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY || '0x4AAAAAAGHY62wOEXbS2aZj';
 const err = (name: string) => `err-${name}`;
 ---
 

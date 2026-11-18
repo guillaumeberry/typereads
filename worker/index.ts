@@ -3,13 +3,15 @@
 //
 // POST /api/submit, from /submit (new publication) or /submit/fix/<slug> (correction):
 //   size limit → honeypot → rate limit → Turnstile → validation (src/lib/submission.ts)
-//   → new: commit a `status: submitted` entry to GitHub ("[skip ci]"), then email the editor
+//   → new: commit a `status: submitted` entry to GitHub (skip-CI marker), then email the editor
 //   → fix: email the editor only (nothing is committed)
 // Answers JSON to the page's script (Accept: application/json), otherwise redirects
 // (303) to /submit/thanks or /submit/error, so the form also posts without JavaScript.
 //
 // Secrets (Cloudflare dashboard → typereads → Settings → Variables and Secrets, or
-// .dev.vars locally, never in this repo): TURNSTILE_SECRET, GITHUB_TOKEN, NOTIFY_TO.
+// .dev.vars locally, never in this repo): TURNSTILE_SECRET, GITHUB_TOKEN, RESEND_API_KEY,
+// NOTIFY_TO. Email goes through Resend's HTTP API (free tier; typereads.xyz is verified
+// there with records on the `send` subdomain, so the Gandi mailbox and MX are untouched).
 // DRY_RUN=1 (local testing only) skips GitHub and email and returns the file instead.
 import { MAX_BODY_BYTES, parseSubmission, randomId, type Errors } from '../src/lib/submission';
 
@@ -19,28 +21,19 @@ interface Fetcher {
 interface RateLimit {
   limit(o: { key: string }): Promise<{ success: boolean }>;
 }
-interface SendEmail {
-  send(m: {
-    to: string;
-    from: { email: string; name: string };
-    subject: string;
-    text: string;
-    replyTo?: string;
-  }): Promise<unknown>;
-}
 interface Env {
   ASSETS: Fetcher;
-  EMAIL?: SendEmail;
   SUBMIT_LIMIT?: RateLimit;
   TURNSTILE_SECRET?: string;
   GITHUB_TOKEN?: string;
+  RESEND_API_KEY?: string;
   NOTIFY_TO?: string;
   DRY_RUN?: string;
 }
 
 const REPO = 'guillaumeberry/typereads';
 const BRANCH = 'main';
-const FROM = { email: 'submissions@typereads.xyz', name: 'Read About Type' };
+const FROM = 'Read About Type <submissions@typereads.xyz>';
 
 class Fail extends Error {
   constructor(
@@ -88,7 +81,10 @@ async function submit(req: Request, env: Env): Promise<Response> {
     if (env.SUBMIT_LIMIT && !(await env.SUBMIT_LIMIT.limit({ key: ip })).success)
       throw fail(429, 'Too many sends in a short time. Please wait a minute and try again.');
 
-    if (!env.TURNSTILE_SECRET || (!env.DRY_RUN && (!env.GITHUB_TOKEN || !env.NOTIFY_TO)))
+    if (
+      !env.TURNSTILE_SECRET ||
+      (!env.DRY_RUN && (!env.GITHUB_TOKEN || !env.RESEND_API_KEY || !env.NOTIFY_TO))
+    )
       throw fail(503, 'The form isn’t available right now. Please email hello@typereads.xyz.');
     await verifyTurnstile(form.get('cf-turnstile-response'), ip, env.TURNSTILE_SECRET);
 
@@ -167,7 +163,7 @@ async function commit(path: string, content: string, message: string, env: Env) 
 }
 
 async function notify(env: Env, subject: string, summary: string, email?: string) {
-  if (!env.EMAIL || !env.NOTIFY_TO) throw new Error('email not configured');
+  if (!env.RESEND_API_KEY || !env.NOTIFY_TO) throw new Error('email not configured');
   const text = [
     summary,
     '',
@@ -175,11 +171,21 @@ async function notify(env: Env, subject: string, summary: string, email?: string
     '',
     'Review in the Inbox: https://typereads.xyz/admin/',
   ].join('\n');
-  await env.EMAIL.send({
-    to: env.NOTIFY_TO,
-    from: FROM,
-    subject: subject.slice(0, 150),
-    text,
-    ...(email && { replyTo: email }),
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+      'User-Agent': 'typereads-submit',
+    },
+    body: JSON.stringify({
+      from: FROM,
+      to: [env.NOTIFY_TO],
+      subject: subject.slice(0, 150),
+      text,
+      ...(email && { reply_to: email }),
+    }),
   });
+  // Only the status is logged: the body could echo the addresses.
+  if (!res.ok) throw new Error(`resend ${res.status}`);
 }
