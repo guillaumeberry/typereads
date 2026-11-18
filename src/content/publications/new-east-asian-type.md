@@ -1,7 +1,7 @@
 ---
 title: New East Asian Type
 slug: new-east-asian-type
-status: draft
+status: published
 type: book
 authors:
   - Peter Biľak
