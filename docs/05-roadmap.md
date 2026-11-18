@@ -130,8 +130,8 @@ Goal: Guillaume edits content from `/admin` with GitHub login.
 - [x] Media: covers saved next to the entries (`covers/`), picked up by the Astro image pipeline (AVIF/WebP). Uploads get slugified filenames and are converted to WebP, ≤ 2048 px, quality 85 (`media_libraries` in `config.yml`). _(2026-11-18)_
 - [x] Test: create, edit, unpublish and delete (first real entry added: _New East Asian Type_); replace a cover; invalid data fails the build (bad ISBN checksum, duplicate slug), so Cloudflare keeps the previous version live. _(2026-11-18)_
 - [x] Duplicate slugs fail the build: entry ids come from file names (`generateId`), and `getPublished()` throws on a repeated slug. Found in testing: the admin's _Duplicate_ keeps the slug, and Astro only warned. _(2026-11-18)_
-- [ ] Add a cover from a phone (the exit test below).
-- [x] Admin CSP in `public/_headers` (+ noindex, no framing): self, unpkg, jsdelivr fonts, GitHub API and images, the login Worker, githubstatus.com. Checked signed out and signed in (browse, upload, create, delete). _(2026-11-18)_
+- [x] Add a cover from a phone: entry live on the site. It exposed a gap: Safari can't encode WebP itself, so Sveltia loads a WebAssembly encoder (`@jsquash/webp` from unpkg), which the CSP blocked; Sveltia then silently kept the original PNG. Fixed with `'wasm-unsafe-eval'` (also needed for iPhone HEIC photos). _(2026-11-18)_
+- [x] Admin CSP in `public/_headers` (+ noindex, no framing): self, unpkg (+ `'wasm-unsafe-eval'` for the image encoders), jsdelivr fonts, GitHub API and images, the login Worker, githubstatus.com. Checked signed out and signed in (browse, upload, create, delete). _(2026-11-18)_
 - [ ] Optional: Cloudflare Access in front of `/admin`.
 
 **Exit:** a new publication goes from phone to live site in under 3 minutes.
