@@ -1,21 +1,29 @@
 ---
-title: "Typography: When, Who, How"
-subtitle: "Typographie: wann, wer, wie · Typographie: quand, qui, comment"
+title: 'Typography: When, Who, How'
+subtitle: 'Typographie: wann, wer, wie · Typographie: quand, qui, comment'
 slug: typography-when-who-how
 status: published
 type: book
-authors: ["Friedrich Friedl","Nicolaus Ott","Bernard Stein"]
-publishers: ["Könemann"]
-formats: ["physical"]
-languages: ["en","de","fr"]
-translations: []
-scripts: ["Latn"]
+authors:
+  - Friedrich Friedl
+  - Nicolaus Ott
+  - Bernard Stein
+publishers:
+  - Könemann
+formats:
+  - physical
+languages:
+  - en
+  - de
+  - fr
+scripts:
+  - Latn
 year: 1998
 date: 1998-03-01
 availability: unknown
-isbn: "9783895084737"
-cover: ./covers/typography-when-who-how.jpg
-color: "#000023"
+isbn: '9783895084737'
+cover: ./covers/Typography when who how.png
+color: '#000023'
 addedAt: 2026-11-15
 ---
 
