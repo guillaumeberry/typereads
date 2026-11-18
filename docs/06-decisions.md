@@ -22,7 +22,7 @@ Lightweight ADRs (architecture decision records). Each one records what was deci
 
 ## ADR-003 — Cloudflare for hosting and serverless pieces
 
-- **Status:** Accepted (2026-11-14). **Set up 2026-11-17 as a Worker with static assets** (Cloudflare's current recommendation over Pages): `wrangler.jsonc`, Workers Builds deploys every push to `main`; live at <https://typereads.guillaume-berry.workers.dev>.
+- **Status:** Accepted (2026-11-14). **Set up 2026-11-17 as a Worker with static assets** (Cloudflare's current recommendation over Pages): `wrangler.jsonc`, Workers Builds deploys every push to `main`; live at <https://typereads.guillaume-berry.workers.dev>. **Custom domain `typereads.xyz` (and `www.`) since 2026-11-18**: registered at Gandi, nameservers on Cloudflare, attached as Worker custom domains in `wrangler.jsonc` (Cloudflare manages the DNS records and the certificate).
 - **Decision:** Host the static site on Cloudflare (Pages or Workers static assets, whichever Cloudflare recommends at setup time). Run the OAuth and submission Workers there too, with Turnstile, Email Routing and WAF rate limiting.
 - **Why:** The free tier has unmetered static bandwidth and requests, 500 builds/month and 100k Worker requests/day. Everything server-ish lives on one platform with one account.
 - **Alternatives:** Netlify (see below), Vercel (Hobby is non-commercial only), GitHub Pages (no functions, so submissions and OAuth would need another host).

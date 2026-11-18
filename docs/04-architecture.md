@@ -335,11 +335,11 @@ The exact CSP gets tuned during implementation; Astro inline scripts may need ha
 
 ## Environments
 
-| Env        | URL                                                            | Trigger                            |
-| ---------- | -------------------------------------------------------------- | ---------------------------------- |
-| Local      | `localhost:4321`                                               | `npm run dev`                      |
-| Preview    | Workers Builds preview URL per branch / PR                     | Push to any branch or PR           |
-| Production | `typereads.guillaume-berry.workers.dev`, later a custom domain | Push to `main` (incl. CMS commits) |
+| Env        | URL                                                                        | Trigger                            |
+| ---------- | -------------------------------------------------------------------------- | ---------------------------------- |
+| Local      | `localhost:4321`                                                           | `npm run dev`                      |
+| Preview    | Workers Builds preview URL per branch / PR                                 | Push to any branch or PR           |
+| Production | `typereads.xyz` (and `www.`; also `typereads.guillaume-berry.workers.dev`) | Push to `main` (incl. CMS commits) |
 
 Builds: ~300 entries with images, an estimated 1–2 minutes. Astro caches optimised images between builds where the platform allows. The free tier allows 500 builds/month, far beyond monthly updates.
 

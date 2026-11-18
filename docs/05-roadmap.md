@@ -166,18 +166,18 @@ Goal: public submissions land in the CMS Inbox and in your email.
 
 ## Post-launch backlog (prioritise using real usage)
 
-| Item                                                | Size | Notes                                                             |
-| --------------------------------------------------- | ---- | ----------------------------------------------------------------- |
-| RSS feed of recently added publications             | S    | `@astrojs/rss`; nearly free.                                      |
-| Related publications on detail pages                | S    | Computed at build from shared authors, scripts or type.           |
-| Generated OG images per publication                 | M    | Satori at build time; better social sharing.                      |
-| Light theme / follow the system setting             | S–M  | Depends on Q8.                                                    |
-| Topic + level taxonomy                              | M    | Was not chosen for V1; revisit if visitors ask "where to start?". |
-| Author pages                                        | M    | Turns `authors` into references.                                  |
-| Custom domain                                       | S    | Reuse the domain the project used before, if still owned.         |
-| WebGL signature moment (e.g. shader on cover hover) | M–L  | Only if worth the 30–150 KB; lazy-loaded, desktop only.           |
-| Spam-proof submission queue (KV/D1 + accept button) | M    | Only if spam gets through.                                        |
-| Public JSON export / API                            | S    | `/publications.json` generated at build.                          |
+| Item                                                 | Size | Notes                                                             |
+| ---------------------------------------------------- | ---- | ----------------------------------------------------------------- |
+| RSS feed of recently added publications              | S    | `@astrojs/rss`; nearly free.                                      |
+| Related publications on detail pages                 | S    | Computed at build from shared authors, scripts or type.           |
+| Generated OG images per publication                  | M    | Satori at build time; better social sharing.                      |
+| Light theme / follow the system setting              | S–M  | Depends on Q8.                                                    |
+| Topic + level taxonomy                               | M    | Was not chosen for V1; revisit if visitors ask "where to start?". |
+| Author pages                                         | M    | Turns `authors` into references.                                  |
+| ~~Custom domain~~ done: `typereads.xyz` (2026-11-18) | S    | Registrar Gandi, DNS on Cloudflare, attached in `wrangler.jsonc`. |
+| WebGL signature moment (e.g. shader on cover hover)  | M–L  | Only if worth the 30–150 KB; lazy-loaded, desktop only.           |
+| Spam-proof submission queue (KV/D1 + accept button)  | M    | Only if spam gets through.                                        |
+| Public JSON export / API                             | S    | `/publications.json` generated at build.                          |
 
 ## First three concrete steps
 

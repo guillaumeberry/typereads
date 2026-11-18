@@ -3,7 +3,7 @@
 A curated, open-source library of publications about type design (books, magazines, websites and posts), across cultures, scripts and languages.
 
 > **Status:** Phase 4, motion (2026-11-17): page transitions with the cover flying between the grid and the detail page, animated filtering and grid/list, the 404 numeral cycle. On top of the library (search, filters, sort, list view) and the static pages. Works without JavaScript; motion is skipped under reduced motion. Throwaway spikes live in `spike/` (gitignored).
-> Live: https://typereads.guillaume-berry.workers.dev · Repo: https://github.com/guillaumeberry/typereads · Prototype: https://read-about-type.framer.website/
+> Live: https://typereads.xyz · Repo: https://github.com/guillaumeberry/typereads · Prototype: https://read-about-type.framer.website/
 
 ## Docs
 
