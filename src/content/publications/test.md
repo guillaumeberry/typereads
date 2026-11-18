@@ -1,7 +1,7 @@
 ---
 title: Test
 slug: test
-status: draft
+status: published
 type: book
 authors:
   - Me Me
