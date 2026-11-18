@@ -10,7 +10,9 @@
   "send_metrics": false,
   // Custom domains: attached on deploy; Cloudflare creates the DNS records and the
   // HTTPS certificate. The domain's DNS is on Cloudflare (registrar: Gandi).
-  // The workers.dev address keeps working too.
+  // Declaring routes turns the workers.dev address off by default; workers_dev keeps
+  // it working (its pages point search engines to typereads.xyz via canonical URLs).
+  "workers_dev": true,
   "routes": [
     { "pattern": "typereads.xyz", "custom_domain": true },
     { "pattern": "www.typereads.xyz", "custom_domain": true },
