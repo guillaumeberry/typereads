@@ -1,0 +1,42 @@
+---
+// Correction form for one publication (linked from its page). Static, one per entry,
+// so it works without JavaScript; the correction is emailed, never committed.
+import Base from '../../../layouts/Base.astro';
+import SubmitForm from '../../../components/SubmitForm.astro';
+import { getPublished, publicationUrl, type Publication } from '../../../lib/publications';
+
+export async function getStaticPaths() {
+  const pubs = await getPublished();
+  return pubs.map((pub) => ({ params: { slug: pub.data.slug }, props: { pub } }));
+}
+const { pub } = Astro.props as { pub: Publication };
+---
+
+<Base title={`Suggest a correction: ${pub.data.title}`} noindex>
+  <div class="wrap narrow">
+    <h1 class="display h1">Suggest a correction</h1>
+    <p class="intro">
+      For{' '}
+      <a href={publicationUrl(pub)}>
+        <em>{pub.data.title}</em>
+      </a>
+      . Spotted a mistake or something missing? Tell me what should change.
+    </p>
+    <SubmitForm fix={{ slug: pub.data.slug, title: pub.data.title }} />
+  </div>
+</Base>
+
+<style>
+  .narrow {
+    max-width: 720px;
+  }
+  .h1 {
+    font-size: var(--step-3);
+    margin-top: clamp(16px, 4vw, 48px);
+  }
+  .intro {
+    margin-top: 16px;
+    font-size: var(--step-1);
+    line-height: 1.45;
+  }
+</style>

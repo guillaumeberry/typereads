@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this sub-project.
 
 ## Status
 
-Phase 5 nearly done: the admin at /admin works (GitHub login; create, edit, unpublish, delete and cover upload tested). Phone-to-live tested; Cloudflare Access is optional. Hand tests on phones/Safari/Firefox and Phase 1 data enrichment still open. Read `README.md` and `docs/` first.
+Phase 5 done (admin at /admin; Cloudflare Access optional). Phase 6 (submissions) built and tested locally; waiting on the Turnstile, GitHub token and Email Service setup in Cloudflare/GitHub. Hand tests on phones/Safari/Firefox and Phase 1 data enrichment still open. Read `README.md` and `docs/` first.
 
 ## Commands
 
@@ -30,6 +30,7 @@ Phase 5 nearly done: the admin at /admin works (GitHub login; create, edit, unpu
 - `src/scripts/motion/`: Swup router + GSAP transitions (`index.ts`), Flip for in-page changes (`flip.ts`). Budget ≤ 60 KB gz.
 - `src/scripts/library-core.ts` (pure, tested) + `library.ts` (DOM, `init`/`destroy`, `animate` hook): search, filters, faceted counts, sort, URL state. Cards carry `data-*` attributes; `/search.json` holds descriptions, loaded on first search focus.
 - Admin: `public/admin/` (Sveltia CMS, pinned in `index.html`; `config.yml` mirrors the schema: change a field in `content.config.ts`, `config.yml` and docs/03 together). Login via the GitHub App "TypeReads CMS" and the `sveltia-cms-auth` Worker (`base_url`); its secrets live in that Worker's runtime settings. `public/_headers` holds the admin's CSP: add a domain there if Sveltia needs a new one (check the browser console). Uploads are slugified and converted to WebP (`media_libraries`); on Safari that needs a WebAssembly encoder, hence `'wasm-unsafe-eval'` in the CSP: keep it. Entry ids are file names (`generateId`), so a repeated `slug` fails the build in `getPublished()`.
+- Submissions (Phase 6, ADR-005): `worker/index.ts` is the site's Worker, run only for `/api/*` (`wrangler.jsonc`); validation in `src/lib/submission.ts` (tested); form in `src/components/SubmitForm.astro` + `src/scripts/submit.ts` (loaded by `boot.ts` only where `form[data-submit]` exists). Secrets `TURNSTILE_SECRET`, `GITHUB_TOKEN`, `NOTIFY_TO` live in the Cloudflare dashboard. Local test: `.dev.vars` (gitignored) with `TURNSTILE_SECRET=1x0000000000000000000000000000000AA` and `DRY_RUN=1`, `npm run build`, then `npx wrangler dev`. Never log or commit the submitter's email.
 - URLs: pages are built as files (`about.html`) and served at clean URLs (`/about`); canonical URLs strip `.html`.
 - `spike/` is gitignored and throwaway (motion spike, CMS demo with its own `.git`). Don't import from it.
 

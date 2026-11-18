@@ -22,3 +22,5 @@ public/fonts/
 .vscode/
 .idea/
 .claude/
+.dev.vars
+.wrangler/

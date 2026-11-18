@@ -25,6 +25,23 @@ export function mount() {
   }
   const notdef = document.querySelector<HTMLElement>('[data-notdef]');
   if (notdef) cleanups.push(initNotdef(notdef));
+  // The submission form's script is loaded only where there's a form (not core budget).
+  const form = document.querySelector<HTMLFormElement>('form[data-submit]');
+  if (form) {
+    let stop: (() => void) | undefined;
+    let gone = false;
+    import('./submit')
+      .then((m) => {
+        if (!gone) stop = m.init(form);
+      })
+      .catch(() => {
+        /* offline: the form still posts natively */
+      });
+    cleanups.push(() => {
+      gone = true;
+      stop?.();
+    });
+  }
   // Only a detail page reached from the library may send "←" back in history.
   if (!document.querySelector('[data-detail]')) safeSession('remove');
 }

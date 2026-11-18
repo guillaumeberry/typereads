@@ -26,6 +26,27 @@ const language = z.string().regex(/^[a-z]{2}$/, 'ISO 639-1 code, e.g. "en"');
 const listOf = <T extends z.ZodType>(item: T, required: boolean) =>
   z.preprocess((v) => blank(v) ?? [], required ? z.array(item).min(1) : z.array(item));
 
+/**
+ * Entries from the public form (`status: submitted`, written by worker/index.ts) only carry
+ * what a visitor can know. They are never built, so missing required fields get
+ * placeholders in memory only (the file is untouched): a bare suggestion can't fail the
+ * build. The admin still requires the real values before publishing.
+ */
+function fillSubmitted(v: unknown): unknown {
+  if (!v || typeof v !== 'object' || (v as { status?: unknown }).status !== 'submitted') return v;
+  const d = v as Record<string, unknown>;
+  const empty = (x: unknown) => x === undefined || x === null || x === '';
+  return {
+    ...d,
+    type: empty(d.type) ? 'book' : d.type,
+    formats:
+      empty(d.formats) || (Array.isArray(d.formats) && !d.formats.length)
+        ? ['physical']
+        : d.formats,
+    year: empty(d.year) ? new Date().getFullYear() : d.year,
+  };
+}
+
 const publications = defineCollection({
   // Entry ids come from the file name, not the `slug` field: with the default, two
   // files sharing a slug collapse into one (only a warning). getPublished() then
@@ -36,50 +57,53 @@ const publications = defineCollection({
     generateId: ({ entry }) => entry.replace(/\.md$/, ''),
   }),
   schema: ({ image }) =>
-    z.object({
-      title: z.string().min(1),
-      subtitle: opt(z.string()),
-      slug,
-      status: z.enum(STATUSES),
-      type: z.enum(keysOf(TYPES)),
-      authors: z.array(z.string().min(1)).min(1),
-      publishers: listOf(z.string().min(1), false),
-      formats: z.array(z.enum(keysOf(FORMATS))).min(1),
-      languages: listOf(language, REQUIRE_ENRICHMENT),
-      translations: listOf(
-        z.object({
-          language,
-          title: opt(z.string()),
-          publisher: opt(z.string()),
-          year: opt(z.number().int()),
-          link: opt(url),
-        }),
-        false,
-      ),
-      scripts: listOf(z.enum(keysOf(SCRIPTS)), REQUIRE_ENRICHMENT),
-      year: z.number().int().min(1450).max(2100),
-      date: opt(z.coerce.date()),
-      availability: z.preprocess((v) => blank(v) ?? 'unknown', z.enum(keysOf(AVAILABILITY))),
-      isbn: opt(
-        z
-          .string()
-          .refine(isValidIsbn, 'Not a valid ISBN-10/13 (digits only; 977… is an ISSN barcode)'),
-      ),
-      issn: opt(z.string().refine(isValidIssn, 'Not a valid ISSN (1234-567X with check digit)')),
-      pages: opt(z.number().int().positive()),
-      links: opt(
-        z.object({
-          publisher: opt(url),
-          buy: opt(url),
-          read: opt(url),
-        }),
-      ),
-      // Image file in ./covers/ next to the entries; optimised at build. A missing file fails the build.
-      cover: opt(image()),
-      color: opt(z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Hex colour like #1a2b3c')),
-      addedAt: z.coerce.date(),
-      credit: opt(z.string()),
-    }),
+    z.preprocess(
+      fillSubmitted,
+      z.object({
+        title: z.string().min(1),
+        subtitle: opt(z.string()),
+        slug,
+        status: z.enum(STATUSES),
+        type: z.enum(keysOf(TYPES)),
+        authors: z.array(z.string().min(1)).min(1),
+        publishers: listOf(z.string().min(1), false),
+        formats: z.array(z.enum(keysOf(FORMATS))).min(1),
+        languages: listOf(language, REQUIRE_ENRICHMENT),
+        translations: listOf(
+          z.object({
+            language,
+            title: opt(z.string()),
+            publisher: opt(z.string()),
+            year: opt(z.number().int()),
+            link: opt(url),
+          }),
+          false,
+        ),
+        scripts: listOf(z.enum(keysOf(SCRIPTS)), REQUIRE_ENRICHMENT),
+        year: z.number().int().min(1450).max(2100),
+        date: opt(z.coerce.date()),
+        availability: z.preprocess((v) => blank(v) ?? 'unknown', z.enum(keysOf(AVAILABILITY))),
+        isbn: opt(
+          z
+            .string()
+            .refine(isValidIsbn, 'Not a valid ISBN-10/13 (digits only; 977… is an ISSN barcode)'),
+        ),
+        issn: opt(z.string().refine(isValidIssn, 'Not a valid ISSN (1234-567X with check digit)')),
+        pages: opt(z.number().int().positive()),
+        links: opt(
+          z.object({
+            publisher: opt(url),
+            buy: opt(url),
+            read: opt(url),
+          }),
+        ),
+        // Image file in ./covers/ next to the entries; optimised at build. A missing file fails the build.
+        cover: opt(image()),
+        color: opt(z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Hex colour like #1a2b3c')),
+        addedAt: z.coerce.date(),
+        credit: opt(z.string()),
+      }),
+    ),
 });
 
 const pages = defineCollection({

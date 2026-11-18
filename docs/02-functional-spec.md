@@ -10,7 +10,7 @@
 | Home / library     | `/`                           | Full list with search, filters, sort and the grid/list view. Filter state is in the query string. |
 | Publication detail | `/publications/<slug>`        | ASCII slug (e.g. `glyphs-type-design` for 글립스 타입 디자인).                                    |
 | About              | `/about`                      | Mission, FAQ, colophon, licences, credits.                                                        |
-| Submit             | `/submit`                     | Contribution form. Also handles corrections via `/submit?fix=<slug>`.                             |
+| Submit             | `/submit`                     | Contribution form. Also handles corrections via `/submit/fix/<slug>`.                             |
 | Submit — thanks    | `/submit/thanks`              | Confirmation shown after sending.                                                                 |
 | 404                | any unknown URL               | The fun twist (see below).                                                                        |
 | Backend (CMS)      | `/admin`                      | GitHub login. Not linked from the public site.                                                    |
@@ -114,7 +114,7 @@ Everything is server-rendered. With JS off, all publications show in grid view, 
    - ISBN / ISSN · Pages (optional)
 5. **Links**: _Publisher page ↗_, _Buy ↗_, _Read online ↗_ (whichever exist), all opening in a new tab with `rel="noopener"`.
 6. **Description** (Markdown).
-7. **Footer actions**: _Suggest a correction_ (→ `/submit?fix=<slug>`) · _Back to the library_.
+7. **Footer actions**: _Suggest a correction_ (→ `/submit/fix/<slug>`) · _Back to the library_.
 
 ### Rules
 
@@ -161,11 +161,11 @@ The About copy is editable in the CMS (a single Markdown file).
 | _(hidden honeypot)_          | —                | Must stay empty.                                                                                          |
 | _(Turnstile widget)_         | —                | Invisible or managed mode.                                                                                |
 
-**Correction mode** (`/submit?fix=<slug>`): shows "Suggesting a correction for _Title_", with a single "What should change?" text field plus name and email.
+**Correction mode** (`/submit/fix/<slug>`, one static page per publication, linked from its page): shows "Suggest a correction" for _Title_, with a single "What should change?" text field plus name and email. Corrections are emailed to the editor, not committed.
 
 ### Behaviour
 
-- It's a native HTML `<form method="post" action="/api/submit">`, so it **works without JS** (the server redirects to `/submit/thanks`). With JS, it submits in place and shows inline errors.
+- It's a native HTML `<form method="post" action="/api/submit">` (the server redirects to `/submit/thanks` or `/submit/error`). With JS, it submits in place and shows inline errors. **Exception to "works without JS":** the Turnstile spam check needs JS, so a no-JS visitor sees a note with the email address instead (ADR-005).
 - Validation runs on the client for UX and **again on the server**, which is the source of truth.
 - The success page explains what happens next: "I review every submission by hand; accepted titles usually appear within a month."
 - Errors are friendly and keep everything the person typed.

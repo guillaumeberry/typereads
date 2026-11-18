@@ -27,6 +27,7 @@
   --focus: #0b5fff;
   --accent: #ffd84d;
   --on-accent: #141414;
+  --danger: #b3261e;
 
   /* Type */
   --font-text: 'Archivo Variable', 'Archivo Fallback', system-ui, sans-serif;
@@ -85,6 +86,7 @@
     --ink-muted: #5c5a55;
     --paper-line: #d8d5cd;
     --focus: #ffd84d;
+    --danger: #ff8a80;
   }
 }
 

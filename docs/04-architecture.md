@@ -17,7 +17,7 @@
 | Backend / CMS             | **Sveltia CMS** (Git-based, Decap-compatible)                                      | A static admin app at `/admin`. Commits directly to the repo. Modern, fast, mobile-friendly.                                                 | Free, MIT           |
 | CMS login                 | **GitHub App** (installed on this repo only) via the **`sveltia-cms-auth` Worker** | No passwords stored by us. Access = write access to the repo, protected by GitHub 2FA.                                                       | Free                |
 | Submissions               | **Cloudflare Worker** `/api/submit` + **Turnstile**                                | Validates and writes a `status: submitted` entry to the repo, then emails the editor.                                                        | Free                |
-| Notifications             | Cloudflare Email Routing (`send_email` to a verified address)                      | Submission alerts in your inbox.                                                                                                             | Free                |
+| Notifications             | Cloudflare Email Service (`send_email` to a verified address)                      | Submission alerts in your inbox.                                                                                                             | Free                |
 | Analytics                 | **Cabin** (fallback: Cloudflare Web Analytics)                                     | Cookie-free, low-carbon; no consent banner needed.                                                                                           | Free ≤ 10k pv/mo    |
 | Code hosting / CI         | **GitHub** (public repo)                                                           | Open source; Cloudflare builds on push.                                                                                                      | Free                |
 | Dependency updates        | Renovate or Dependabot                                                             | Keeps a small dependency list patched.                                                                                                       | Free                |
@@ -105,7 +105,7 @@ typereads/   (github.com/guillaumeberry/typereads)
 │       ├── color.ts             # cover colour extraction + contrast
 │       └── normalize.ts         # accent-insensitive search text
 ├── workers/
-│   └── submit/                  # Cloudflare Worker for /api/submit
+│   └── (see worker/index.ts)    # the site's Worker: /api/submit
 │       ├── src/index.ts
 │       └── wrangler.toml
 └── scripts/
@@ -290,17 +290,17 @@ sequenceDiagram
   T-->>W: ok
   W->>W: Validate + sanitise (schema), build YAML safely
   W->>GH: PUT src/content/publications/<slug>-<id>.md<br/>status: submitted · message "[skip ci] submission"
-  W->>M: send_email to editor (incl. private email if given)
+  W->>M: send_email to editor (incl. private email if given, as Reply-To)
   W-->>U: 303 → /submit/thanks (or JSON for JS clients)
 ```
 
 ### Details
 
-- **Hosting**: either a Pages Function at `functions/api/submit.ts` or a standalone Worker under `workers/submit` routed to `/api/submit`. Use whichever deploy model the site ends up on; both are free.
+- **Hosting**: the site's own Worker (`worker/index.ts`); `run_worker_first: ["/api/*"]` in `wrangler.jsonc` keeps every other request on static assets. Secrets: `TURNSTILE_SECRET`, `GITHUB_TOKEN`, `NOTIFY_TO` (dashboard only). Local testing: `.dev.vars` with Turnstile's test secret and `DRY_RUN=1`, then `npx wrangler dev`.
 - **GitHub token**: a **fine-grained personal access token** (or a GitHub App) scoped to **this repo only**, with **Contents: read & write** only and an expiry date. Stored as a Worker secret. Rotate it yearly.
 - **Write format**: the YAML is generated with a serialiser (e.g. `yaml` npm), never by string concatenation, so it can't be injected. The body is plain text, escaped.
 - **`[skip ci]`** in the commit message: Cloudflare doesn't rebuild for submissions, because they aren't published anyway. The next real edit rebuilds as usual.
-- **Rate limiting**: a free Cloudflare WAF rate-limiting rule on `/api/submit` (e.g. 5 requests per 10 min per IP), and/or a KV counter.
+- **Rate limiting**: the Workers rate-limiting binding `SUBMIT_LIMIT` (5 per 60 s per IP, per Cloudflare location). A WAF rule can be added on top.
 - **Privacy**: the submitter's email is **only** in the notification email. It's never written to the repo or logged. A credit name is only written when consent is ticked.
 - **Spam fallback**: if spam ever gets past Turnstile, the Worker can write to a private store (Cloudflare KV/D1) instead of the repo, with an "accept" button that commits. That's deliberately not built in V1.
 

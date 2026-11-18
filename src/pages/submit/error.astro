@@ -1,0 +1,41 @@
+---
+// Where /api/submit sends a form posted without JavaScript when something is wrong.
+// (With JavaScript, errors show inline on the form instead.)
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="Not sent" noindex>
+  <div class="wrap narrow">
+    <h1 class="display h1">Not sent</h1>
+    <p class="intro">
+      Your message couldn’t be sent. The usual reason is the spam check, which needs JavaScript; a
+      required field may also have been missing.
+    </p>
+    <p class="more">
+      Go back to fix it (your browser usually keeps what you typed), or email
+      <a href="mailto:hello@typereads.xyz">hello@typereads.xyz</a>.
+    </p>
+    <p class="links">
+      <a href="/submit">Back to the form</a> · <a href="/">The library</a>
+    </p>
+  </div>
+</Base>
+
+<style>
+  .narrow {
+    max-width: 720px;
+  }
+  .h1 {
+    font-size: var(--step-3);
+    margin-top: clamp(16px, 4vw, 48px);
+  }
+  .intro {
+    margin-top: 16px;
+    font-size: var(--step-1);
+    line-height: 1.45;
+  }
+  .more,
+  .links {
+    margin-top: 16px;
+  }
+</style>

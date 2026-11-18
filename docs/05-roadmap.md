@@ -140,19 +140,21 @@ Goal: Guillaume edits content from `/admin` with GitHub login.
 
 Goal: public submissions land in the CMS Inbox and in your email.
 
-- [ ] Turnstile site (widget on `/submit`, secret on the Worker).
-- [ ] Worker `/api/submit`: honeypot, size limit, Turnstile verification, schema validation, safe YAML, GitHub commit with `[skip ci]`, 303 redirect or JSON response.
-- [ ] Fine-grained GitHub token (one repo, contents only, with an expiry). Set a calendar reminder to rotate it.
-- [ ] Email notification via Cloudflare Email Routing (`send_email`) to your verified address.
-- [ ] WAF rate-limit rule on `/api/submit`.
-- [ ] Progressive enhancement: works without JS; with JS, inline errors and no page reload.
-- [ ] Correction mode (`/submit?fix=<slug>`).
-- [ ] Test the abuse cases: empty, huge, script injection, many requests, missing token.
+- [ ] Turnstile site (widget on `/submit`, secret on the Worker). Code done (`SubmitForm.astro`, `submit.ts`; test key until the real site key is set). **Setup pending.**
+- [x] Worker `/api/submit` (`worker/index.ts` + tested `src/lib/submission.ts`): size limit, honeypot, rate limit, Turnstile, validation, YAML via the `yaml` serialiser, HTML escaped in the body, GitHub commit with `[skip ci]`, 303 redirect or JSON. Submitted entries can't fail the build (schema placeholders). _(2026-11-18)_
+- [ ] Fine-grained GitHub token (one repo, contents only, with an expiry) as the `GITHUB_TOKEN` secret. Set a calendar reminder to rotate it. **Setup pending.**
+- [ ] Email notification via Cloudflare Email Service (`send_email`; sending-only onboarding keeps the Gandi mailbox) to your verified address (`NOTIFY_TO` secret). Code done; **setup pending.**
+- [x] Rate limit on `/api/submit`: Workers rate-limiting binding, 5 per minute per IP (instead of a WAF rule). _(2026-11-18)_
+- [x] Progressive enhancement: native form + redirects; with JS, inline errors and no page reload. Turnstile itself needs JS (no-JS note with the email address; ADR-005). _(2026-11-18)_
+- [x] Correction mode: `/submit/fix/<slug>` (static per publication), emailed only. _(2026-11-18)_
+- [x] Abuse cases tested locally (`wrangler dev`, dry run): GET 405, empty/missing token 400, huge 413, JSON 415, honeypot silently dropped, invalid fields 400, YAML/HTML injection neutralised, 6th request in a minute 429, unknown correction slug 400. _(2026-11-18)_
+- [ ] End-to-end on the live site once the secrets are set: a submission in the Inbox and the email within a minute.
 
 **Exit:** a test submission shows up in the Inbox and your email within a minute; spam tests are rejected.
 
 ## Phase 7 — QA and launch · **S–M**
 
+- [ ] Header overflows at 375 px ("Submit" touches or passes the right edge): tighten the wordmark or gap on narrow phones. _(found 2026-11-18)_
 - [ ] Accessibility: keyboard-only pass, VoiceOver (macOS and iOS), axe scan, contrast check of all publication colours.
 - [ ] Performance: Lighthouse mobile ≥ 95 everywhere; check the budgets in [02](02-functional-spec.md#performance-and-lazy-loading-spec).
 - [ ] Cross-browser: Chrome, Safari, Firefox, iOS Safari, Android Chrome.

@@ -1,11 +1,13 @@
-// Cloudflare deploy config: a Worker with no code that serves the static build
-// (Workers static assets, ADR-003). Workers Builds runs `npm run build`, then
-// `npx wrangler deploy` on every push to main.
+// Cloudflare deploy config: a Worker that serves the static build (Workers static
+// assets, ADR-003) and runs worker/index.ts for /api/* only (submissions, ADR-005).
+// Workers Builds runs `npm run build`, then `npx wrangler deploy` on every push to main.
+// Secrets (TURNSTILE_SECRET, GITHUB_TOKEN, NOTIFY_TO) live in the dashboard, never here.
 // The Worker name in the Cloudflare dashboard must match "name" below.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "typereads",
-  "compatibility_date": "2026-11-17",
+  "compatibility_date": "2026-11-10",
+  "main": "worker/index.ts",
   // No anonymous usage telemetry from wrangler.
   "send_metrics": false,
   // Custom domains: attached on deploy; Cloudflare creates the DNS records and the
@@ -21,5 +23,17 @@
     "directory": "./dist",
     // Serve dist/404.html (the ".notdef" page) for unknown URLs.
     "not_found_handling": "404-page",
+    "binding": "ASSETS",
+    // Everything else is served without invoking the Worker (free, fastest).
+    "run_worker_first": ["/api/*"],
   },
+  // Cloudflare Email Service: typereads.xyz is onboarded for sending (records on the
+  // cf-bounce subdomain; the Gandi mailbox and MX records are untouched). Sends only to
+  // NOTIFY_TO, a verified destination address (free plan).
+  "send_email": [{ "name": "EMAIL" }],
+  // 5 submissions per minute per IP and Cloudflare location (on top of Turnstile).
+  "ratelimits": [
+    { "name": "SUBMIT_LIMIT", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } },
+  ],
+  "observability": { "enabled": true },
 }
