@@ -123,13 +123,13 @@ Goal: the high-end part: native base plus the GSAP/Swup layer (C, chosen in the 
 
 Goal: Guillaume edits content from `/admin` with GitHub login.
 
-- [ ] Create a **GitHub App** installed on this repo only (Contents read/write, Metadata read; callback = `<worker>/callback`). Deploy the `sveltia-cms-auth` Worker with the client ID, the secret as a Worker secret, and `ALLOWED_DOMAINS`; keep token expiry on. (Alternative: fine-grained token sign-in, see ADR-004.)
-- [ ] `public/admin/index.html` + `config.yml` with the _Inbox_, _Publications_ and _Pages_ collections. Start from the demo in [`spike/cms/`](../spike/cms/README.md), and pin the Sveltia version.
-- [ ] Mirror every schema field, with widgets, hints and validation patterns (ISBN, URL, hex). The demo config already does this; carry over its fixes: ISBN accepts only 978/979 ISBN-13 or ISBN-10, and magazines' `977…` barcodes go to `issn`.
-- [ ] Empty optional fields: Sveltia saves them as `''` / `null` (seen in the demo). Either turn on Sveltia's option to omit empty optional fields, or make the Zod schema treat `''` and `null` as missing. Decide once, test with a save.
+- [x] GitHub App **TypeReads CMS** (this repo only, Contents read/write, expiring tokens) + `sveltia-cms-auth` Worker at `sveltia-cms-auth.guillaume-berry.workers.dev` with runtime **secrets** `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `ALLOWED_DOMAINS`. Checked: sends typereads.xyz sign-ins to GitHub, refuses other sites. Its Git builds fail (Deploy-button setup) and can stay disabled: the deployed Worker runs. _(2026-11-18)_
+- [x] `public/admin/index.html` (Sveltia 0.258.1, pinned) + `config.yml` with the _Inbox_, _Publications_ and _Pages_ (About) collections, validated against Sveltia's JSON schema. _(2026-11-18)_
+- [x] Every schema field mirrored, with widgets, hints and validation (ISBN 978/979 or ISBN-10, ISSN, URLs, hex colour, slug). _(2026-11-18)_
+- [x] Empty optional fields: `output.omit_empty_optional_fields: true` (and the schema treats `''`/`null` as missing anyway). _(2026-11-18)_
 - [ ] Media: covers saved next to the entries; verify the Astro image pipeline picks them up.
-- [ ] Test: create, edit, unpublish and delete; add a cover from a phone; check that the build fails safely on invalid data.
-- [ ] Admin CSP (GitHub API, the Worker popup) without loosening the site-wide CSP.
+- [ ] Test: create, edit, unpublish and delete; add a cover from a phone; check that the build fails safely on invalid data. **Edit tested** (About page: commit authored by the editor, live in about a minute). _(2026-11-18)_
+- [x] Admin CSP in `public/_headers` (+ noindex, no framing): self, unpkg, jsdelivr fonts, GitHub API and images, the login Worker, githubstatus.com. Signed-out page checked; signed-in use to confirm. _(2026-11-18)_
 - [ ] Optional: Cloudflare Access in front of `/admin`.
 
 **Exit:** a new publication goes from phone to live site in under 3 minutes.

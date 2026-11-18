@@ -31,7 +31,7 @@ Lightweight ADRs (architecture decision records). Each one records what was deci
 
 ## ADR-004 — Sveltia CMS (Git-based) as the backend
 
-- **Status:** **Confirmed (2026-11-15)** after trying Sveltia and Decap side by side on the 50 publications ([`spike/cms/`](../spike/cms/README.md)). Login updated the same day (GitHub App). Decap stays the fallback; Kirby and Netlify were considered and not chosen (below and ADR-003). First accepted 2026-11-14.
+- **Status:** **Live since 2026-11-18** at <https://typereads.xyz/admin> (GitHub App _TypeReads CMS_ + `sveltia-cms-auth` Worker; CSP and noindex in `public/_headers`). **Confirmed (2026-11-15)** after trying Sveltia and Decap side by side on the 50 publications ([`spike/cms/`](../spike/cms/README.md)). Login updated the same day (GitHub App). Decap stays the fallback; Kirby and Netlify were considered and not chosen (below and ADR-003). First accepted 2026-11-14.
 - **Decision:** Sveltia CMS at `/admin`, GitHub backend, with login through the official `sveltia-cms-auth` Cloudflare Worker backed by a **GitHub App installed on this repo only** (not an OAuth app).
 - **Access (updated 2026-11-15):**
   - **GitHub App, not OAuth app.** A GitHub App only reaches the repos it's installed on; an OAuth app's token reaches _all_ your repos, private ones included. Permissions: Contents read/write and Metadata read; Pull requests read/write only if we turn on the editorial workflow. (Trade-off: Open Authoring, which lets non-collaborators propose edits, doesn't work with a GitHub App. We don't need it: public submissions go through the form.)
