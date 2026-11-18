@@ -1,0 +1,11 @@
+# Response headers for Cloudflare Workers static assets.
+# Admin (Sveltia CMS): never indexed, never framed. Its content security policy is
+# added once the GitHub login is tested (roadmap Phase 5).
+/admin
+  X-Robots-Tag: noindex, nofollow
+  X-Frame-Options: DENY
+  Referrer-Policy: same-origin
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+  X-Frame-Options: DENY
+  Referrer-Policy: same-origin

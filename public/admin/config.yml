@@ -1,0 +1,320 @@
+# Read About Type: Sveltia CMS configuration (served at /admin).
+# Must stay in sync with src/content.config.ts (Zod) and docs/03-content-model.md:
+# change a field in all three. Started from the demo in spike/cms.
+
+backend:
+  name: github
+  repo: guillaumeberry/typereads
+  branch: main
+  # Login: GitHub App via the sveltia-cms-auth Worker (ADR-004). Set once deployed:
+  # base_url: https://sveltia-cms-auth.<subdomain>.workers.dev
+
+# Fallback media folder (covers live next to the entries, see the collection).
+media_folder: public/uploads
+public_folder: /uploads
+
+site_url: https://typereads.xyz/
+display_url: https://typereads.xyz/
+
+# Leave empty optional fields out of the saved files (the schema treats them as
+# missing either way).
+output:
+  omit_empty_optional_fields: true
+
+collections:
+  - name: inbox
+    label: 'Inbox (submissions)'
+    label_singular: Submission
+    description: 'Submitted through the public form. Complete the fields, then set Status to Published, or delete.'
+    folder: src/content/publications
+    extension: md
+    format: frontmatter
+    filter: { field: status, value: submitted }
+    create: false
+    identifier_field: title
+    slug: '{{fields.slug}}'
+    media_folder: covers
+    public_folder: ./covers
+    summary: '{{title}} · {{year}}'
+    sortable_fields: [title, year, addedAt]
+    # Shared with Publications below (YAML anchor).
+    fields: &publication_fields
+      - {
+          name: title,
+          label: Title,
+          widget: string,
+          hint: 'The original title, in its own script.',
+        }
+      - { name: subtitle, label: Subtitle, widget: string, required: false }
+      - name: slug
+        label: URL slug
+        widget: string
+        hint: 'Lowercase ASCII, words joined by hyphens. Becomes /publications/<slug>. Romanise non-Latin titles.'
+        pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', 'Use lowercase letters, digits and hyphens only']
+      - name: status
+        label: Status
+        widget: select
+        default: draft
+        hint: 'Only Published entries appear on the site.'
+        options:
+          - { label: 'Submitted (from the form)', value: submitted }
+          - { label: Draft, value: draft }
+          - { label: Published, value: published }
+      - name: type
+        label: Type
+        widget: select
+        options:
+          - { label: Book, value: book }
+          - { label: Magazine, value: magazine }
+          - { label: 'Website & post', value: web }
+      - { name: authors, label: 'Author(s)', widget: list, min: 1, hint: 'One name per item.' }
+      - { name: publishers, label: 'Publisher(s)', widget: list, required: false }
+      - name: formats
+        label: Format
+        widget: select
+        multiple: true
+        min: 1
+        options: [{ label: Physical, value: physical }, { label: Digital, value: digital }]
+      - name: languages
+        label: 'Language(s) of this edition'
+        widget: select
+        multiple: true
+        # Required again once every entry has languages (REQUIRE_ENRICHMENT in content.config.ts).
+        required: false
+        options: &languages
+          - { label: 'English (en)', value: en }
+          - { label: 'Français (fr)', value: fr }
+          - { label: 'Deutsch (de)', value: de }
+          - { label: 'Español (es)', value: es }
+          - { label: 'Italiano (it)', value: it }
+          - { label: 'Nederlands (nl)', value: nl }
+          - { label: 'Português (pt)', value: pt }
+          - { label: 'Polski (pl)', value: pl }
+          - { label: 'Čeština (cs)', value: cs }
+          - { label: 'Svenska (sv)', value: sv }
+          - { label: 'Русский (ru)', value: ru }
+          - { label: 'Українська (uk)', value: uk }
+          - { label: 'Ελληνικά (el)', value: el }
+          - { label: 'Türkçe (tr)', value: tr }
+          - { label: 'العربية (ar)', value: ar }
+          - { label: 'עברית (he)', value: he }
+          - { label: 'हिन्दी (hi)', value: hi }
+          - { label: 'ไทย (th)', value: th }
+          - { label: 'ქართული (ka)', value: ka }
+          - { label: 'Հայերեն (hy)', value: hy }
+          - { label: '한국어 (ko)', value: ko }
+          - { label: '日本語 (ja)', value: ja }
+          - { label: '中文 (zh)', value: zh }
+          - { label: 'Dansk (da)', value: da }
+          - { label: 'Suomi (fi)', value: fi }
+          - { label: 'Norsk (no)', value: 'no' }
+          - { label: 'Magyar (hu)', value: hu }
+          - { label: 'Slovenčina (sk)', value: sk }
+          - { label: 'Hrvatski (hr)', value: hr }
+          - { label: 'Català (ca)', value: ca }
+          - { label: 'Euskara (eu)', value: eu }
+          - { label: 'Tiếng Việt (vi)', value: vi }
+          - { label: 'Bahasa Indonesia (id)', value: id }
+      - name: translations
+        label: Translations
+        widget: list
+        required: false
+        summary: '{{fields.language}} · {{fields.title}}'
+        hint: "One item per translated edition. Feeds the 'Include translations' filter."
+        fields:
+          - { name: language, label: Language, widget: select, options: *languages }
+          - { name: title, label: Title, widget: string, required: false }
+          - { name: publisher, label: Publisher, widget: string, required: false }
+          - { name: year, label: Year, widget: number, value_type: int, required: false }
+          - {
+              name: link,
+              label: Link,
+              widget: string,
+              required: false,
+              pattern: ['^https?://', 'Must start with http:// or https://'],
+            }
+      - name: scripts
+        label: 'Scripts covered'
+        widget: select
+        multiple: true
+        # Required again once every entry has scripts (REQUIRE_ENRICHMENT in content.config.ts).
+        required: false
+        hint: "The scripts the publication is ABOUT, not the script it's written in."
+        options:
+          - { label: 'Latin (Latn) A', value: Latn }
+          - { label: 'Cyrillic (Cyrl) Ж', value: Cyrl }
+          - { label: 'Greek (Grek) Ω', value: Grek }
+          - { label: 'Arabic (Arab) ع', value: Arab }
+          - { label: 'Hebrew (Hebr) א', value: Hebr }
+          - { label: 'Devanagari (Deva) क', value: Deva }
+          - { label: 'Bengali (Beng) ক', value: Beng }
+          - { label: 'Thai (Thai) ก', value: Thai }
+          - { label: 'Tibetan (Tibt) ཀ', value: Tibt }
+          - { label: 'Georgian (Geor) ა', value: Geor }
+          - { label: 'Armenian (Armn) Ա', value: Armn }
+          - { label: 'Hangul (Hang) 한', value: Hang }
+          - { label: 'Han (Hani) 永', value: Hani }
+          - { label: 'Japanese (Jpan) あ', value: Jpan }
+          - { label: 'Canadian Aboriginal Syllabics (Cans) ᐊ', value: Cans }
+          - { label: 'Cherokee (Cher) Ꭰ', value: Cher }
+          - { label: 'Multi-script / general (Zyyy) ✦', value: Zyyy }
+      - {
+          name: year,
+          label: Year,
+          widget: number,
+          value_type: int,
+          min: 1450,
+          max: 2100,
+          hint: 'First publication of this edition (start year for ongoing magazines and websites).',
+        }
+      - {
+          name: date,
+          label: 'Full date',
+          widget: datetime,
+          required: false,
+          time_format: false,
+          date_format: 'YYYY-MM-DD',
+        }
+      - name: availability
+        label: Availability
+        widget: select
+        default: unknown
+        options:
+          - { label: 'In print', value: in-print }
+          - { label: 'Out of print', value: out-of-print }
+          - { label: 'Free to read online', value: free-online }
+          - { label: 'Unknown', value: unknown }
+      - name: isbn
+        label: ISBN
+        widget: string
+        required: false
+        hint: "Books only. ISBN-13 (starts with 978 or 979) preferred, or ISBN-10; digits only. A magazine barcode starting with 977 is not an ISBN: enter the magazine's ISSN instead."
+        pattern:
+          ['^(97[89]\d{10}|\d{9}[\dX])$', 'ISBN-13 starting with 978/979, or ISBN-10, digits only']
+      - {
+          name: issn,
+          label: ISSN,
+          widget: string,
+          required: false,
+          hint: 'Magazines. From a 977 barcode: digits 4 to 10, then a check digit.',
+          pattern: ['^\d{4}-\d{3}[\dX]$', 'Format 1234-567X'],
+        }
+      - { name: pages, label: Pages, widget: number, value_type: int, required: false, min: 1 }
+      - name: links
+        label: Links
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - {
+              name: publisher,
+              label: 'Publisher page',
+              widget: string,
+              required: false,
+              pattern: ['^https?://', 'Must start with http:// or https://'],
+            }
+          - {
+              name: buy,
+              label: 'Where to buy',
+              widget: string,
+              required: false,
+              pattern: ['^https?://', 'Must start with http:// or https://'],
+            }
+          - {
+              name: read,
+              label: 'Read online (free)',
+              widget: string,
+              required: false,
+              pattern: ['^https?://', 'Must start with http:// or https://'],
+            }
+      - {
+          name: cover,
+          label: Cover,
+          widget: image,
+          required: false,
+          hint: 'A typographic cover is generated if empty.',
+        }
+      - {
+          name: color,
+          label: 'Background colour',
+          widget: color,
+          required: false,
+          hint: 'Background of the card and the detail page, e.g. #b52800. Pick a colour from the cover.',
+        }
+      - {
+          name: addedAt,
+          label: 'Added on',
+          widget: datetime,
+          time_format: false,
+          date_format: 'YYYY-MM-DD',
+          default: '{{now}}',
+          hint: "Drives the 'Recently added' sort.",
+        }
+      - {
+          name: credit,
+          label: 'Public credit',
+          widget: string,
+          required: false,
+          hint: 'Contributor name, only with their consent.',
+        }
+      - {
+          name: body,
+          label: Description,
+          widget: markdown,
+          required: false,
+          buttons: [bold, italic, link, bulleted-list, numbered-list],
+        }
+
+  - name: publications
+    label: Publications
+    label_singular: Publication
+    folder: src/content/publications
+    extension: md
+    format: frontmatter
+    create: true
+    identifier_field: title
+    slug: '{{fields.slug}}'
+    media_folder: covers
+    public_folder: ./covers
+    summary: '{{title}} · {{year}} · {{status}}'
+    sortable_fields: [title, year, addedAt]
+    view_filters:
+      - { label: Books, field: type, pattern: book }
+      - { label: Magazines, field: type, pattern: magazine }
+      - { label: 'Websites & posts', field: type, pattern: web }
+      - { label: Published, field: status, pattern: published }
+      - { label: Drafts, field: status, pattern: draft }
+      - { label: 'Missing scripts', field: scripts, pattern: '^$' }
+    view_groups:
+      - { label: Status, field: status }
+      - { label: Type, field: type }
+      - { label: Year, field: year }
+    fields: *publication_fields
+
+  - name: pages
+    label: Pages
+    files:
+      - name: about
+        label: About
+        file: src/content/pages/about.md
+        fields:
+          - { name: title, label: Title, widget: string }
+          - { name: intro, label: Intro, widget: text, required: false }
+          - name: faq
+            label: 'Questions (FAQ)'
+            label_singular: Question
+            widget: list
+            required: false
+            summary: '{{fields.question}}'
+            fields:
+              - { name: question, label: Question, widget: string }
+              - name: answer
+                label: Answer
+                widget: text
+                hint: 'Plain text. A blank line starts a new paragraph; lines starting with "- " become a bulleted list.'
+          - name: contact
+            label: 'Contact email'
+            widget: string
+            required: false
+            pattern: ['^[^@\s]+@[^@\s]+\.[^@\s]+$', 'An email address']
+          - { name: body, label: 'Text (contribute, colophon, licences)', widget: markdown }
