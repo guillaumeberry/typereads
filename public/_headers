@@ -1,14 +1,32 @@
-# Response headers for Cloudflare Workers static assets.
+# Response headers for Cloudflare Workers static assets (not for /api/*, which the Worker
+# answers itself).
+#
+# Public pages: a strict CSP, because the admin's login token lives on this origin too
+# (ADR-004). Scripts: our own, Cabin analytics (scripts. and ping.withcabin.com) and
+# Turnstile on the submit pages. The one inline script
+# (index.astro: list view before first paint) is allowed by hash; `npm run build` fails
+# (scripts/csp.mjs) and prints the new hash if it changes. style-src needs
+# 'unsafe-inline' for Astro's inline styles and GSAP's style attributes.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-+vlH8qGb+w9mn75Tnxtaawjp4uItRyqWOFnMZTz8Z0M=' https://challenges.cloudflare.com https://scripts.withcabin.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://ping.withcabin.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+
 # Admin (Sveltia CMS): never indexed, never framed, and a content security policy that
 # only allows our site, Sveltia's CDN (unpkg, jsdelivr fonts), GitHub's API and images,
 # the login Worker and githubstatus.com (outage notices). Based on Sveltia's security docs.
 /admin
   X-Robots-Tag: noindex, nofollow
-  X-Frame-Options: DENY
+  ! Referrer-Policy
   Referrer-Policy: same-origin
+  ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline'; font-src 'self' https://cdn.jsdelivr.net; img-src 'self' blob: data: https://*.githubusercontent.com; media-src blob:; frame-src blob:; worker-src 'self' blob:; manifest-src blob:; connect-src 'self' blob: data: https://unpkg.com https://api.github.com https://*.githubusercontent.com https://sveltia-cms-auth.guillaume-berry.workers.dev https://www.githubstatus.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 /admin/*
   X-Robots-Tag: noindex, nofollow
-  X-Frame-Options: DENY
+  ! Referrer-Policy
   Referrer-Policy: same-origin
+  ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline'; font-src 'self' https://cdn.jsdelivr.net; img-src 'self' blob: data: https://*.githubusercontent.com; media-src blob:; frame-src blob:; worker-src 'self' blob:; manifest-src blob:; connect-src 'self' blob: data: https://unpkg.com https://api.github.com https://*.githubusercontent.com https://sveltia-cms-auth.guillaume-berry.workers.dev https://www.githubstatus.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'

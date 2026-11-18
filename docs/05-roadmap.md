@@ -142,25 +142,25 @@ Goal: public submissions land in the CMS Inbox and in your email.
 
 - [x] Turnstile site (widget on `/submit`, secret on the Worker). _(2026-11-18)_
 - [x] Worker `/api/submit` (`worker/index.ts` + tested `src/lib/submission.ts`): size limit, honeypot, rate limit, Turnstile, validation, YAML via the `yaml` serialiser, HTML escaped in the body, GitHub commit with `[skip ci]`, 303 redirect or JSON. Submitted entries can't fail the build (schema placeholders). _(2026-11-18)_
-- [ ] Fine-grained GitHub token (one repo, contents only, with an expiry) as the `GITHUB_TOKEN` secret. Set a calendar reminder to rotate it. **Setup pending.**
-- [ ] Email notification via Resend's free tier (Cloudflare Email Service sending needs a paid plan; Resend's DNS records keep the Gandi mailbox) to `NOTIFY_TO`, with the `RESEND_API_KEY` secret. Code done; **setup pending.**
+- [ ] Fine-grained GitHub token (one repo, contents only, with an expiry) as the `GITHUB_TOKEN` secret. Set a calendar reminder to rotate it. _(2026-11-18)_
+- [x] Email notification via Resend's free tier (Cloudflare Email Service sending needs a paid plan; Resend's DNS records keep the Gandi mailbox) to `NOTIFY_TO`, with the `RESEND_API_KEY` secret. _(2026-11-18)_
 - [x] Rate limit on `/api/submit`: Workers rate-limiting binding, 5 per minute per IP (instead of a WAF rule). _(2026-11-18)_
 - [x] Progressive enhancement: native form + redirects; with JS, inline errors and no page reload. Turnstile itself needs JS (no-JS note with the email address; ADR-005). _(2026-11-18)_
 - [x] Correction mode: `/submit/fix/<slug>` (static per publication), emailed only. _(2026-11-18)_
 - [x] Abuse cases tested locally (`wrangler dev`, dry run): GET 405, empty/missing token 400, huge 413, JSON 415, honeypot silently dropped, invalid fields 400, YAML/HTML injection neutralised, 6th request in a minute 429, unknown correction slug 400. _(2026-11-18)_
 - [ ] End-to-end on the live site once the secrets are set: a submission in the Inbox and the email within a minute.
 
-**Exit:** a test submission shows up in the Inbox and your email within a minute; spam tests are rejected.
+**Exit:** a test submission shows up in the Inbox and your email within a minute; spam tests are rejected. ✓ Live test passed 2026-11-18 (submission committed, submission and correction emails received).
 
 ## Phase 7 — QA and launch · **S–M**
 
-- [ ] Header overflows at 375 px ("Submit" touches or passes the right edge): tighten the wordmark or gap on narrow phones. _(found 2026-11-18)_
-- [ ] Accessibility: keyboard-only pass, VoiceOver (macOS and iOS), axe scan, contrast check of all publication colours.
-- [ ] Performance: Lighthouse mobile ≥ 95 everywhere; check the budgets in [02](02-functional-spec.md#performance-and-lazy-loading-spec).
+- [x] Header overflows at 375 px: below 420 px the wordmark takes two lines ("Read about / Type Design"), so the nav fits down to 320 px. _(2026-11-18)_
+- [ ] Accessibility: Lighthouse (axe) 100 on home, About, submit, correction and detail pages, in light and dark, including the contrast of every card colour on the home page. _(2026-11-18)_ Still to do by hand: keyboard-only pass, VoiceOver (macOS and iOS).
+- [x] Performance: Lighthouse mobile 98–100 (live home 98, LCP 1.4 s, CLS 0.087 from the grid; submit 99). Budgets: core JS 5.1 KB gz, motion layer 56.3 KB gz, form script 1.2 KB gz (submit pages only). _(2026-11-18)_
 - [ ] Cross-browser: Chrome, Safari, Firefox, iOS Safari, Android Chrome.
-- [ ] Security headers/CSP tuned; secrets audit; GitHub secret scanning on.
-- [ ] Cabin installed (CSP updated); check it records pageviews.
-- [ ] About page colophon and licences updated; README with screenshots, setup and contribution notes.
+- [x] Security headers/CSP: site-wide CSP (hash for the inline script, checked at build), nosniff, referrer and permissions policies, HSTS, no framing; the admin keeps its own CSP. Secrets audit: no keys, tokens, font files or submitter emails in the Git history. GitHub secret scanning and push protection on. _(2026-11-18)_
+- [ ] Cabin installed (production builds only, in `Base.astro`; CSP allows `scripts.` and `ping.withcabin.com`); pings verified locally under the CSP. _(2026-11-18)_ Still to do: see pageviews appear in the Cabin dashboard after the deploy.
+- [ ] About page colophon and licences updated (submissions: Turnstile, Resend); README status, folder map and contribution notes. _(2026-11-18)_ Still to do: README screenshots, once the "Test" entry is deleted.
 - [x] ~~Make the repo public.~~ Public since its creation (2026-11-17), so everything pushed is public immediately: keep secrets and personal data out from day one.
 - [ ] Announce it. Keep the Framer site up with a link to the new one until traffic moves over (or redirect).
 

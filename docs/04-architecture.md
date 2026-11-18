@@ -320,6 +320,8 @@ sequenceDiagram
 
 ### Security headers (`public/_headers`)
 
+Implemented 2026-11-18; `public/_headers` is the source of truth (the sketch below was the plan). The site's one inline script is allowed by hash, and `scripts/csp.mjs` (postbuild) fails the build if an inline script's hash is missing. The admin rules detach (`! Header`) the site-wide CSP and referrer policy and set their own. Cabin is allowed in `script-src` (`scripts.withcabin.com`) and `connect-src` (`ping.withcabin.com`).
+
 ```
 /*
   Content-Security-Policy: default-src 'self'; img-src 'self' data:; script-src 'self' https://challenges.cloudflare.com <cabin-domain>; frame-src https://challenges.cloudflare.com; connect-src 'self' <cabin-domain>; style-src 'self' 'unsafe-inline'; base-uri 'self'; form-action 'self'

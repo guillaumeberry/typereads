@@ -35,7 +35,7 @@ You can [submit a publication](/submit). I review every submission before adding
 
 ## Colophon: how and what?
 
-The library is a static website built with [Astro](https://astro.build). Each publication is a small text file in a public [GitHub repository](https://github.com/guillaumeberry/typereads), edited through [Sveltia CMS](https://github.com/sveltia/sveltia-cms), and the site is hosted on [Cloudflare](https://www.cloudflare.com). Hosting costs nothing, and the pages are light: no tracking cookies, no ads. The motion uses [Swup](https://swup.js.org) and [GSAP](https://gsap.com), loaded after the page is ready and skipped if you prefer reduced motion.
+The library is a static website built with [Astro](https://astro.build). Each publication is a small text file in a public [GitHub repository](https://github.com/guillaumeberry/typereads), edited through [Sveltia CMS](https://github.com/sveltia/sveltia-cms), and the site is hosted on [Cloudflare](https://www.cloudflare.com). Hosting costs nothing, and the pages are light: no tracking cookies, no ads. Visits are counted with [Cabin](https://withcabin.com), which uses no cookies and stores nothing personal. The motion uses [Swup](https://swup.js.org) and [GSAP](https://gsap.com), loaded after the page is ready and skipped if you prefer reduced motion. Suggestions arrive through a form checked by [Cloudflare Turnstile](https://www.cloudflare.com/application-services/products/turnstile/) (no cookies, no puzzles for most people) and land in the repository for review; email alerts go through [Resend](https://resend.com).
 
 The typeface is HEX Franklin by Nick Sherman (HEX Projects).
 

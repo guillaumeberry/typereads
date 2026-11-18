@@ -2,7 +2,7 @@
 
 A curated, open-source library of publications about type design (books, magazines, websites and posts), across cultures, scripts and languages.
 
-> **Status:** Phase 4, motion (2026-11-17): page transitions with the cover flying between the grid and the detail page, animated filtering and grid/list, the 404 numeral cycle. On top of the library (search, filters, sort, list view) and the static pages. Works without JavaScript; motion is skipped under reduced motion. Throwaway spikes live in `spike/` (gitignored).
+> **Status:** Phase 7, QA before launch (2026-11-18). The library, motion, admin (Sveltia CMS) and public submissions are live. Works without JavaScript (except the submission form's spam check); motion is skipped under reduced motion.
 > Live: https://typereads.xyz · Repo: https://github.com/guillaumeberry/typereads · Prototype: https://read-about-type.framer.website/
 
 ## Docs
@@ -29,15 +29,22 @@ npm test         # unit tests
 
 Requires Node 22+. The site's typeface, HEX Franklin, is licensed and not in this repo: put the `.woff2` files in `assets/fonts/`, or set `FONTS_BASE_URL`/`FONTS_TOKEN` to read them from the private fonts repo (see `scripts/fonts.mjs`); otherwise the build falls back to Archivo. Content lives in `src/content/publications/` (one Markdown file per publication); the schema is `src/content.config.ts`.
 
+## Contribute
+
+- **Suggest a publication** with the form at [typereads.xyz/submit](https://typereads.xyz/submit). It lands in the admin's Inbox for review; nothing is published automatically. Your email, if you give it, is only sent to the editor and never stored in this repo.
+- **Report a mistake** with the "Suggest a correction" link on any publication page, or open an issue.
+- **Code**: pull requests are welcome. Run `npm run format`, then `npm run check`, `npm test` and `npm run build` (CI runs the same). Read [CLAUDE.md](CLAUDE.md) and the [decisions](docs/06-decisions.md) first: the site stays lean, works without JavaScript, and adds no UI framework.
+- **Data edits** (a year, a link) can also be a pull request on `src/content/publications/<slug>.md`, following the [content model](docs/03-content-model.md).
+
 ## TL;DR
 
 - **No database.** ~300 publications = Markdown files in Git. Static site, €0 hosting.
 - **Astro** (static) + **one small vanilla TS module** for filters, search, sort and grid/list.
 - **Two-tier motion:** a native base (CSS, scroll-driven animations, View Transitions) plus a deferred high-end layer (**GSAP** Flip/SplitText + **Swup** page transitions, ≤ 60 KB) for choreographed, interruptible, cross-browser transitions. **Chosen for now after the motion spike** (variant C, [ADR-012](docs/06-decisions.md#adr-012--two-tier-motion-architecture-native-base--gsap-layer--swup-router)); native-only (A) is the fallback until phones are tested.
-- **Cloudflare** hosts the site, the CMS login Worker, the submission Worker, Turnstile anti-spam and email alerts. All on the free tier.
+- **Cloudflare** hosts the site and its Worker (submissions, `/api/*` only), the CMS login Worker and the Turnstile spam check. **Resend** sends the email alerts. All on free tiers.
 - **Sveltia CMS** at `/admin`, with GitHub login (2FA). Edits are commits; the site rebuilds in about 1–2 minutes.
 - **Submissions**: on-site form → Worker → `status: submitted` entry in the CMS Inbox, plus an email to the editor. Submitter emails never touch the public repo.
-- **Cabin** analytics (cookie-free).
+- **Cabin** analytics (cookie-free, no consent banner).
 - **Licences**: MIT code · CC BY 4.0 data · covers © publishers. The motion layer uses [GSAP](https://gsap.com), installed from npm under its own free but proprietary _Standard No Charge_ licence (not open source); it is not part of this repo's MIT code.
 
 ## Folder
@@ -47,9 +54,10 @@ typereads/
 ├── README.md        ← you are here
 ├── CLAUDE.md        ← guidance for Claude sessions
 ├── docs/            ← planning docs (above)
-├── src/             ← Astro site: content/, content.config.ts, data/, lib/, pages/
+├── src/             ← Astro site: content/, content.config.ts, data/, lib/, pages/, scripts/
+├── public/admin/    ← Sveltia CMS (config.yml mirrors the schema); public/_headers: CSP
+├── worker/          ← the site's Worker: POST /api/submit (Turnstile → GitHub → email)
+├── scripts/         ← build helpers: fonts.mjs (licensed fonts), csp.mjs (CSP check)
 ├── LICENSE          ← MIT (code) · LICENSE-CONTENT.md: CC BY 4.0 (data), covers excluded
-├── spike/motion/    ← throwaway motion spike: 3 variants to compare (see its README)
-├── spike/cms/       ← local demo of the admin (Sveltia CMS) on the 50 publications
-└── assets/fonts/    ← (empty) project typefaces, see open question Q2
+└── assets/fonts/    ← licensed typefaces, gitignored (never committed)
 ```

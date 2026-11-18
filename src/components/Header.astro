@@ -11,7 +11,9 @@ const nav = [
   <div class="wrap bar">
     <a class="brand" href="/">
       <Logo />
-      <span class="wordmark display">Read about Type Design</span>
+      <span class="wordmark display">
+        <span>Read about</span> <span>Type Design</span>
+      </span>
     </a>
     <nav aria-label="Main">
       <ul>
@@ -68,9 +70,17 @@ const nav = [
   .strong {
     font-weight: 700;
   }
+  /* Narrow phones: the wordmark takes two lines so "Submit" stays on screen (320 px up). */
   @media (max-width: 420px) {
     .wordmark {
       font-size: 1.125rem;
+      line-height: 1.05;
+    }
+    .wordmark > span {
+      display: block;
+    }
+    .brand {
+      gap: 10px;
     }
   }
 </style>

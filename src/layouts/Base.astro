@@ -105,6 +105,12 @@ const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
     <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
 
     {ld && <script type="application/ld+json" set:html={ld} />}
+    {/* Cabin analytics (ADR-008): cookie-free pageviews; it follows pushState, so the
+         motion router's page changes count too. Production builds only. Allowed in the
+         CSP (public/_headers): scripts.withcabin.com, ping.withcabin.com. */}
+    {import.meta.env.PROD && (
+      <script is:inline src="https://scripts.withcabin.com/hello.js" async defer />
+    )}
     <slot name="head" />
   </head>
   <body>
