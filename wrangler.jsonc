@@ -8,9 +8,16 @@
   "compatibility_date": "2026-11-17",
   // No anonymous usage telemetry from wrangler.
   "send_metrics": false,
+  // Custom domains: attached on deploy; Cloudflare creates the DNS records and the
+  // HTTPS certificate. The domain's DNS is on Cloudflare (registrar: Gandi).
+  // The workers.dev address keeps working too.
+  "routes": [
+    { "pattern": "typereads.xyz", "custom_domain": true },
+    { "pattern": "www.typereads.xyz", "custom_domain": true },
+  ],
   "assets": {
     "directory": "./dist",
-    // Serve dist/404.html for unknown URLs (the ".notdef" 404 page arrives in Phase 2).
+    // Serve dist/404.html (the ".notdef" page) for unknown URLs.
     "not_found_handling": "404-page",
   },
 }
