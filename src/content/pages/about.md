@@ -27,7 +27,7 @@ faq:
       - Language names shown in their own language (Français, 简体中文…) to help non-English readers.
       - Short descriptions for more publications.
       - Maybe topic tags, if a common tag structure can be found.
-contact: hello@read-about-type.info
+contact: hello@typereads.xyz
 ---
 
 ## Contribute to the list
