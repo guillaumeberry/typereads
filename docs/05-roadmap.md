@@ -155,14 +155,15 @@ Goal: public submissions land in the CMS Inbox and in your email.
 ## Phase 7 — QA and launch · **S–M**
 
 - [x] Header overflows at 375 px: below 420 px the wordmark takes two lines ("Read about / Type Design"), so the nav fits down to 320 px. _(2026-11-18)_
-- [ ] Accessibility: Lighthouse (axe) 100 on home, About, submit, correction and detail pages, in light and dark, including the contrast of every card colour on the home page. _(2026-11-18)_ Still to do by hand: keyboard-only pass, VoiceOver (macOS and iOS).
+- [ ] Accessibility: Lighthouse (axe) 100 on home, About, submit, correction and detail pages, in light and dark, including the contrast of every card colour on the home page. _(2026-11-18)_ Still to do by hand (later): keyboard-only pass, VoiceOver (macOS and iOS).
 - [x] Performance: Lighthouse mobile 98–100 (live home 98, LCP 1.4 s, CLS 0.087 from the grid; submit 99). Budgets: core JS 5.1 KB gz, motion layer 56.3 KB gz, form script 1.2 KB gz (submit pages only). _(2026-11-18)_
 - [ ] Cross-browser: Chrome, Safari, Firefox, iOS Safari, Android Chrome.
 - [x] Security headers/CSP: site-wide CSP (hash for the inline script, checked at build), nosniff, referrer and permissions policies, HSTS, no framing; the admin keeps its own CSP. Secrets audit: no keys, tokens, font files or submitter emails in the Git history. GitHub secret scanning and push protection on. _(2026-11-18)_
-- [ ] Cabin installed (production builds only, in `Base.astro`; CSP allows `scripts.` and `ping.withcabin.com`); pings verified locally under the CSP. _(2026-11-18)_ Still to do: see pageviews appear in the Cabin dashboard after the deploy.
-- [ ] About page colophon and licences updated (submissions: Turnstile, Resend); README status, folder map and contribution notes. _(2026-11-18)_ Still to do: README screenshots, once the "Test" entry is deleted.
+- [x] Cabin installed (production builds only, in `Base.astro`; CSP allows `scripts.` and `ping.withcabin.com`); pings verified locally under the CSP. _(2026-11-18)_ Pageviews confirmed in the dashboard.
+- [x] About page colophon and licences updated (submissions: Turnstile, Resend); README status, folder map, contribution notes and screenshots (`docs/screenshots/`). _(2026-11-18)_
 - [x] ~~Make the repo public.~~ Public since its creation (2026-11-17), so everything pushed is public immediately: keep secrets and personal data out from day one.
-- [ ] Announce it. Keep the Framer site up with a link to the new one until traffic moves over (or redirect).
+- [x] Framer prototype taken offline (no redirect). _(2026-11-18)_
+- [ ] Announce it.
 
 **Exit:** the [success criteria](01-brief.md#success-criteria-for-launch) are all ticked.
 

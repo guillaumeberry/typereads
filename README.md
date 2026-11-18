@@ -3,7 +3,9 @@
 A curated, open-source library of publications about type design (books, magazines, websites and posts), across cultures, scripts and languages.
 
 > **Status:** Phase 7, QA before launch (2026-11-18). The library, motion, admin (Sveltia CMS) and public submissions are live. Works without JavaScript (except the submission form's spam check); motion is skipped under reduced motion.
-> Live: https://typereads.xyz · Repo: https://github.com/guillaumeberry/typereads · Prototype: https://read-about-type.framer.website/
+> Live: https://typereads.xyz · Repo: https://github.com/guillaumeberry/typereads
+
+![The library: a grid of publication covers with search, filters, sort and a grid/list switch](docs/screenshots/home.jpg)
 
 ## Docs
 
@@ -35,6 +37,13 @@ Requires Node 22+. The site's typeface, HEX Franklin, is licensed and not in thi
 - **Report a mistake** with the "Suggest a correction" link on any publication page, or open an issue.
 - **Code**: pull requests are welcome. Run `npm run format`, then `npm run check`, `npm test` and `npm run build` (CI runs the same). Read [CLAUDE.md](CLAUDE.md) and the [decisions](docs/06-decisions.md) first: the site stays lean, works without JavaScript, and adds no UI framework.
 - **Data edits** (a year, a link) can also be a pull request on `src/content/publications/<slug>.md`, following the [content model](docs/03-content-model.md).
+
+<p>
+  <img src="docs/screenshots/detail.jpg" alt="A publication page: title, cover and details" width="66%">
+  <img src="docs/screenshots/mobile-dark.jpg" alt="The library on a phone, in dark mode" width="30%">
+</p>
+
+Covers in the screenshots are © their publishers, shown to identify each publication.
 
 ## TL;DR
 

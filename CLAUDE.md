@@ -48,4 +48,4 @@ Phase 5 done (admin at /admin; Cloudflare Access optional). Phase 6 done (public
 - Progressive enhancement: every page must work without JS.
 - The repo is public. **Never commit personal data** (submitter emails), secrets, or font files whose licence forbids redistribution.
 - Only `status: published` entries are built.
-- Prototype for visual reference: https://read-about-type.framer.website/
+- The Framer prototype (read-about-type.framer.website) was taken offline on 2026-11-18: the live site is now the visual reference.

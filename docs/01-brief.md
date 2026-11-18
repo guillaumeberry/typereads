@@ -10,7 +10,7 @@ History of the project:
 
 1. Started as a Notion database (hard to exploit).
 2. Moved to **Airtable + Softr + Tally**, a "no-code triforce" with a domain and a contact address.
-3. Rebuilt as a **Framer prototype** (https://read-about-type.framer.website/) with 50 publications, filters by type, sort and detail pages. Its content is good enough to migrate.
+3. Rebuilt as a **Framer prototype** (read-about-type.framer.website, offline since 2026-11-18) with 50 publications, filters by type, sort and detail pages. Its content is good enough to migrate.
 4. **Now:** a custom, open-source, lean web platform the project owns end to end.
 
 Why rebuild instead of staying on Framer or no-code:
