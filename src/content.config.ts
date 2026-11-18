@@ -27,7 +27,14 @@ const listOf = <T extends z.ZodType>(item: T, required: boolean) =>
   z.preprocess((v) => blank(v) ?? [], required ? z.array(item).min(1) : z.array(item));
 
 const publications = defineCollection({
-  loader: glob({ base: './src/content/publications', pattern: '*.md' }),
+  // Entry ids come from the file name, not the `slug` field: with the default, two
+  // files sharing a slug collapse into one (only a warning). getPublished() then
+  // fails the build on a duplicate slug.
+  loader: glob({
+    base: './src/content/publications',
+    pattern: '*.md',
+    generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+  }),
   schema: ({ image }) =>
     z.object({
       title: z.string().min(1),

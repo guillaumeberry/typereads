@@ -22,7 +22,7 @@ year: 1998
 date: 1998-03-01
 availability: unknown
 isbn: '9783895084737'
-cover: ./covers/Typography when who how.png
+cover: ./covers/typography-when-who-how.webp
 color: '#000023'
 addedAt: 2026-11-15
 ---

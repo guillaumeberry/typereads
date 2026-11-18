@@ -14,6 +14,20 @@ backend:
 media_folder: public/uploads
 public_folder: /uploads
 
+# Uploads: clean filenames ("New East Asian Type.png" → new-east-asian-type.webp)
+# and covers resized to at most 2048 px and saved as WebP before they are committed.
+# The site makes its own AVIF/WebP sizes from this file, so 2048 px is plenty.
+media_libraries:
+  default:
+    config:
+      slugify_filename: true
+      transformations:
+        raster_image:
+          format: webp
+          quality: 85
+          width: 2048
+          height: 2048
+
 site_url: https://typereads.xyz/
 display_url: https://typereads.xyz/
 

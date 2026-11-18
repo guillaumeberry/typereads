@@ -25,7 +25,7 @@ isbn: '9789083420233'
 pages: 184
 links:
   publisher: https://www.typotheque.com/books/new-east-asian-type
-cover: ./covers/New East Asian Type.png
+cover: ./covers/new-east-asian-type.webp
 color: '#1f5371'
 addedAt: 2026-11-18
 ---

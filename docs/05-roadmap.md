@@ -127,9 +127,11 @@ Goal: Guillaume edits content from `/admin` with GitHub login.
 - [x] `public/admin/index.html` (Sveltia 0.258.1, pinned) + `config.yml` with the _Inbox_, _Publications_ and _Pages_ (About) collections, validated against Sveltia's JSON schema. _(2026-11-18)_
 - [x] Every schema field mirrored, with widgets, hints and validation (ISBN 978/979 or ISBN-10, ISSN, URLs, hex colour, slug). _(2026-11-18)_
 - [x] Empty optional fields: `output.omit_empty_optional_fields: true` (and the schema treats `''`/`null` as missing anyway). _(2026-11-18)_
-- [ ] Media: covers saved next to the entries; verify the Astro image pipeline picks them up.
-- [ ] Test: create, edit, unpublish and delete; add a cover from a phone; check that the build fails safely on invalid data. **Edit tested** (About page: commit authored by the editor, live in about a minute). _(2026-11-18)_
-- [x] Admin CSP in `public/_headers` (+ noindex, no framing): self, unpkg, jsdelivr fonts, GitHub API and images, the login Worker, githubstatus.com. Signed-out page checked; signed-in use to confirm. _(2026-11-18)_
+- [x] Media: covers saved next to the entries (`covers/`), picked up by the Astro image pipeline (AVIF/WebP). Uploads get slugified filenames and are converted to WebP, ≤ 2048 px, quality 85 (`media_libraries` in `config.yml`). _(2026-11-18)_
+- [x] Test: create, edit, unpublish and delete (first real entry added: _New East Asian Type_); replace a cover; invalid data fails the build (bad ISBN checksum, duplicate slug), so Cloudflare keeps the previous version live. _(2026-11-18)_
+- [x] Duplicate slugs fail the build: entry ids come from file names (`generateId`), and `getPublished()` throws on a repeated slug. Found in testing: the admin's _Duplicate_ keeps the slug, and Astro only warned. _(2026-11-18)_
+- [ ] Add a cover from a phone (the exit test below).
+- [x] Admin CSP in `public/_headers` (+ noindex, no framing): self, unpkg, jsdelivr fonts, GitHub API and images, the login Worker, githubstatus.com. Checked signed out and signed in (browse, upload, create, delete). _(2026-11-18)_
 - [ ] Optional: Cloudflare Access in front of `/admin`.
 
 **Exit:** a new publication goes from phone to live site in under 3 minutes.
