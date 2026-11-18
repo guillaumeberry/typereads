@@ -13,8 +13,7 @@ faq:
 
       As for the type of publications: books, magazines and teaching/learning material are the core content. We may expand to podcasts and videos. But as the name suggests, reading is the primary mode.
   - question: How can I help?
-    answer: |-
-      Do contribute. Do reach out about typos, incorrect information, broken links, etc. If I'm crumbling under 100+ submissions a day, I may cry for help with the curation.
+    answer: Do contribute. Do reach out about typos, incorrect information, broken links, etc. If I'm crumbling under 100+ submissions a day, I may cry for help with the curation.
   - question: Why so many Latin-script publications?
     answer: |-
       Because I'm biased. And because most of the written literature I've encountered was published by Western culture, leaving very little room for other cultures and writing systems. Learning a bit of Japanese, having an introduction to Hangul or discussing Cyrillic opened the right path.
@@ -43,3 +42,5 @@ The typeface is HEX Franklin by Nick Sherman (HEX Projects).
 ## Licences
 
 The code is under the MIT licence and the publication data under CC BY 4.0: reuse it, with credit. Covers remain © their publishers and are shown only to identify each publication; to have one removed, get in touch.
+
+Code [MIT](https://github.com/guillaumeberry/typereads/blob/main/LICENSE) · Data [CC BY 4.0](https://github.com/guillaumeberry/typereads/blob/main/LICENSE-CONTENT.md) · Covers © their publishers. [Source on GitHub](https://github.com/guillaumeberry/typereads)
