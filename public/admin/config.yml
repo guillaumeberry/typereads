@@ -6,8 +6,9 @@ backend:
   name: github
   repo: guillaumeberry/typereads
   branch: main
-  # Login: GitHub App via the sveltia-cms-auth Worker (ADR-004). Set once deployed:
-  # base_url: https://sveltia-cms-auth.<subdomain>.workers.dev
+  # Login: GitHub App (installed on this repo only) via the sveltia-cms-auth Worker
+  # (ADR-004). The Worker only serves typereads.xyz (ALLOWED_DOMAINS).
+  base_url: https://sveltia-cms-auth.guillaume-berry.workers.dev
 
 # Fallback media folder (covers live next to the entries, see the collection).
 media_folder: public/uploads
