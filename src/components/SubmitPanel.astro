@@ -73,6 +73,10 @@ import SubmitForm from './SubmitForm.astro';
     scrollbar-width: thin;
   }
   .submit-panel::backdrop {
+    /* Past the top and bottom edges: on iOS the page is also drawn next to the
+       browser's toolbars, outside the viewport a fixed inset: 0 layer covers, and a
+       strip of it showed undimmed under the panel. */
+    inset: -50vh 0;
     background: rgb(26 26 26 / 0.8); /* Figma "Overlay": Foreground at 80% */
   }
   /* The page doesn't scroll behind the open panel. */
@@ -155,7 +159,9 @@ import SubmitForm from './SubmitForm.astro';
       inset: var(--xs) var(--xs) auto;
       width: calc(100vw - 2 * var(--xs));
       height: auto;
-      max-height: calc(100dvh - 2 * var(--xs));
+      /* The smallest viewport (toolbars shown), so the bottom of the panel and its
+         button never end up behind a phone browser's toolbar. */
+      max-height: calc(100svh - 2 * var(--xs));
       padding: var(--l);
     }
     .view {
