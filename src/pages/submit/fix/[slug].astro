@@ -1,8 +1,9 @@
 ---
 // Correction form for one publication (linked from its page). Static, one per entry,
-// so it works without JavaScript; the correction is emailed, never committed. Styled
-// like the submission panel (a white card).
+// so it works without JavaScript; the correction is emailed, never committed. Laid out
+// like the About page: a white card with a 760px column, "Home ←" in the header.
 import Base from '../../../layouts/Base.astro';
+import Icon from '../../../components/Icon.astro';
 import SubmitForm from '../../../components/SubmitForm.astro';
 import { getPublished, publicationUrl, type Publication } from '../../../lib/publications';
 
@@ -14,48 +15,72 @@ const { pub } = Astro.props as { pub: Publication };
 ---
 
 <Base title={`Suggest a correction: ${pub.data.title}`} noindex>
+  <a class="trigger t-caption home" href="/" slot="header-back">
+    Home
+    <Icon name="back" />
+  </a>
+
   <div class="wrap page">
-    <div class="card">
-      <h1 class="t-h2">Suggest a modification</h1>
-      <p class="t-paragraph">
-        Spotted a mistake or something missing? Tell me what should change in:
-      </p>
-      <p class="t-paragraph pub">
-        <a class="u-link" href={publicationUrl(pub)}>
-          {pub.data.title}
-        </a>
-      </p>
-      <SubmitForm id="fix" fix={{ slug: pub.data.slug, title: pub.data.title }} />
-    </div>
+    <article class="card">
+      <div class="column">
+        <header class="intro">
+          <h1 class="t-h1">Suggest a modification</h1>
+          <p class="t-paragraph">
+            Spotted a mistake or something missing? Tell me what should change in:
+          </p>
+          <p class="t-paragraph pub">
+            <a class="u-link" href={publicationUrl(pub)}>
+              {pub.data.title}
+            </a>
+          </p>
+        </header>
+        <SubmitForm id="fix" fix={{ slug: pub.data.slug, title: pub.data.title }} />
+      </div>
+    </article>
   </div>
 </Base>
 
 <style>
+  /* Same layout as the About page (about.astro). */
+  .home {
+    min-width: 108px;
+  }
   .page {
     padding-top: var(--x3l);
   }
   .card {
-    display: grid;
-    gap: var(--xxl);
-    max-width: 640px;
-    margin-inline: auto;
-    padding: var(--xl);
+    padding: 96px var(--l);
     background: var(--surface);
+    border-radius: var(--radius-l);
+    color: var(--fg);
+  }
+  .column {
+    display: grid;
+    gap: var(--x3l);
+    max-width: 760px;
+    margin-inline: auto;
+  }
+  .intro {
+    display: grid;
+    gap: var(--x3l);
   }
   /* The publication's title sits right under the sentence that introduces it. */
   .pub {
-    margin-top: calc(var(--m) - var(--xxl));
+    margin-top: calc(var(--m) - var(--x3l));
   }
   @media (max-width: 720px) {
-    .pub {
-      margin-top: calc(var(--xs) - var(--l));
-    }
     .page {
       padding-top: var(--m);
     }
     .card {
-      gap: var(--l);
-      padding: var(--l);
+      padding: var(--xl) var(--m);
+    }
+    .column,
+    .intro {
+      gap: var(--xl);
+    }
+    .pub {
+      margin-top: calc(var(--xs) - var(--xl));
     }
   }
 </style>
