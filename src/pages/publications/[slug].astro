@@ -17,6 +17,8 @@ import {
   typeLabel,
 } from '../../lib/format';
 import { getPublished, type Publication } from '../../lib/publications';
+import { SCRIPTS } from '../../data/taxonomies';
+import { publicationTitle, siteIds, SITE_NAME, summarize } from '../../lib/seo';
 
 export async function getStaticPaths() {
   const pubs = await getPublished();
@@ -65,10 +67,27 @@ const og = d.cover ? await getImage({ src: d.cover, width: 1200, format: 'jpeg' 
 const pageUrl = new URL(`/publications/${d.slug}`, Astro.site).href;
 const schemaType =
   d.type === 'book' ? 'Book' : d.type === 'magazine' ? 'Periodical' : 'CreativeWork';
-const jsonLd = {
-  '@context': 'https://schema.org',
+const site = siteIds(Astro.site!);
+// What the publication is about: type design, and the scripts it covers (general /
+// multi-script left out). Helps "books about Arabic type design"-style searches.
+const scriptNames = d.scripts.filter((s) => s !== 'Zyyy').map((s) => SCRIPTS[s].label);
+const topics = ['Type design', ...scriptNames.map((n) => `${n} script`)];
+const longDescription = pub.body?.trim() ? summarize(pub.body, 1000) : undefined;
+const publication = {
   '@type': schemaType,
+  '@id': `${pageUrl}#publication`,
   name: d.title,
+  mainEntityOfPage: pageUrl,
+  isPartOf: { '@id': site.website },
+  ...(longDescription && { description: longDescription }),
+  about: topics.map((name) => ({ '@type': 'Thing', name })),
+  keywords: ['type design', 'typography', typeLabel(d.type).toLowerCase(), ...scriptNames].join(
+    ', ',
+  ),
+  // Only digital is certain: "physical" doesn't say hardcover or paperback.
+  ...(d.type === 'book' &&
+    d.formats.length === 1 &&
+    d.formats[0] === 'digital' && { bookFormat: 'https://schema.org/EBook' }),
   ...(d.subtitle && { alternativeHeadline: d.subtitle }),
   url: pageUrl,
   author: d.authors.map((name) => ({ '@type': 'Person', name })),
@@ -83,11 +102,26 @@ const jsonLd = {
   ...(og && { image: new URL(og.src, Astro.site).href }),
   ...(links[0] && { sameAs: links.map((l) => l.href) }),
 };
-const description = pub.body?.trim().replace(/\s+/g, ' ').slice(0, 155) || undefined;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    publication,
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: SITE_NAME, item: Astro.site!.href },
+        { '@type': 'ListItem', position: 2, name: d.title, item: pageUrl },
+      ],
+    },
+  ],
+};
+// Meta description: whole words, with "…" when shortened.
+const description = pub.body?.trim() ? summarize(pub.body) : undefined;
 ---
 
 <Base
-  title={d.title}
+  title={publicationTitle(d.title, d.authors)}
+  ogTitle={d.title}
   description={description}
   image={og?.src}
   imageAlt={d.cover ? `Cover of ${d.title}` : undefined}

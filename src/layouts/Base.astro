@@ -9,9 +9,12 @@ import { existsSync } from 'node:fs';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SubmitPanel from '../components/SubmitPanel.astro';
+import { SITE_DESCRIPTION, SITE_NAME } from '../lib/seo';
 
 interface Props {
   title?: string;
+  /** Title for social previews, when it should differ from the page title. */
+  ogTitle?: string;
   description?: string;
   /** Absolute or root-relative URL of the social preview image. */
   image?: string;
@@ -21,8 +24,6 @@ interface Props {
   jsonLd?: object | object[];
   noindex?: boolean;
 }
-
-const SITE_NAME = 'Read About Type';
 
 // HEX Franklin (licensed) when scripts/fonts.mjs found the files; Archivo otherwise.
 const HEX = ['regular', 'bold'].every((w) => existsSync(`public/fonts/hex-franklin-${w}.woff2`));
@@ -38,7 +39,8 @@ html:root {
 }`;
 const {
   title,
-  description = 'A curated library of books, magazines and websites about type design, across cultures, scripts and languages.',
+  ogTitle = title,
+  description = SITE_DESCRIPTION,
   image,
   imageAlt,
   ogType = 'website',
@@ -56,7 +58,11 @@ const cleanPath =
     .replace(/\/index$/, '')
     .replace(/\/$/, '') || '/';
 const canonical = new URL(cleanPath, Astro.site);
-const imageUrl = image ? new URL(image, Astro.site).href : undefined;
+// Pages without an image of their own share the site's card (public/og.png:
+// the logo and the shelf of books, 1200 × 630).
+const ownImage = Boolean(image);
+const imageUrl = new URL(image ?? '/og.png', Astro.site).href;
+const imageAltText = ownImage ? imageAlt : `${SITE_NAME}: publications about type design`;
 // Escape "<" so a value can never close the script element.
 const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
 ---
@@ -68,8 +74,8 @@ const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex" />}
+    {/* A page kept out of search (404, correction forms) has no canonical URL. */}
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     {HEX ? (
       <>
         <link
@@ -96,17 +102,40 @@ const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
         <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
       </>
     )}
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/* The "T" mark (assets/favicon/): black on light browser themes, white on dark
+         ones; the touch icon for iOS home screens. */}
+    <link
+      rel="icon"
+      href="/favicon-light.png"
+      type="image/png"
+      sizes="16x16"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="icon"
+      href="/favicon-dark.png"
+      type="image/png"
+      sizes="16x16"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <meta name="theme-color" content="#e7e8ef" />
 
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:type" content={ogType} />
-    <meta property="og:title" content={title ?? SITE_NAME} />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:title" content={ogTitle ?? SITE_NAME} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    {imageUrl && <meta property="og:image" content={imageUrl} />}
-    {imageUrl && imageAlt && <meta property="og:image:alt" content={imageAlt} />}
-    <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
+    <meta property="og:image" content={imageUrl} />
+    {!ownImage && (
+      <>
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+      </>
+    )}
+    {imageAltText && <meta property="og:image:alt" content={imageAltText} />}
+    <meta name="twitter:card" content="summary_large_image" />
 
     {ld && <script type="application/ld+json" set:html={ld} />}
     {/* Cabin analytics (ADR-008): cookie-free pageviews; it follows pushState, so the

@@ -3,12 +3,61 @@ import Base from '../layouts/Base.astro';
 import Card from '../components/Card.astro';
 import LibraryControls from '../components/LibraryControls.astro';
 import LibraryTools from '../components/LibraryTools.astro';
-import { getPublished } from '../lib/publications';
+import { getPublished, publicationUrl } from '../lib/publications';
+import { REPO_URL, SITE_ALT_NAMES, SITE_DESCRIPTION, SITE_NAME, siteIds } from '../lib/seo';
 
 const pubs = await getPublished();
+
+// Structured data: who the site is (its names, so "Read About Type", "Typereads" and
+// typereads.xyz are one site) and what this page is (the list of publications).
+const site = Astro.site!;
+const ids = siteIds(site);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': ids.website,
+      name: SITE_NAME,
+      alternateName: SITE_ALT_NAMES,
+      url: site.href,
+      description: SITE_DESCRIPTION,
+      inLanguage: 'en',
+      publisher: { '@id': ids.organization },
+    },
+    {
+      '@type': 'Organization',
+      '@id': ids.organization,
+      name: SITE_NAME,
+      alternateName: SITE_ALT_NAMES,
+      url: site.href,
+      logo: new URL('/og.png', site).href,
+      sameAs: [REPO_URL],
+    },
+    {
+      '@type': 'CollectionPage',
+      '@id': `${site.href}#library`,
+      url: site.href,
+      name: `${SITE_NAME}: publications about type design`,
+      description: SITE_DESCRIPTION,
+      isPartOf: { '@id': ids.website },
+      about: { '@type': 'Thing', name: 'Type design' },
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: pubs.length,
+        itemListElement: pubs.map((p, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          url: new URL(publicationUrl(p), site).href,
+          name: p.data.title,
+        })),
+      },
+    },
+  ],
+};
 ---
 
-<Base>
+<Base jsonLd={jsonLd}>
   <!-- Before first paint: apply the remembered view (no list-view flash) and start the
        intro animation (global.css, "Intro"; boot.ts removes the class afterwards). -->
   <script is:inline slot="head">

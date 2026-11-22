@@ -8,15 +8,46 @@ import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import Prose from '../components/Prose.astro';
 import { externalLinksInNewWindow } from '../lib/links';
+import { plainText, siteIds } from '../lib/seo';
 
 const about = await getEntry('pages', 'about');
 if (!about) throw new Error('Missing src/content/pages/about.md');
+const { title, intro, faq, contact } = about.data;
 // The Markdown body, its links to other sites opening in a new window (lib/links.ts).
 const body = externalLinksInNewWindow(about.rendered?.html ?? '');
-const { title, intro, faq, contact } = about.data;
+
+// Structured data: an AboutPage of the site, with the questions as an FAQ.
+const pageUrl = new URL('/about', Astro.site).href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'AboutPage',
+      '@id': pageUrl,
+      url: pageUrl,
+      name: title,
+      ...(intro && { description: intro }),
+      isPartOf: { '@id': siteIds(Astro.site!).website },
+    },
+    ...(faq.length
+      ? [
+          {
+            '@type': 'FAQPage',
+            '@id': `${pageUrl}#faq`,
+            url: pageUrl,
+            mainEntity: faq.map((item) => ({
+              '@type': 'Question',
+              name: item.question,
+              acceptedAnswer: { '@type': 'Answer', text: plainText(item.answer) },
+            })),
+          },
+        ]
+      : []),
+  ],
+};
 ---
 
-<Base title="About" description={intro}>
+<Base title="About" description={intro} jsonLd={jsonLd}>
   <a class="trigger t-caption home" href="/" data-back slot="header-back">
     Home
     <Icon name="back" />
