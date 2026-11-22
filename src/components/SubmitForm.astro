@@ -30,12 +30,17 @@ const label = fix ? 'Send the correction' : 'Submit publication';
   </noscript>
   <p class="notice t-paragraph" data-error-for="form" id={err('form')} role="alert" hidden></p>
 
-  {fix ? (
-    <fieldset class="section">
-      <legend class="heading t-caption">The correction (mandatory)</legend>
+  {fix && (
+    <>
       <input type="hidden" name="mode" value="fix" />
       <input type="hidden" name="fix" value={fix.slug} />
       <input type="hidden" name="pubtitle" value={fix.title} />
+    </>
+  )}
+
+  {fix ? (
+    <fieldset class="section">
+      <legend class="heading t-caption">The correction (mandatory)</legend>
       <div class="field">
         <label class="t-caption" for={fid('change')}>
           What should change? *
@@ -198,24 +203,32 @@ const label = fix ? 'Send the correction' : 'Submit publication';
   .notice[hidden] {
     display: none;
   }
+  /* Block layout, not grid: the heading is a floated legend, and only block layout
+     clears floats in every browser (in a grid, Safari let the first label ride up
+     onto the rule). Fields are 24px apart. */
   .section {
-    display: grid;
-    gap: var(--l);
+    display: block;
     min-width: 0;
     margin: 0;
     padding: 0;
     border: 0;
   }
   /* A section heading: a caption above a rule (legends don't take padding well, so the
-     rule is drawn under it as a border). */
+     rule is drawn under it as a border). Floated, so it is laid out like a normal
+     element; its bottom margin is the 24px before the first field (a float's margin
+     is kept by the clearance, unlike the next element's margin-top). */
   .heading {
-    float: left; /* lets the legend sit in the grid like a normal element */
+    float: left;
     width: 100%;
+    margin: 0 0 var(--l);
     padding: 0 0 var(--l);
     border-bottom: 1px solid var(--fg);
   }
   .heading + * {
     clear: both;
+  }
+  .section > :not(.heading) + :not(.heading) {
+    margin-top: var(--l);
   }
   .field {
     display: grid;
