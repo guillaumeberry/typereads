@@ -3,14 +3,16 @@
 // the intro, the sections written in src/content/pages/about.md (Contribute, Colophon,
 // Licences and code), then the questions as an accordion and the contact line.
 // Everything is editable in the admin (Pages → About).
-import { getEntry, render } from 'astro:content';
+import { getEntry } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import Prose from '../components/Prose.astro';
+import { externalLinksInNewWindow } from '../lib/links';
 
 const about = await getEntry('pages', 'about');
 if (!about) throw new Error('Missing src/content/pages/about.md');
-const { Content } = await render(about);
+// The Markdown body, its links to other sites opening in a new window (lib/links.ts).
+const body = externalLinksInNewWindow(about.rendered?.html ?? '');
 const { title, intro, faq, contact } = about.data;
 ---
 
@@ -26,9 +28,7 @@ const { title, intro, faq, contact } = about.data;
         <h1 class="t-h1">{title}</h1>
         {intro && <p class="t-paragraph">{intro}</p>}
 
-        <div class="body t-paragraph">
-          <Content />
-        </div>
+        <div class="body t-paragraph" set:html={body} />
 
         {faq.length > 0 && (
           <section class="faq" aria-labelledby="faq" data-faq>
