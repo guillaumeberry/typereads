@@ -66,9 +66,20 @@ function makeBlock(color: string, r: DOMRect): HTMLElement {
     clipPath: clipFor(r),
     willChange: 'clip-path',
   });
+  el.dataset.clip = clipFor(r);
   document.body.append(el);
   return el;
 }
+/** Morph a block's clip-path to a rectangle. The start value is given explicitly:
+ *  read back from the style, inset() with equal left and right margins comes out
+ *  shortened (3 values), and GSAP would then pair the numbers wrongly (the block
+ *  jumped sideways and lost its corners for the first frames). */
+const morphTo = (b: HTMLElement, r: DOMRect) => {
+  const to = clipFor(r);
+  const from = b.dataset.clip ?? to;
+  b.dataset.clip = to;
+  return [b, { clipPath: from }, { clipPath: to, ...MORPH }] as const;
+};
 
 type Ghost = { el: HTMLImageElement; rect: DOMRect };
 /** A copy of a cover that flies between the two pages. It lives inside the colour
@@ -255,9 +266,11 @@ export function start(core: Core) {
             const hero = $('[data-detail] [data-hero]');
             const heroImg = $<HTMLImageElement>('[data-detail] .hero-cover img');
             const target = heroImg?.getBoundingClientRect();
-            if (hero)
-              tl.to(block, { clipPath: clipFor(hero.getBoundingClientRect()), ...MORPH }, 0);
-            if (target) tl.to(g.el, { ...flyTo(g, target), ...MORPH }, 0);
+            if (hero) tl.fromTo(...morphTo(block, hero.getBoundingClientRect()), 0);
+            // A target with no size yet (image box not laid out): fade the copy
+            // rather than shrink it to a dot.
+            if (target?.width && target.height) tl.to(g.el, { ...flyTo(g, target), ...MORPH }, 0);
+            else tl.to(g.el, { opacity: 0, ...FADE_OUT }, 0);
             await tl;
             // The real block takes over (same place, same colour) once its cover image
             // has loaded, so the copy is never swapped for an empty frame; then the
@@ -293,7 +306,7 @@ export function start(core: Core) {
               card.style.opacity = '';
               hide(tile);
               const visible = $$('.card:not([hidden])').filter((c) => c !== card && inView(c));
-              tl.to(b, { clipPath: clipFor(tile.getBoundingClientRect()), ...MORPH }, 0)
+              tl.fromTo(...morphTo(b, tile.getBoundingClientRect()), 0)
                 .to(g.el, { ...flyTo(g, displayedRect(img)), ...MORPH }, 0)
                 .fromTo(
                   visible,

@@ -330,6 +330,12 @@ const description = pub.body?.trim().replace(/\s+/g, ' ').slice(0, 155) || undef
     .hero {
       padding: 0 var(--xl) var(--xl);
     }
+    /* Full width from the first frame: an image at width: 100% in a box sized by its
+       content is 0 wide until it loads, and the card -> detail transition measures
+       the cover before that (it flew to a 0 × 0 target in a short block). */
+    .hero-cover {
+      width: 100%;
+    }
     .hero-cover :global(img),
     .hero-cover :global(.type-cover) {
       width: 100%;
