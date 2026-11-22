@@ -1,150 +1,114 @@
 ---
-// 404 ".notdef": a missing page is a missing glyph. Static version (Phase 2); the
-// numeral cycle arrives with the motion pass (Phase 4).
+// 404 (Figma "404 desktop", ADR-013): "404" spelled in a 12 × 6 matrix of dots on a
+// white card, then "I'm feeling curious (and lucky)" (a random publication, picked by
+// src/scripts/notdef.ts; without JS it links to the first one) and a way back home.
 import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
 import { getPublished } from '../lib/publications';
 
 const slugs = (await getPublished()).map((p) => p.data.slug);
 const fallback = slugs[0] ?? '';
-const numerals = [
-  { text: '٤٠٤', script: 'Arabic-Indic' },
-  { text: '४०४', script: 'Devanagari' },
-  { text: '৪০৪', script: 'Bengali' },
-  { text: '๔๐๔', script: 'Thai' },
-  { text: '༤༠༤', script: 'Tibetan' },
+
+// The matrix, row by row: # is a black dot, . a grey one ("4", gap, "0", gap, "4").
+const MATRIX = [
+  '#.#..##..#.#',
+  '#.#.#..#.#.#',
+  '#.#.#..#.#.#',
+  '###.#..#.###',
+  '..#.#..#...#',
+  '..#..##....#',
 ];
+const dots = MATRIX.flatMap((row, r) => [...row].map((c, col) => ({ on: c === '#', r, col })));
 ---
 
-<Base title="Glyph not found" noindex>
-  <div class="wrap notdef" data-notdef data-slugs={JSON.stringify(slugs)}>
-    <div class="stage" aria-hidden="true">
-      <p
-        class="cycle display"
-        data-cycle
-        data-steps={JSON.stringify(numerals.map((n) => n.text))}
-        hidden
-      >
-        404
-      </p>
-      <p class="tofu" data-tofu>
-        <span></span>
-        <span></span>
-        <span></span>
-      </p>
+<Base title="Page not found" noindex>
+  <a class="trigger t-caption home" href="/" slot="header-back">
+    Home
+    <Icon name="back" />
+  </a>
+
+  <div class="wrap page" data-notdef data-slugs={JSON.stringify(slugs)}>
+    <div class="card">
+      <h1 class="visually-hidden">Page not found (404)</h1>
+      <div class="matrix" aria-hidden="true">
+        {dots.map((d) => (
+          <span class:list={['dot', { on: d.on }]} style={`--d:${d.col + d.r}`} />
+        ))}
+      </div>
     </div>
-    <h1 class="display h1">This glyph isn't in the font.</h1>
-    <p class="intro">The page you're looking for doesn't exist (or was never drawn).</p>
-    <p class="numerals" lang="und">
-      {numerals.map((n) => (
-        <span title={n.script}>
-          {n.text}
-          <span class="visually-hidden"> ({n.script})</span>
-        </span>
-      ))}
-    </p>
     <p class="actions">
-      <a class="primary" href="/">
-        Back to the library
+      <a class="btn-primary t-paragraph" href={`/publications/${fallback}`} data-random>
+        I’m feeling curious (and lucky)
+        <span class="btn-icon" aria-hidden="true">
+          <Icon name="next" class="out" />
+          <Icon name="next" class="in" />
+        </span>
       </a>
-      <a href={`/publications/${fallback}`} data-random>
-        Read something random
+      <a class="u-link t-paragraph" href="/">
+        Nah, bring me back home
       </a>
     </p>
   </div>
 </Base>
 
 <style>
-  .notdef {
-    max-width: 760px;
-    padding-block: clamp(24px, 6vw, 80px);
+  .home {
+    min-width: 108px;
   }
-  /* The numeral cycle (src/scripts/notdef.ts) plays first, then the tofu boxes appear. */
-  .stage {
-    position: relative;
-    min-height: clamp(110px, 24vw, 230px);
+  .page {
+    padding-top: var(--x3l);
   }
-  .cycle {
-    font-size: clamp(5rem, 3rem + 10vw, 11rem);
-    line-height: 1;
+  /* Figma: a white card, 96px above and below the matrix, the matrix 1372px wide. */
+  .card {
+    padding: 96px var(--l);
+    background: var(--surface);
+    border-radius: var(--radius-l);
   }
-  .cycle[hidden] {
-    display: none;
+  .matrix {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(6px, 1.25vw, 20px); /* Figma: 96px dots, 20px apart at 1600px */
+    max-width: 1372px;
+    margin-inline: auto;
   }
-  .tofu.is-waiting {
-    display: none;
+  .dot {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--bg);
   }
+  .dot.on {
+    background: var(--fg);
+  }
+  /* The black dots fill in one diagonal after another, gently. */
   @media (prefers-reduced-motion: no-preference) {
-    .tofu:not(.is-waiting) span {
-      animation: tofu-in var(--dur-slow) var(--ease-out) backwards;
-    }
-    .tofu span:nth-child(2) {
-      animation-delay: 80ms;
-    }
-    .tofu span:nth-child(3) {
-      animation-delay: 160ms;
+    .dot.on {
+      animation: dot-in var(--dur-slow) var(--ease-gentle) backwards;
+      animation-delay: calc(var(--d) * 45ms + 150ms);
     }
   }
-  @keyframes tofu-in {
+  @keyframes dot-in {
     from {
-      opacity: 0;
-      transform: translateY(12px) scale(0.96);
+      background: var(--bg);
+      transform: scale(0.6);
     }
   }
-  .tofu {
-    display: flex;
-    gap: clamp(10px, 2vw, 20px);
-  }
-  .tofu span {
-    width: clamp(64px, 14vw, 140px);
-    aspect-ratio: 0.62;
-    border: 3px solid var(--fg);
-    position: relative;
-  }
-  /* The classic .notdef glyph: a box with a cross. */
-  .tofu span::before,
-  .tofu span::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to top right,
-      transparent calc(50% - 1px),
-      var(--line) 50%,
-      transparent calc(50% + 1px)
-    );
-  }
-  .tofu span::after {
-    transform: scaleX(-1);
-  }
-  .h1 {
-    margin-top: clamp(24px, 4vw, 40px);
-    font-size: var(--step-3);
-  }
-  .intro {
-    margin-top: 12px;
-    font-size: var(--step-1);
-    color: var(--muted);
-  }
-  .numerals {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
-    margin-top: 24px;
-    font-size: var(--step-2);
-    color: var(--muted);
-  }
+  /* The way out: a black button and a link, centred, 64px under the card. */
   .actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px 24px;
+    flex-direction: column;
     align-items: center;
-    margin-top: 32px;
+    gap: var(--l);
+    margin-top: var(--x3l);
   }
-  .primary {
-    padding: 10px 18px;
-    background: var(--fg);
-    color: var(--bg);
-    font-weight: 700;
-    text-decoration: none;
+  @media (max-width: 720px) {
+    .page {
+      padding-top: var(--m);
+    }
+    .card {
+      padding: var(--xl) var(--m);
+    }
+    .actions {
+      margin-top: var(--xl);
+    }
   }
 </style>

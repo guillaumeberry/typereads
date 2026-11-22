@@ -1,185 +1,166 @@
 ---
-// The public form: a new publication, or a correction when `fix` is given. A native
-// form posting to /api/submit (worker/index.ts); src/scripts/submit.ts adds Turnstile,
-// in-place sending and inline errors. Field limits mirror src/lib/submission.ts.
-import { SCRIPTS } from '../data/taxonomies';
+// The public form (Figma "Submission Form", ADR-013): a new publication, or a correction
+// when `fix` is given. A native form posting to /api/submit (worker/index.ts);
+// src/scripts/submit.ts adds Turnstile, in-place sending and inline errors. Field
+// limits mirror src/lib/submission.ts. Used in the submission panel (SubmitPanel.astro)
+// and on the /submit and /submit/fix/… pages; `id` keeps element ids unique when both
+// are on a page.
+import Icon from './Icon.astro';
+import { TYPES } from '../data/taxonomies';
 
 interface Props {
   fix?: { slug: string; title: string };
+  id?: string;
 }
-const { fix } = Astro.props;
-const nextYear = new Date().getFullYear() + 1;
+const { fix, id = 'form' } = Astro.props;
 // Turnstile site key (public, not a secret). A local build can override it with
 // PUBLIC_TURNSTILE_SITEKEY, e.g. Cloudflare's test key 1x00000000000000000000AA.
 const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY || '0x4AAAAAAGHY62wOEXbS2aZj';
-const err = (name: string) => `err-${name}`;
+const err = (name: string) => `${id}-err-${name}`;
+const fid = (name: string) => `${id}-${name}`;
+const label = fix ? 'Send the correction' : 'Submit publication';
 ---
 
 <form method="post" action="/api/submit" class="form" data-submit novalidate>
   <noscript>
-    <p class="notice">
+    <p class="notice t-paragraph">
       The spam check needs JavaScript. Without it, please email
       <a href="mailto:hello@typereads.xyz">hello@typereads.xyz</a>.
     </p>
   </noscript>
-  <p class="notice" data-error-for="form" id={err('form')} role="alert" hidden></p>
+  <p class="notice t-paragraph" data-error-for="form" id={err('form')} role="alert" hidden></p>
 
   {fix ? (
-    <fieldset>
-      <legend class="label">The correction</legend>
+    <fieldset class="section">
+      <legend class="heading t-caption">The correction (mandatory)</legend>
       <input type="hidden" name="mode" value="fix" />
       <input type="hidden" name="fix" value={fix.slug} />
       <input type="hidden" name="pubtitle" value={fix.title} />
-      <label>
-        <span>
-          What should change? <abbr title="required">*</abbr>
-        </span>
+      <div class="field">
+        <label class="t-caption" for={fid('change')}>
+          What should change? *
+        </label>
         <textarea
+          id={fid('change')}
           name="change"
           rows="6"
           required
           maxlength="2000"
+          placeholder="A wrong year, a missing author, a broken link…"
           aria-describedby={err('change')}
         />
-        <small>A wrong year, a missing author, a broken link… Up to 2,000 characters.</small>
-        <span class="err" id={err('change')} data-error-for="change" />
-      </label>
+        <span class="err t-caption" id={err('change')} data-error-for="change" />
+      </div>
     </fieldset>
   ) : (
-    <fieldset>
-      <legend class="label">The publication</legend>
-      <label>
-        <span>
-          Title <abbr title="required">*</abbr>
-        </span>
+    <fieldset class="section">
+      <legend class="heading t-caption">Publication (mandatory)</legend>
+      <div class="field">
+        <label class="t-caption" for={fid('title')}>
+          Title *
+        </label>
         <input
+          id={fid('title')}
           name="title"
           required
           maxlength="300"
           autocomplete="off"
+          placeholder="Name of the publication"
           aria-describedby={err('title')}
         />
-        <span class="err" id={err('title')} data-error-for="title" />
-      </label>
-      <label>
-        <span>
-          Author(s) <abbr title="required">*</abbr>
-        </span>
+        <span class="err t-caption" id={err('title')} data-error-for="title" />
+      </div>
+      <div class="field">
+        <label class="t-caption" for={fid('authors')}>
+          Author(s) *
+        </label>
         <input
+          id={fid('authors')}
           name="authors"
           required
           maxlength="300"
-          placeholder="Comma-separated"
+          placeholder="Comma separated, please"
           aria-describedby={err('authors')}
         />
-        <span class="err" id={err('authors')} data-error-for="authors" />
-      </label>
-      <label>
-        <span>
-          Type <abbr title="required">*</abbr>
-        </span>
-        <select name="type" required aria-describedby={err('type')}>
-          <option value="">Choose…</option>
-          <option value="book">Book</option>
-          <option value="magazine">Magazine</option>
-          <option value="web">Website &amp; post</option>
-          <option value="other">Other</option>
-        </select>
-        <span class="err" id={err('type')} data-error-for="type" />
-      </label>
-      <label>
-        <span>
-          Link <abbr title="required">*</abbr>
-        </span>
-        <input
-          name="link"
-          type="url"
-          required
-          maxlength="500"
-          placeholder="https://"
-          inputmode="url"
-          aria-describedby={`hint-link ${err('link')}`}
-        />
-        <small id="hint-link">The publisher, shop or web page.</small>
-        <span class="err" id={err('link')} data-error-for="link" />
-      </label>
-      <label>
-        <span>Publisher</span>
-        <input name="publisher" maxlength="200" aria-describedby={err('publisher')} />
-        <span class="err" id={err('publisher')} data-error-for="publisher" />
-      </label>
-      <label class="short">
-        <span>Year</span>
-        <input
-          name="year"
-          type="number"
-          min="1450"
-          max={nextYear}
-          inputmode="numeric"
-          aria-describedby={err('year')}
-        />
-        <span class="err" id={err('year')} data-error-for="year" />
-      </label>
-      <label>
-        <span>Language(s)</span>
-        <input
-          name="languages"
-          maxlength="200"
-          placeholder="e.g. English, French"
-          aria-describedby={err('languages')}
-        />
-        <span class="err" id={err('languages')} data-error-for="languages" />
-      </label>
-      <fieldset class="scripts" aria-describedby={err('scripts')}>
-        <legend>Script(s) covered</legend>
-        <div class="checks">
-          {Object.entries(SCRIPTS).map(([code, s]) => (
-            <label class="check">
-              <input type="checkbox" name="scripts" value={code} />
-              <span>
-                {s.label} <span aria-hidden="true">{s.glyph}</span>
-              </span>
-            </label>
-          ))}
+        <span class="err t-caption" id={err('authors')} data-error-for="authors" />
+      </div>
+      <div class="field">
+        <label class="t-caption" for={fid('type')}>
+          Type *
+        </label>
+        <div class="select">
+          <select id={fid('type')} name="type" required aria-describedby={err('type')}>
+            <option value="">Choose</option>
+            {Object.entries(TYPES).map(([value, name]) => (
+              <option value={value}>{name}</option>
+            ))}
+            <option value="other">Other</option>
+          </select>
+          <Icon name="dropdown" />
         </div>
-        <span class="err" id={err('scripts')} data-error-for="scripts" />
-      </fieldset>
-      <label>
-        <span>Why it belongs here</span>
-        <textarea name="why" rows="4" maxlength="1000" aria-describedby={err('why')} />
-        <small>Up to 1,000 characters.</small>
-        <span class="err" id={err('why')} data-error-for="why" />
-      </label>
+        <span class="err t-caption" id={err('type')} data-error-for="type" />
+      </div>
     </fieldset>
   )}
 
-  <fieldset>
-    <legend class="label">You (optional)</legend>
-    <label>
-      <span>Your name, for public credit</span>
-      <input name="name" maxlength="100" autocomplete="name" aria-describedby={err('name')} />
-      <span class="err" id={err('name')} data-error-for="name" />
-    </label>
-    <label class="check">
-      <input type="checkbox" name="consent" value="yes" aria-describedby={err('consent')} />
-      <span>I agree my name may be shown as a contributor.</span>
-    </label>
-    <span class="err" id={err('consent')} data-error-for="consent"></span>
-    <label>
-      <span>Your email</span>
+  <fieldset class="section">
+    <legend class="heading t-caption">
+      {fix ? 'You (optional)' : 'Additional information (optional)'}
+    </legend>
+    {!fix && (
+      <div class="field">
+        <label class="t-caption" for={fid('publisher')}>
+          Publisher
+        </label>
+        <input
+          id={fid('publisher')}
+          name="publisher"
+          maxlength="200"
+          placeholder="Publishing house, individual or organisation"
+          aria-describedby={err('publisher')}
+        />
+        <span class="err t-caption" id={err('publisher')} data-error-for="publisher" />
+      </div>
+    )}
+    <div class="field">
+      <label class="t-caption" for={fid('name')}>
+        Your name, for public credit in the About page
+      </label>
       <input
+        id={fid('name')}
+        name="name"
+        maxlength="100"
+        autocomplete="name"
+        placeholder="Which name would you like to be displayed?"
+        aria-describedby={err('name')}
+      />
+      <span class="err t-caption" id={err('name')} data-error-for="name" />
+    </div>
+    <div class="field">
+      <label class="t-caption" for={fid('email')}>
+        Your email
+      </label>
+      <input
+        id={fid('email')}
         name="email"
         type="email"
         maxlength="200"
         autocomplete="email"
-        aria-describedby={`hint-email ${err('email')}`}
+        placeholder="Your valid email address"
+        aria-describedby={`${fid('email-help')} ${err('email')}`}
       />
-      <small id="hint-email">
-        Only so I can reply. It goes to my inbox and is never published or stored with the
-        publication.
-      </small>
-      <span class="err" id={err('email')} data-error-for="email" />
-    </label>
+      <span class="help t-caption" id={fid('email-help')}>
+        Only so I can reply, never published or stored
+      </span>
+      <span class="err t-caption" id={err('email')} data-error-for="email" />
+    </div>
+    <div class="field">
+      <label class="check t-paragraph">
+        <input type="checkbox" name="consent" value="yes" aria-describedby={err('consent')} />
+        <span class="box" aria-hidden="true"></span>I agree my name may be shown as a contributor.
+      </label>
+      <span class="err t-caption" id={err('consent')} data-error-for="consent" />
+    </div>
   </fieldset>
 
   <div class="hp" aria-hidden="true">
@@ -190,111 +171,156 @@ const err = (name: string) => `err-${name}`;
 
   <div class="turnstile" data-turnstile data-sitekey={sitekey}></div>
 
-  <p class="public">
-    {fix
-      ? 'Your message comes to me by email; nothing is published automatically.'
-      : 'What you send (except your email) is saved in the site’s public GitHub repository for review, and published only if I accept it.'}
-  </p>
-
-  <button type="submit" data-label={fix ? 'Send the correction' : 'Send the suggestion'}>
-    {fix ? 'Send the correction' : 'Send the suggestion'}
+  <button type="submit" class="btn-primary t-paragraph" data-label={label}>
+    <span data-label-text>{label}</span>
+    <span class="btn-icon" aria-hidden="true">
+      <Icon name="next" class="out" />
+      <Icon name="next" class="in" />
+    </span>
   </button>
 </form>
 
 <style>
+  /* Figma: sections 48px apart (24px on phones); fields 24px apart. */
   .form {
     display: grid;
-    gap: 32px;
-    margin-top: 32px;
+    gap: var(--xxl);
+    color: var(--fg);
   }
   .notice {
-    padding: 14px 18px;
-    border-left: 3px solid var(--accent);
-    background: var(--surface);
+    padding: var(--s) var(--m);
+    border: 1px solid var(--fg);
+  }
+  .notice[data-error-for] {
+    border-color: var(--danger);
+    color: var(--danger);
   }
   .notice[hidden] {
     display: none;
   }
-  fieldset {
+  .section {
     display: grid;
-    gap: 18px;
+    gap: var(--l);
+    min-width: 0;
     margin: 0;
     padding: 0;
     border: 0;
+  }
+  /* A section heading: a caption above a rule (legends don't take padding well, so the
+     rule is drawn under it as a border). */
+  .heading {
+    float: left; /* lets the legend sit in the grid like a normal element */
+    width: 100%;
+    padding: 0 0 var(--l);
+    border-bottom: 1px solid var(--fg);
+  }
+  .heading + * {
+    clear: both;
+  }
+  .field {
+    display: grid;
+    gap: var(--xs);
     min-width: 0;
   }
-  legend {
-    margin-bottom: 4px;
-    padding: 0;
-    color: var(--muted);
-  }
-  label {
-    display: grid;
-    gap: 6px;
-  }
-  label > span:first-child {
-    font-weight: 600;
-  }
-  abbr {
-    text-decoration: none;
-    color: var(--muted);
-  }
+  /* "Form/Textfield": 44px, 1px border, 12px padding, Paragraph text. */
   input:not([type='checkbox']),
   select,
   textarea {
     width: 100%;
-    padding: 11px 12px;
+    height: 44px;
+    padding: 0 var(--s);
     background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
+    color: var(--fg);
+    border: 1px solid var(--fg);
+    border-radius: 0;
+    font-size: var(--paragraph);
+    -webkit-appearance: none;
+    appearance: none;
   }
-  input:focus-visible,
-  select:focus-visible,
-  textarea:focus-visible {
-    outline-offset: 0;
-    border-color: var(--fg);
+  textarea {
+    height: auto;
+    min-height: 132px;
+    padding: var(--s);
+    line-height: 1.6;
+    resize: vertical;
+  }
+  ::placeholder {
+    color: var(--fg);
+    opacity: 1;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 1px var(--fg);
   }
   [aria-invalid='true'] {
-    border-color: var(--danger) !important;
+    border-color: var(--danger);
+    box-shadow: inset 0 0 0 1px var(--danger);
+  }
+  .select {
+    position: relative;
+  }
+  .select select {
+    padding-right: 40px;
+    cursor: pointer;
+  }
+  .select :global(svg) {
+    position: absolute;
+    top: 50%;
+    right: var(--s);
+    margin-top: -9.5px;
+    pointer-events: none;
+  }
+  .help {
+    margin-top: var(--xxs);
   }
   .err {
     color: var(--danger);
-    font-size: var(--step--1);
-    font-weight: 600;
   }
   .err:empty {
     display: none;
   }
-  .short input {
-    max-width: 10ch;
-  }
-  small,
-  .public {
-    color: var(--muted);
-    font-size: var(--step--1);
-  }
-  .scripts legend {
-    font-weight: 600;
-    color: var(--fg);
-  }
-  .checks {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 8px 16px;
-  }
+
+  /* "Checkbox": an 18px box, a 14px black square when ticked. */
   .check {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 10px;
-  }
-  .check span {
-    font-weight: 400;
+    gap: var(--xs);
+    cursor: pointer;
   }
   .check input {
+    position: absolute;
+    opacity: 0;
     width: 18px;
     height: 18px;
-    accent-color: var(--fg);
+    margin: 0;
   }
+  .box {
+    flex: none;
+    position: relative;
+    width: 18px;
+    height: 18px;
+    background: var(--surface);
+    border: 1px solid var(--fg);
+  }
+  .box::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background: var(--fg);
+    transform: scale(0);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .check input:checked + .box::after {
+    transform: scale(1);
+  }
+  .check input:focus-visible + .box {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
   .hp {
     position: absolute;
     left: -9999px;
@@ -302,18 +328,14 @@ const err = (name: string) => `err-${name}`;
   .turnstile:empty {
     display: none;
   }
-  button {
-    justify-self: start;
-    padding: 12px 22px;
-    background: var(--fg);
-    color: var(--bg);
-    border: 0;
-    border-radius: var(--radius);
-    font-weight: 700;
-    cursor: pointer;
+
+  .form > :global(.btn-primary) {
+    justify-self: end;
   }
-  button:disabled {
-    opacity: 0.45;
-    cursor: progress;
+
+  @media (max-width: 720px) {
+    .form {
+      gap: var(--l);
+    }
   }
 </style>

@@ -1,71 +1,102 @@
 ---
-const year = new Date().getFullYear();
+// Site footer (Figma "Footer": on all pages): a shelf of books in the cover colours,
+// the project line with a link to About, and "Back to top".
+// The shelf's colours are the publications' background colours: boot.ts picks seven
+// different ones at random on every page view (the Figma colours below show without
+// JS or before it runs).
+import Icon from './Icon.astro';
+import { getPublished } from '../lib/publications';
+
+const colors = [
+  ...new Set(
+    (await getPublished()).map((p) => p.data.color?.toLowerCase()).filter(Boolean) as string[],
+  ),
+];
 ---
 
 <footer class="site-footer">
-  <div class="wrap grid">
-    <div>
-      <p class="display title">Publications about Type Design</p>
-      <p class="muted">
-        A collection of books, essays, magazines and more about type design: theories, history,
-        monographs, tools and techniques, technologies.
+  <div class="wrap bar">
+    <svg
+      class="shelf"
+      viewBox="0 0 154 75"
+      width="154"
+      height="75"
+      aria-hidden="true"
+      data-shelf={colors.join(' ')}
+    >
+      <rect y="27" width="12" height="48" fill="#1b3247"></rect>
+      <rect x="16" width="12" height="75" fill="#6c0159"></rect>
+      <rect x="32" y="17" width="12" height="58" fill="#baa100"></rect>
+      <rect x="48" y="9" width="12" height="66" fill="#5f5800"></rect>
+      <rect x="64" y="22" width="12" height="53" fill="#0c6567"></rect>
+      <rect x="80" y="27" width="12" height="48" fill="#007c26"></rect>
+      <rect x="96" y="63" width="58" height="12" fill="#e85341"></rect>
+    </svg>
+    <div class="about">
+      <p class="t-paragraph">
+        A collection of books, essays, magazines and so on. All about type design across cultures,
+        scripts and languages.
       </p>
-      <p>
-        <a href="/submit" class="cta">
-          Submit a publication →
+      <p class="t-paragraph">
+        <a class="u-link" href="/about">
+          About the project
         </a>
       </p>
     </div>
-    <div class="small">
-      <p class="label muted">Licences</p>
-      <p>
-        Code <a href="https://github.com/guillaumeberry/typereads/blob/main/LICENSE">MIT</a> · Data{' '}
-        <a href="https://github.com/guillaumeberry/typereads/blob/main/LICENSE-CONTENT.md">
-          CC BY 4.0
-        </a>{' '}
-        · Covers © their publishers
-      </p>
-      <p>
-        <a href="https://github.com/guillaumeberry/typereads">Source on GitHub</a>
-      </p>
+    <div class="end">
+      <a class="trigger t-caption" href="#top" data-back-to-top>
+        Back to top
+        <Icon name="up" />
+      </a>
     </div>
-    <p class="label muted credit">A project cooked by Guillaume Berry · {year}</p>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    margin-top: clamp(48px, 8vw, 120px);
-    border-top: 1px solid var(--line);
+    margin-top: var(--x3l);
   }
-  .grid {
+  /* Desktop: shelf | text | back to top, aligned on their bottom edge. */
+  .bar {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    gap: 24px 48px;
-    padding-block: 40px;
+    grid-template-columns: minmax(154px, 372px) minmax(0, 1fr) minmax(max-content, 372px);
+    align-items: end;
+    gap: var(--m);
+    padding-top: var(--xl);
+    padding-bottom: var(--x3l);
   }
-  .title {
-    font-size: var(--step-2);
-    margin-bottom: 8px;
+  .shelf {
+    width: 154px;
+    height: 75px;
   }
-  .muted {
-    color: var(--muted);
+  .about {
+    display: grid;
+    gap: var(--l);
   }
-  p + p {
-    margin-top: 8px;
+  .end {
+    justify-self: end;
   }
-  .small {
-    font-size: var(--step--1);
-  }
-  .cta {
-    font-weight: 700;
-  }
-  .credit {
-    grid-column: 1 / -1;
-  }
+
+  /* Phones: shelf and "Back to top" on one row, the text below. */
   @media (max-width: 720px) {
-    .grid {
-      grid-template-columns: 1fr;
+    .site-footer {
+      margin-top: var(--m);
+    }
+    .bar {
+      grid-template-columns: 1fr auto;
+      grid-template-areas: 'shelf end' 'about about';
+      row-gap: var(--xxl);
+      padding-top: var(--m);
+      padding-bottom: var(--xxl);
+    }
+    .shelf {
+      grid-area: shelf;
+    }
+    .end {
+      grid-area: end;
+    }
+    .about {
+      grid-area: about;
     }
   }
 </style>

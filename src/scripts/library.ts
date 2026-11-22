@@ -1,6 +1,8 @@
 // Library engine, DOM part: reads the server-rendered cards, wires search, filters,
 // sort and the view toggle, and keeps the URL in sync. Exposes init/destroy so a
-// client router (Phase 4) can re-run it on every page view.
+// client router (Phase 4) can re-run it on every page view. The view, search and
+// filter buttons live in the header ([data-lib-tools], LibraryTools.astro); the rest
+// is inside `root` (index.astro).
 import {
   activeFilterCount,
   computeCounts,
@@ -19,7 +21,6 @@ export type Animate = (mutate: () => void, kind: 'filter' | 'search' | 'sort' | 
 const instant: Animate = (mutate) => mutate();
 
 const VIEW_KEY = 'rat:view';
-const MOBILE = '(max-width: 720px)';
 
 let controller: AbortController | null = null;
 
@@ -30,19 +31,23 @@ export function init(root: HTMLElement, animate: Animate = instant) {
   const $ = <T extends Element = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
   const $$ = <T extends Element = HTMLElement>(sel: string) => [...root.querySelectorAll<T>(sel)];
 
+  const tools = document.querySelector<HTMLElement>('[data-lib-tools]');
+  const tool = <T extends Element = HTMLButtonElement>(sel: string) =>
+    (tools ?? root).querySelector<T>(sel)!;
   const controls = $('[data-controls]');
+  const searchRow = $('[data-search-row]');
   const grid = $('[data-grid]');
   const countEl = $('[data-count-total]');
   const emptyEl = $('[data-empty]');
   const search = $<HTMLInputElement>('[data-q]');
-  const sortSelect = $<HTMLSelectElement>('[data-sort]');
   const form = $<HTMLFormElement>('[data-filter-form]');
-  const panel = $<HTMLDialogElement>('[data-panel]');
-  const toggle = $<HTMLButtonElement>('[data-filters-toggle]');
-  const badge = $('[data-badge]');
-  const activeList = $('[data-active]');
-  const showBtn = $<HTMLButtonElement>('[data-show]');
-  const viewBtns = $$<HTMLButtonElement>('[data-view]');
+  const panel = $('[data-panel]');
+  const toggle = tool<HTMLButtonElement>('[data-filters-toggle]');
+  const searchToggle = tool<HTMLButtonElement>('[data-search-toggle]');
+  const viewToggle = tool<HTMLButtonElement>('[data-view-toggle]');
+  const viewLabel = viewToggle.querySelector<HTMLElement>('[data-view-label]')!;
+  const viewHint = viewToggle.querySelector<HTMLElement>('[data-view-hint]');
+  const filterCount = tool<HTMLElement>('[data-filter-count]');
 
   const cards = $$<HTMLLIElement>('.card');
   const words = (s?: string) => (s ? s.split(' ').filter(Boolean) : []);
@@ -67,6 +72,7 @@ export function init(root: HTMLElement, animate: Animate = instant) {
   let state: State = parseState(location.search);
 
   controls.hidden = false;
+  if (tools) tools.hidden = false;
 
   // --- render --------------------------------------------------------------
   function render() {
@@ -93,91 +99,44 @@ export function init(root: HTMLElement, animate: Animate = instant) {
       input.disabled = n === 0 && !input.checked;
     }
 
-    // Count, badge, active chips, empty state, mobile "Show N" button.
+    // The result count is for screen readers only (a live region); the Filter button
+    // shows how many filters are on: "Filter (2)".
     const countText =
       visible.length === total
         ? `${total} publications`
         : `${visible.length} of ${total} publications`;
-    if (countEl.textContent !== countText) {
-      countEl.textContent = countText;
-      // The number rolls in (skipped under reduced motion).
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        countEl.animate(
-          [
-            { transform: 'translateY(0.4em)', opacity: 0.2 },
-            { transform: 'none', opacity: 1 },
-          ],
-          { duration: 240, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
-        );
-      }
-    }
+    if (countEl.textContent !== countText) countEl.textContent = countText;
     const nActive = activeFilterCount(state);
-    badge.hidden = nActive === 0;
-    badge.textContent = String(nActive);
-    showBtn.textContent = visible.length === 1 ? 'Show 1 result' : `Show ${visible.length} results`;
+    filterCount.textContent = nActive ? ` (${nActive})` : '';
     emptyEl.hidden = visible.length > 0;
-    renderActive();
-  }
-
-  function labelFor(group: string, value: string) {
-    const input = form.querySelector<HTMLInputElement>(
-      `input[name="${group}"][value="${CSS.escape(value)}"]`,
-    );
-    const chip = input?.nextElementSibling?.cloneNode(true) as HTMLElement | undefined;
-    chip?.querySelector('[data-count]')?.remove();
-    return chip?.textContent?.trim() || value;
-  }
-
-  function renderActive() {
-    const chips: HTMLLIElement[] = [];
-    const add = (text: string, remove: () => void) => {
-      const li = document.createElement('li');
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.innerHTML = '<span aria-hidden="true">×</span> ';
-      b.append(text);
-      b.setAttribute('aria-label', `Remove filter: ${text}`);
-      b.addEventListener('click', () => {
-        remove();
-        commit('push');
-      });
-      li.append(b);
-      chips.push(li);
-    };
-    for (const g of MULTI) for (const v of state[g]) add(labelFor(g, v), () => state[g].delete(v));
-    if (state.date) add(labelFor('date', state.date), () => (state.date = ''));
-    if (chips.length > 1 || (chips.length && state.q)) {
-      const li = document.createElement('li');
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'reset';
-      b.textContent = 'Reset all';
-      b.addEventListener('click', resetAll);
-      li.append(b);
-      chips.push(li);
-    }
-    activeList.replaceChildren(...chips);
+    if (state.q) showSearch(true, false);
   }
 
   // --- state <-> controls ---------------------------------------------------
   function syncControls() {
     if (document.activeElement !== search) search.value = state.q;
-    sortSelect.value = state.sort;
+    // The panel has one choice per group (radios); value "" means "all".
     for (const input of form.querySelectorAll<HTMLInputElement>('input[name]')) {
       const g = input.name;
-      if (g === 'tr') input.checked = state.tr;
+      if (g === 'sort') input.checked = input.value === state.sort;
       else if (g === 'date') input.checked = input.value === state.date;
       else if ((MULTI as readonly string[]).includes(g)) {
-        input.checked = state[g as (typeof MULTI)[number]].has(input.value);
+        const set = state[g as (typeof MULTI)[number]];
+        input.checked = input.value ? set.has(input.value) : set.size === 0;
       }
     }
   }
 
+  // Only the groups that are in the panel: language, script and availability can still
+  // come from a URL, and picking a type mustn't clear them.
   function readForm() {
     const fd = new FormData(form);
-    for (const g of MULTI) state[g] = new Set(fd.getAll(g).map(String));
+    for (const g of MULTI) {
+      if (!form.querySelector(`input[name="${g}"]`)) continue;
+      state[g] = new Set(fd.getAll(g).map(String).filter(Boolean));
+    }
     state.date = String(fd.get('date') ?? '');
-    state.tr = fd.has('tr');
+    state.sort = (fd.get('sort') as State['sort']) ?? 'added';
   }
 
   function commit(
@@ -197,8 +156,9 @@ export function init(root: HTMLElement, animate: Animate = instant) {
     else window.history.replaceState({ ...(window.history.state ?? {}), ...st }, '', url);
   }
 
+  // Reset clears every filter and the sort (the panel's "Reset"), and the search.
   function resetAll() {
-    state = { ...emptyState(), sort: state.sort };
+    state = emptyState();
     search.value = '';
     commit('push');
   }
@@ -230,35 +190,89 @@ export function init(root: HTMLElement, animate: Animate = instant) {
     },
     { signal },
   );
+  // --- opening and closing ----------------------------------------------------
+  // Panels animate in with CSS (`:not([hidden])`) and out with an `is-leaving` class;
+  // `hidden` is set once the exit animation ends (at once under reduced motion).
+  const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function leave(el: HTMLElement, done: () => void) {
+    if (el.hidden) return;
+    if (reducedMotion()) {
+      done();
+      return;
+    }
+    el.classList.add('is-leaving');
+    const finish = (e?: Event) => {
+      if (e && e.target !== el) return;
+      el.removeEventListener('animationend', finish);
+      if (!el.classList.contains('is-leaving')) return; // reopened meanwhile
+      el.classList.remove('is-leaving');
+      done();
+    };
+    el.addEventListener('animationend', finish);
+    setTimeout(finish, 600); // in case animationend never fires
+  }
+  function enter(el: HTMLElement) {
+    el.classList.remove('is-leaving');
+    el.hidden = false;
+  }
+
+  // --- search bar ----------------------------------------------------------------
+  // The header's Search button opens a bar over the header (Figma "Search field");
+  // its × (or Escape) clears the search and closes it.
+  const searchOpen = () => !searchRow.hidden && !searchRow.classList.contains('is-leaving');
+  function showSearch(open: boolean, focus: boolean) {
+    searchToggle.setAttribute('aria-expanded', String(open));
+    if (open) {
+      enter(searchRow);
+      if (focus) {
+        search.focus({ preventScroll: true });
+        search.select();
+      }
+    } else {
+      leave(searchRow, () => (searchRow.hidden = true));
+    }
+  }
+  function closeSearch(focusBack: boolean) {
+    if (search.value || state.q) {
+      search.value = '';
+      state.q = '';
+      commit('replace', 'search');
+    }
+    showSearch(false, false);
+    if (focusBack) searchToggle.focus({ preventScroll: true });
+  }
+  searchToggle.addEventListener(
+    'click',
+    () => (searchOpen() ? closeSearch(false) : showSearch(true, true)),
+    { signal },
+  );
+  $('[data-search-close]').addEventListener('click', () => closeSearch(true), { signal });
   search.addEventListener(
     'keydown',
     (e) => {
-      if (e.key === 'Escape' && search.value) {
-        e.preventDefault();
-        search.value = '';
-        state.q = '';
-        commit('replace', 'search');
-      }
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      closeSearch(true);
     },
     { signal },
   );
-  // ⌘ / (Mac) or Ctrl / (Windows, Linux) focuses search from anywhere, and selects
-  // what's there so you can type over it. e.code covers layouts where "/" needs Shift.
+
+  // ⌘ K (Mac) or Ctrl K (Windows, Linux) opens the search from anywhere and selects
+  // what's there so you can type over it.
   const mac = /mac|iphone|ipad/i.test(
     (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ??
       navigator.platform,
   );
   const hint = root.querySelector('[data-shortcut]');
-  if (hint) hint.textContent = mac ? '⌘ /' : 'Ctrl /';
-  search.setAttribute('aria-keyshortcuts', mac ? 'Meta+/' : 'Control+/');
+  if (hint) hint.textContent = mac ? '⌘ K' : 'Ctrl K';
+  search.setAttribute('aria-keyshortcuts', mac ? 'Meta+K' : 'Control+K');
   document.addEventListener(
     'keydown',
     (e) => {
-      const slash = e.key === '/' || e.code === 'Slash';
-      if (!slash || !(mac ? e.metaKey : e.ctrlKey) || e.altKey) return;
+      const k = e.key.toLowerCase() === 'k' || e.code === 'KeyK';
+      if (!k || !(mac ? e.metaKey : e.ctrlKey) || e.altKey || e.shiftKey) return;
       e.preventDefault();
-      search.focus();
-      search.select();
+      showSearch(true, true);
     },
     { signal },
   );
@@ -266,59 +280,51 @@ export function init(root: HTMLElement, animate: Animate = instant) {
   // --- filters ---------------------------------------------------------------
   form.addEventListener(
     'change',
-    () => {
+    (e) => {
+      const sorting = (e.target as HTMLInputElement).name === 'sort';
       readForm();
-      commit('push');
+      commit('push', sorting ? 'sort' : 'filter');
     },
     { signal },
   );
   $$('[data-reset]').forEach((b) => b.addEventListener('click', resetAll, { signal }));
   root.querySelector('[data-empty-reset]')?.addEventListener('click', resetAll, { signal });
 
-  toggle.addEventListener(
-    'click',
-    () => {
-      if (panel.open) panel.close();
-      else if (matchMedia(MOBILE).matches) panel.showModal();
-      else panel.show();
-      toggle.setAttribute('aria-expanded', String(panel.open));
-    },
-    { signal },
-  );
-  panel.addEventListener(
-    'close',
-    () => {
-      toggle.setAttribute('aria-expanded', 'false');
-      if (matchMedia(MOBILE).matches) toggle.focus();
-    },
-    { signal },
-  );
-  // Tapping the backdrop closes the mobile sheet.
-  panel.addEventListener(
-    'click',
+  // The panel opens under the header and pushes the publications down; choices apply
+  // at once. It closes with the Filter button or Escape (focus returns to Filter).
+  // Opening: the publications glide down (the library's animate hook) while the panel
+  // unrolls (CSS). Closing: the panel rolls up first, then the publications glide up.
+  const panelOpen = () => !panel.hidden && !panel.classList.contains('is-leaving');
+  function setPanel(open: boolean, focusBack = false) {
+    toggle.setAttribute('aria-expanded', String(open));
+    if (open) {
+      animate(() => enter(panel), 'sort');
+      panel.focus({ preventScroll: true });
+    } else {
+      leave(panel, () => animate(() => (panel.hidden = true), 'sort'));
+      if (focusBack) toggle.focus({ preventScroll: true });
+    }
+  }
+  toggle.addEventListener('click', () => setPanel(!panelOpen()), { signal });
+  document.addEventListener(
+    'keydown',
     (e) => {
-      if (e.target === panel && panel.matches(':modal')) panel.close();
-    },
-    { signal },
-  );
-  matchMedia(MOBILE).addEventListener('change', () => panel.open && panel.close(), { signal });
-
-  // --- sort ------------------------------------------------------------------
-  sortSelect.addEventListener(
-    'change',
-    () => {
-      state.sort = sortSelect.value as State['sort'];
-      commit('push', 'sort');
+      if (e.key === 'Escape' && panelOpen()) setPanel(false, true);
     },
     { signal },
   );
 
   // --- view ------------------------------------------------------------------
+  // One switch in the header, labelled with the current view (Figma); its hidden
+  // hint says what a press does. Grid is the default; the choice is remembered in
+  // localStorage (VIEW_KEY).
   const setView = (view: string, save: boolean) => {
     const apply = () => {
       if (view === 'list') document.documentElement.dataset.view = 'list';
       else delete document.documentElement.dataset.view;
-      viewBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+      viewToggle.dataset.current = view;
+      viewLabel.textContent = view === 'list' ? 'List' : 'Grid';
+      if (viewHint) viewHint.textContent = ` view: show as ${view === 'list' ? 'grid' : 'list'}`;
     };
     if (save) animate(apply, 'view');
     else apply();
@@ -331,8 +337,10 @@ export function init(root: HTMLElement, animate: Animate = instant) {
     }
   };
   setView(document.documentElement.dataset.view === 'list' ? 'list' : 'grid', false);
-  viewBtns.forEach((b) =>
-    b.addEventListener('click', () => setView(b.dataset.view!, true), { signal }),
+  viewToggle.addEventListener(
+    'click',
+    () => setView(viewToggle.dataset.current === 'list' ? 'grid' : 'list', true),
+    { signal },
   );
 
   // --- history -----------------------------------------------------------------

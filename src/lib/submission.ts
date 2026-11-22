@@ -6,7 +6,7 @@
 // Privacy: the submitter's email is returned separately and never written into the file
 // (the repo is public). A name is only written as `credit` when consent is ticked.
 import { stringify } from 'yaml';
-import { SCRIPTS, TYPES } from '../data/taxonomies';
+import { TYPES } from '../data/taxonomies';
 
 export const MAX_BODY_BYTES = 10_000;
 
@@ -57,15 +57,6 @@ export function slugify(title: string): string {
 /** Neutralises HTML in text that ends up in a Markdown body (Astro renders raw HTML). */
 export const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-function isHttpUrl(s: string): boolean {
-  try {
-    const u = new URL(s);
-    return (u.protocol === 'https:' || u.protocol === 'http:') && !!u.hostname.includes('.');
-  } catch {
-    return false;
-  }
-}
 
 function text(
   f: Fields,
@@ -123,6 +114,7 @@ function parseCorrection(f: Fields): Parsed {
 }
 
 function parseNew(f: Fields, id: string, today: string): Parsed {
+  // Fields the form no longer has (link, year, languages, scripts, why) are ignored.
   const errors: Errors = {};
   const title = text(f, errors, 'title', 300, { required: 'Add the title.' });
   const authorsRaw = text(f, errors, 'authors', 300, { required: 'Add at least one author.' });
@@ -136,30 +128,16 @@ function parseNew(f: Fields, id: string, today: string): Parsed {
   if (!type) errors.type = 'Choose a type.';
   else if (type !== 'other' && !(type in TYPES)) errors.type = 'Choose one of the types.';
 
-  const link = text(f, errors, 'link', 500, { required: 'Add a link.' });
-  if (link && !errors.link && !isHttpUrl(link))
-    errors.link = 'Use a full web address starting with https://';
-
+  // The form (Figma "Submission Form", ADR-013) asks only for these; the editor looks
+  // up the rest (link, year, languages, scripts…) when reviewing in the admin Inbox.
   const publisher = text(f, errors, 'publisher', 200);
-  const yearRaw = clean(f.get('year'));
-  const nextYear = Number(today.slice(0, 4)) + 1;
-  let year: number | undefined;
-  if (yearRaw) {
-    year = Number(yearRaw);
-    if (!/^\d{4}$/.test(yearRaw) || year < 1450 || year > nextYear)
-      errors.year = `Use a year between 1450 and ${nextYear}.`;
-  }
-  const languages = text(f, errors, 'languages', 200);
-  const scripts = [...new Set(f.getAll('scripts').map((s) => clean(s)))].filter(Boolean);
-  if (scripts.some((s) => !(s in SCRIPTS))) errors.scripts = 'Unknown script.';
-  const why = text(f, errors, 'why', 1000, { multiline: true });
   const who = contributor(f, errors);
 
   if (Object.keys(errors).length) return { ok: false, errors };
 
   const slug = `${slugify(title) || 'submission'}-${id}`;
   // Only fields the schema knows. The editor completes the rest (formats, languages as
-  // ISO codes, cover…) in the admin Inbox before publishing.
+  // ISO codes, links, cover…) in the admin Inbox before publishing.
   const data: Record<string, unknown> = {
     title,
     slug,
@@ -167,9 +145,6 @@ function parseNew(f: Fields, id: string, today: string): Parsed {
     ...(type !== 'other' && { type }),
     authors,
     ...(publisher && { publishers: [publisher] }),
-    ...(scripts.length && { scripts }),
-    ...(year && { year }),
-    links: type === 'web' ? { read: link } : { publisher: link },
     addedAt: today,
     ...(who.consent && { credit: who.name }),
   };
@@ -177,8 +152,6 @@ function parseNew(f: Fields, id: string, today: string): Parsed {
   const notes = [
     `Submitted through the form on ${today}. Replace these notes with the description before publishing.`,
     type === 'other' && 'Type: Other.',
-    languages && `Language(s), as typed: ${languages}.`,
-    why && `Why it belongs here:\n\n${why}`,
   ].filter(Boolean) as string[];
   // Front matter via a YAML serialiser (never string concatenation), body escaped.
   const content = `---\n${stringify(data, { lineWidth: 0 })}---\n\n${escapeHtml(notes.join('\n\n'))}\n`;
@@ -187,12 +160,7 @@ function parseNew(f: Fields, id: string, today: string): Parsed {
     `Title: ${title}`,
     `Author(s): ${authors.join(', ')}`,
     `Type: ${type}`,
-    `Link: ${link}`,
     publisher && `Publisher: ${publisher}`,
-    year && `Year: ${year}`,
-    languages && `Language(s): ${languages}`,
-    scripts.length && `Scripts: ${scripts.join(', ')}`,
-    why && `\nWhy it belongs here:\n${why}\n`,
     `Credit: ${who.consent ? who.name : '(none)'}`,
   ]
     .filter(Boolean)

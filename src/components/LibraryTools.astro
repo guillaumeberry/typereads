@@ -1,0 +1,121 @@
+---
+// The homepage's buttons in the header (Figma "Library options"): list view on/off,
+// search and filter. Desktop: three labelled white buttons stacked; phones: icons in
+// a 2×2 grid. Hidden until src/scripts/library.ts runs (without JS the whole grid
+// shows and these would do nothing).
+import Icon from './Icon.astro';
+---
+
+<div class="tools" data-lib-tools hidden>
+  <!-- Shows the current view ("Grid" with the knob left, "List" with it right; Figma
+       "Trigger button"); screen readers also hear what a press does. Grid is the default
+       and the choice is remembered (library.ts, localStorage). -->
+  <button type="button" class="trigger t-caption view" data-view-toggle data-current="grid">
+    <span class="text">
+      <span data-view-label>Grid</span>
+      <span class="visually-hidden" data-view-hint>
+        {' '}
+        view: show as list
+      </span>
+    </span>
+    <Icon name="switch" />
+  </button>
+  <button
+    type="button"
+    class="trigger t-caption"
+    data-search-toggle
+    aria-expanded="false"
+    aria-controls="search-row"
+  >
+    <span class="text">Search</span>
+    <Icon name="search" class="when-closed" />
+    <Icon name="close" class="when-open" />
+  </button>
+  <span class="blank" aria-hidden="true"></span>
+  <button
+    type="button"
+    class="trigger t-caption filter"
+    data-filters-toggle
+    aria-expanded="false"
+    aria-controls="filters"
+  >
+    <!-- "Filter (2)" when filters are on (library.ts); on phones it's read out only. -->
+    <span class="text">
+      Filter<span data-filter-count></span>
+    </span>
+    <Icon name="filter" class="when-closed" />
+    <Icon name="up" class="when-open" />
+  </button>
+</div>
+
+<style>
+  .tools {
+    display: grid;
+    width: 138px;
+  }
+  .tools[hidden] {
+    display: none;
+  }
+  .blank {
+    display: none;
+  }
+  .trigger {
+    position: relative;
+    width: 100%;
+  }
+  /* Figma "Trigger button": Hover = black; open ("Filter open") = no background and
+     a close icon instead of the usual one. */
+  @media (hover: hover) {
+    .trigger:hover {
+      background: var(--fg);
+      color: var(--surface);
+    }
+  }
+  .trigger[aria-expanded='true'] {
+    background: transparent;
+  }
+  /* Filter open (Figma "Homepage filters"): the button stays white with an up arrow
+     and, on desktop, drops 16px to sit on the panel like a tab. */
+  .filter {
+    transition:
+      transform var(--dur-slow) var(--ease-out),
+      background var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
+  }
+  .filter[aria-expanded='true'] {
+    background: var(--surface);
+    color: var(--fg);
+    transform: translateY(var(--m));
+  }
+  .trigger :global(svg.when-open),
+  .trigger[aria-expanded='true'] :global(svg.when-closed) {
+    display: none;
+  }
+  .trigger[aria-expanded='true'] :global(svg.when-open) {
+    display: block;
+  }
+
+  /* Phones: icon-only 36px squares, 2×2 (view, search / blank, filter). */
+  @media (max-width: 720px) {
+    .tools {
+      width: auto;
+      grid-template-columns: 36px 36px;
+    }
+    .trigger {
+      justify-content: center;
+      width: 36px;
+      padding: 0;
+    }
+    .text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .blank {
+      display: block;
+    }
+  }
+</style>

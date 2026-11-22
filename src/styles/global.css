@@ -13,25 +13,30 @@
 }
 
 :root {
-  /* Colour: light by default; dark follows the visitor's system preference (below).
-     --paper/--ink are the detail page's metadata panel. --accent is the filter badge. */
-  --bg: #f4f2ed;
-  --surface: #ffffff;
-  --fg: #141414;
-  --muted: #5f5b53;
-  --line: #d6d2c8;
+  /* Colour (Figma "Typereads.xyz" variables). Light only for now: dark mode will
+     come back once it's designed. --paper/--ink are the detail page's metadata panel. */
+  --bg: #e7e8ef; /* Light Grey */
+  --surface: #ffffff; /* Background */
+  --fg: #1a1a1a; /* Foreground */
+  --muted: #55566a;
+  --line: #cfd0da;
   --paper: #ffffff;
-  --ink: #141414;
-  --ink-muted: #5c5a55;
-  --paper-line: #e2dfd8;
-  --focus: #0b5fff;
-  --accent: #ffd84d;
-  --on-accent: #141414;
+  --ink: #1a1a1a;
+  --ink-muted: #55566a;
+  --paper-line: #e2e3ea;
+  --focus: #1a1a1a; /* Foreground: the keyboard focus ring */
+  --accent: #e85341; /* coral: active-filter dot */
+  --on-accent: #ffffff;
   --danger: #b3261e;
 
-  /* Type */
+  /* Type. Figma styles: H2 (Light), Paragraph, Caption (uppercase), each with a
+     desktop and a mobile size (switched at 720px below). */
   --font-text: 'Archivo Variable', 'Archivo Fallback', system-ui, sans-serif;
   --font-display: 'Archivo Narrow', 'Narrow Fallback', 'Arial Narrow', sans-serif;
+  --h1: 3.375rem; /* 54px; 24px on mobile */
+  --h2: 2rem; /* 32px; 21px on mobile */
+  --paragraph: 1.0625rem; /* 17px; 14px on mobile */
+  --caption: 0.875rem; /* 14px; 11px on mobile */
   --step--2: 0.6875rem; /* 11px: labels */
   --step--1: 0.8125rem; /* 13px */
   --step-0: 1rem; /* 16px: body */
@@ -39,18 +44,28 @@
   --step-2: clamp(1.5rem, 1.2rem + 1.2vw, 2rem); /* 24–32px */
   --step-3: clamp(2rem, 1.4rem + 2.6vw, 3.5rem); /* 32–56px */
 
-  /* Space and layout */
-  --gutter: clamp(16px, 3vw, 40px);
-  --gap: clamp(12px, 1.4vw, 20px);
-  --max: 2560px; /* the library grid goes up to 4 columns at 2560px */
+  /* Space (Figma: XXS 4 · XS 8 · S 12 · M 16 · L 24 · XL 32 · XXL 48 · 3XL 64) */
+  --xxs: 4px;
+  --xs: 8px;
+  --s: 12px;
+  --m: 16px;
+  --l: 24px;
+  --xl: 32px;
+  --xxl: 48px;
+  --x3l: 64px;
+  --gutter: var(--xl);
+  --gap: var(--m);
+  --max: 2560px; /* page width, gutters included */
   --max-reading: 1680px; /* detail pages */
   --radius: 2px;
+  --radius-l: 6px; /* cards and list rows */
 
   /* Motion (Tier 1; see docs/02 motion spec) */
-  --dur-fast: 120ms;
-  --dur-base: 240ms;
-  --dur-slow: 420ms;
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 200ms;
+  --dur-base: 400ms;
+  --dur-slow: 700ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* soft, long settle, no overshoot */
+  --ease-gentle: cubic-bezier(0.16, 1, 0.3, 1); /* intro and large moves */
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --spring: linear(
     0,
@@ -71,22 +86,17 @@
     1
   );
 
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (max-width: 720px) {
   :root {
-    --bg: #1a1a1a;
-    --surface: #0d0d0d;
-    --fg: #ffffff;
-    --muted: #a6a29a;
-    --line: #333333;
-    --paper: #f4f2ed;
-    --ink: #141414;
-    --ink-muted: #5c5a55;
-    --paper-line: #d8d5cd;
-    --focus: #ffd84d;
-    --danger: #ff8a80;
+    --h1: 1.5rem; /* 24px */
+    --h2: 1.3125rem; /* 21px */
+    --paragraph: 0.875rem; /* 14px */
+    --caption: 0.6875rem; /* 11px */
+    --gutter: var(--m);
+    --gap: var(--xs);
   }
 }
 
@@ -152,6 +162,153 @@ textarea {
   font-size: var(--step--2);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+
+/* Figma text styles. Figma trims each text box to the cap height and baseline
+   (text-box-trim); browsers that support `text-box` match its spacing exactly, the
+   others keep the usual line boxes. */
+.t-h1 {
+  text-box: trim-both cap alphabetic;
+  font-family: var(--font-text);
+  font-size: var(--h1);
+  /* Figma: ExtraLight (200); Light is the lightest file we have, so 300 for now. */
+  font-weight: 300;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.t-h2 {
+  text-box: trim-both cap alphabetic;
+  font-family: var(--font-text);
+  font-size: var(--h2);
+  font-weight: 300;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.t-paragraph {
+  text-box: trim-both cap alphabetic;
+  font-size: var(--paragraph);
+  line-height: 1.6;
+}
+.t-caption {
+  text-box: trim-both cap alphabetic;
+  font-size: var(--caption);
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* "Link" component: an underline that draws in from the left on hover. */
+.u-link {
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+  padding-bottom: 2px;
+  transition: background-size var(--dur-slow) var(--ease-out);
+}
+@media (hover: hover) {
+  .u-link:hover {
+    background-size: 0 1px;
+    background-position: 100% 100%;
+    animation: link-draw var(--dur-slow) var(--ease-out) forwards;
+  }
+}
+@keyframes link-draw {
+  0% {
+    background-size: 100% 1px;
+    background-position: 100% 100%;
+  }
+  50% {
+    background-size: 0 1px;
+    background-position: 100% 100%;
+  }
+  50.01% {
+    background-size: 0 1px;
+    background-position: 0 100%;
+  }
+  100% {
+    background-size: 100% 1px;
+    background-position: 0 100%;
+  }
+}
+
+/* "Button Primary" (Figma): black, 48px, Paragraph text, an arrow that slips out to
+   the right and back in from the left on hover. Markup: text, then
+   <span class="btn-icon"><svg class="out"/><svg class="in"/></span>. */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--xs);
+  height: 48px;
+  padding: 0 var(--s) 0 var(--m);
+  background: var(--fg);
+  color: var(--surface);
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+.btn-icon {
+  position: relative;
+  flex: none;
+  width: 19px;
+  height: 19px;
+  overflow: hidden;
+}
+.btn-icon svg {
+  position: absolute;
+  inset: 0;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.btn-icon .in {
+  transform: translateX(-100%);
+}
+@media (hover: hover) {
+  .btn-primary:hover .btn-icon .out {
+    transform: translateX(100%);
+  }
+  .btn-primary:hover .btn-icon .in {
+    transform: none;
+  }
+}
+
+/* Small white "Trigger button" (header tools, back to top). */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--m);
+  height: 36px;
+  padding: 0 var(--s);
+  background: var(--surface);
+  color: var(--fg);
+  border: 0;
+  border-radius: 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+.trigger svg {
+  flex: none;
+  width: 19px;
+  height: 19px;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.trigger {
+  transition:
+    background var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out);
+}
+@media (hover: hover) {
+  .trigger:hover {
+    background: var(--fg);
+    color: var(--surface);
+  }
+  /* "Back to top": the arrow lifts a little. */
+  .trigger:hover .icon-up {
+    transform: translateY(-3px);
+  }
 }
 
 .wrap {
@@ -245,6 +402,75 @@ textarea {
   from {
     opacity: 0;
     transform: scale(0.9);
+  }
+}
+
+/* Intro (homepage, fresh load only; html.is-intro, set in index.astro): the header
+   fades in, then the cards fade and rise into place one after another. Only transform and
+   opacity, slow and soft (--ease-gentle); `backwards` fill so nothing lingers after the
+   animation (the motion layer's Flip transforms stay free). */
+@media (prefers-reduced-motion: no-preference) {
+  html.is-intro .site-header .brand {
+    animation: intro-in 1000ms var(--ease-gentle) backwards;
+  }
+  html.is-intro .site-header .disc {
+    animation: intro-in 1000ms var(--ease-gentle) 100ms backwards;
+  }
+  html.is-intro [data-lib-tools] > * {
+    animation: intro-in 1000ms var(--ease-gentle) backwards;
+  }
+  html.is-intro [data-lib-tools] > :nth-child(1) {
+    animation-delay: 180ms;
+  }
+  html.is-intro [data-lib-tools] > :nth-child(2) {
+    animation-delay: 260ms;
+  }
+  html.is-intro [data-lib-tools] > :nth-child(4) {
+    animation-delay: 340ms;
+  }
+  /* Each card on the first screen (tile or list row) fades and rises in as one
+     piece, one after another; the rest reveal as they scroll into view (Card.astro).
+     Kept short: Chrome counts a cover as painted (LCP) only when its card's animation
+     ends. 8 cards covers the first screen in every layout. */
+  html.is-intro .card:nth-child(-n + 8) > a {
+    animation: intro-card 700ms var(--ease-gentle) backwards;
+    animation-delay: calc(var(--n, 0) * 70ms);
+  }
+  html.is-intro .card:nth-child(2) {
+    --n: 1;
+  }
+  html.is-intro .card:nth-child(3) {
+    --n: 2;
+  }
+  html.is-intro .card:nth-child(4) {
+    --n: 3;
+  }
+  html.is-intro .card:nth-child(5) {
+    --n: 4;
+  }
+  html.is-intro .card:nth-child(6) {
+    --n: 5;
+  }
+  html.is-intro .card:nth-child(7) {
+    --n: 6;
+  }
+  html.is-intro .card:nth-child(8) {
+    --n: 7;
+  }
+  html.is-intro .site-footer {
+    animation: intro-in 1000ms var(--ease-gentle) 1200ms backwards;
+  }
+}
+@keyframes intro-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes intro-card {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
   }
 }
 

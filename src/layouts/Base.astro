@@ -8,6 +8,7 @@ import displayFont from '@fontsource/archivo-narrow/files/archivo-narrow-latin-7
 import { existsSync } from 'node:fs';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import SubmitPanel from '../components/SubmitPanel.astro';
 
 interface Props {
   title?: string;
@@ -25,7 +26,9 @@ const SITE_NAME = 'Read About Type';
 
 // HEX Franklin (licensed) when scripts/fonts.mjs found the files; Archivo otherwise.
 const HEX = ['regular', 'bold'].every((w) => existsSync(`public/fonts/hex-franklin-${w}.woff2`));
-const hexFaces = `
+// Light (titles) is optional: without it, browsers use Regular for weight 300.
+const HEX_LIGHT = HEX && existsSync('public/fonts/hex-franklin-light.woff2');
+const hexFaces = `${HEX_LIGHT ? "@font-face { font-family: 'HEX Franklin'; src: url('/fonts/hex-franklin-light.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }" : ''}
 @font-face { font-family: 'HEX Franklin'; src: url('/fonts/hex-franklin-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: 'HEX Franklin'; src: url('/fonts/hex-franklin-bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
 /* html:root outranks global.css's :root, whatever the order in <head>. */
@@ -76,13 +79,15 @@ const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
           type="font/woff2"
           crossorigin
         />
-        <link
-          rel="preload"
-          href="/fonts/hex-franklin-bold.woff2"
-          as="font"
-          type="font/woff2"
-          crossorigin
-        />
+        {HEX_LIGHT && (
+          <link
+            rel="preload"
+            href="/fonts/hex-franklin-light.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+          />
+        )}
         <style is:inline set:html={hexFaces} />
       </>
     ) : (
@@ -92,8 +97,7 @@ const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
       </>
     )}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#f4f2ed" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#e7e8ef" />
 
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:type" content={ogType} />
@@ -117,11 +121,16 @@ const ld = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : undefined;
     <a class="skip-link" href="#main">
       Skip to content
     </a>
-    <Header />
+    <Header>
+      <slot name="header-back" slot="back" />
+      <slot name="header-tools" slot="tools" />
+    </Header>
     <main id="main" tabindex="-1">
       <slot />
     </main>
     <Footer />
+    <!-- The submission panel, opened by "+" (outside <main>: survives page changes). -->
+    <SubmitPanel />
     <!-- Announces page changes made by the client router to screen readers. -->
     <div class="visually-hidden" aria-live="polite" data-announcer></div>
     <script>

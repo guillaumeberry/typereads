@@ -1,86 +1,150 @@
 ---
+// Site header (Figma "Header": on all pages). Logo on the left, followed by a `back`
+// slot (the detail page's "Home ←"); on the right the round "+" (submit a
+// publication) and a `tools` slot that the homepage fills with its library buttons
+// (view, search, filter). Both slots are containers the client router swaps with
+// <main> ([data-header-back], [data-header-tools]); the rest of the header persists.
 import Logo from './Logo.astro';
-const path = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
-const nav = [
-  { href: '/about', label: 'About' },
-  { href: '/submit', label: 'Submit', strong: true },
-];
+import Icon from './Icon.astro';
 ---
 
-<header class="site-header">
+<header class="site-header" id="top">
   <div class="wrap bar">
-    <a class="brand" href="/">
-      <Logo />
-      <span class="wordmark display">
-        <span>Read about</span> <span>Type Design</span>
-      </span>
-    </a>
-    <nav aria-label="Main">
-      <ul>
-        {nav.map((item) => (
-          <li>
-            <a
-              href={item.href}
-              class:list={{ strong: item.strong }}
-              aria-current={path.startsWith(item.href) ? 'page' : undefined}
-            >
-              {item.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <div class="start">
+      <a class="brand" href="/" aria-label="Typereads: home">
+        <Logo />
+      </a>
+      <div class="back" data-header-back>
+        <slot name="back" />
+      </div>
+    </div>
+    <div class="actions">
+      <a class="add" href="/submit" aria-label="Submit a publication" data-submit-open>
+        <span class="add-label t-caption" aria-hidden="true">
+          Submit
+        </span>
+        <span class="disc">
+          <Icon name="plus" class="plus-l" />
+          <Icon name="plus-small" class="plus-s" />
+        </span>
+      </a>
+      <div class="tools" data-header-tools>
+        <slot name="tools" />
+      </div>
+    </div>
   </div>
 </header>
 
 <style>
   .bar {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
-    padding-block: clamp(20px, 3vw, 36px);
+    padding-top: var(--xl);
+  }
+  .start {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--m);
+  }
+  .back:empty {
+    display: none;
   }
   .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
+    display: block;
     color: var(--fg);
   }
-  .wordmark {
-    font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
-    white-space: nowrap;
-  }
-  ul {
+  .actions {
     display: flex;
-    gap: clamp(12px, 2vw, 24px);
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    align-items: flex-start;
+    gap: var(--m);
   }
-  nav a {
+  .tools:empty {
+    display: none;
+  }
+
+  /* "+": a 106px white disc (38px on phones); "Submit" slides in on its left. */
+  .add {
+    position: relative;
+    display: flex;
+    align-items: center;
+    color: var(--fg);
     text-decoration: none;
-    text-underline-offset: 4px;
   }
-  nav a:hover,
-  nav a[aria-current='page'] {
-    text-decoration: underline;
+  .disc {
+    display: grid;
+    place-items: center;
+    width: 106px;
+    height: 106px;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--fg);
+    transition:
+      background var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out),
+      transform var(--dur-slow) var(--ease-out);
   }
-  .strong {
-    font-weight: 700;
+  .disc :global(.plus-l) {
+    transition: transform var(--dur-slow) var(--ease-out);
   }
-  /* Narrow phones: the wordmark takes two lines so "Submit" stays on screen (320 px up). */
-  @media (max-width: 420px) {
-    .wordmark {
-      font-size: 1.125rem;
-      line-height: 1.05;
+  .disc :global(.plus-s) {
+    display: none;
+  }
+  .add-label {
+    position: absolute;
+    right: calc(100% + var(--s));
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(8px);
+    pointer-events: none;
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      transform var(--dur-base) var(--ease-out);
+  }
+  /* Hover (Figma "Add button / Desktop Hover"): the disc turns black, the plus white
+     and a quarter turn, and "Submit" appears 12px to its left. */
+  @media (hover: hover) {
+    .add:hover .add-label {
+      opacity: 1;
+      transform: none;
     }
-    .wordmark > span {
+    .add:hover .disc {
+      background: var(--fg);
+      color: var(--surface);
+    }
+    .add:hover .disc :global(.plus-l) {
+      transform: rotate(90deg);
+    }
+  }
+  .add:focus-visible .add-label {
+    opacity: 1;
+    transform: none;
+  }
+  .add:focus-visible .disc {
+    background: var(--fg);
+    color: var(--surface);
+  }
+  .add:active .disc {
+    transform: scale(0.94);
+  }
+
+  @media (max-width: 720px) {
+    .bar {
+      padding-block: var(--m);
+    }
+    .start,
+    .actions {
+      gap: var(--xs);
+    }
+    .disc {
+      width: 38px;
+      height: 38px;
+    }
+    .disc :global(.plus-l) {
+      display: none;
+    }
+    .disc :global(.plus-s) {
       display: block;
-    }
-    .brand {
-      gap: 10px;
     }
   }
 </style>

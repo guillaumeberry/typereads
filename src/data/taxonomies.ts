@@ -42,13 +42,13 @@ export const SCRIPTS = {
   Zyyy: { label: 'Multi-script / general', glyph: '✦' },
 } as const;
 
-/** Publication-date filter buckets. Default answer to Q5 (decades); revisit if Q5 is answered. */
+/** Publication-date filter buckets (Figma filter panel, ADR-013; answers Q5). The filter
+ *  only offers buckets that have publications, so "Before 1980" shows up when needed. */
 export const DATE_BUCKETS = [
-  { id: '2020s', label: '2020s', from: 2020, to: Infinity },
-  { id: '2010s', label: '2010s', from: 2010, to: 2019 },
-  { id: '2000s', label: '2000s', from: 2000, to: 2009 },
-  { id: '1990s', label: '1990s', from: 1990, to: 1999 },
-  { id: 'before-1990', label: 'Before 1990', from: -Infinity, to: 1989 },
+  { id: 'now-2020', label: 'Now › 2020', from: 2020, to: Infinity },
+  { id: '2019-2000', label: '2019 › 2000', from: 2000, to: 2019 },
+  { id: '1999-1980', label: '1999 › 1980', from: 1980, to: 1999 },
+  { id: 'before-1980', label: 'Before 1980', from: -Infinity, to: 1979 },
 ] as const;
 
 export type TypeKey = keyof typeof TYPES;

@@ -1,6 +1,6 @@
 ---
 title: It's about Type Design
-intro: This site gathers publications about type design (obviously). The goal is to give people knowledge and resources on the practice of designing signs across cultures and languages.
+intro: This platform serves as a repository of publications about type design, obviously. The goal is to share knowledge and resources on the practice of designing signs across cultures and languages.
 faq:
   - question: Why this list?
     answer: |-
@@ -31,15 +31,31 @@ contact: hello@typereads.xyz
 
 ## Contribute to the list
 
-You can [submit a publication](/submit). I review every submission before adding it to the list. Big up to you for helping this project 🙌
+You can submit a publication using the large (+) button at the top of every page. Please consider the topics below that are matching the goal of this platform. Big up to you for helping this project 🙌
 
-## Colophon: how and what?
+Topics matching the curation:
+
+- Type design theory and techniques
+- Specimen collection
+- Complete use cases for a custom family
+- Font business related publications
+- Writing systems
+
+Related topics NOT matching what the list is about:
+
+- Lettering and calligraphy
+- Layout and font usage
+- Vernacular typography
+- Sign painting
+- Moving type
+
+## Colophon
+
+The UI typeface is [HEX Franklin](https://hex.xyz/HEX_Franklin/), designed and produced by [Nick Sherman](https://hex.xyz/).
 
 The library is a static website built with [Astro](https://astro.build). Each publication is a small text file in a public [GitHub repository](https://github.com/guillaumeberry/typereads), edited through [Sveltia CMS](https://github.com/sveltia/sveltia-cms), and the site is hosted on [Cloudflare](https://www.cloudflare.com). Hosting costs nothing, and the pages are light: no tracking cookies, no ads. Visits are counted with [Cabin](https://withcabin.com), which uses no cookies and stores nothing personal. The motion uses [Swup](https://swup.js.org) and [GSAP](https://gsap.com), loaded after the page is ready and skipped if you prefer reduced motion. Suggestions arrive through a form checked by [Cloudflare Turnstile](https://www.cloudflare.com/application-services/products/turnstile/) (no cookies, no puzzles for most people) and land in the repository for review; email alerts go through [Resend](https://resend.com).
 
-The typeface is HEX Franklin by Nick Sherman (HEX Projects).
-
-## Licences
+## Licences and code
 
 The code is under the MIT licence and the publication data under CC BY 4.0: reuse it, with credit. Covers remain © their publishers and are shown only to identify each publication; to have one removed, get in touch.
 

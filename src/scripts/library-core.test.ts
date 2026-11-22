@@ -77,12 +77,14 @@ describe('filters', () => {
     expect(ids(computeVisible(items, state({ lang: new Set(['fr']), tr: false })))).toEqual(['a']);
   });
   it('filters by date bucket', () => {
-    expect(bucketOf(2001)).toBe('2000s');
-    expect(bucketOf(1985)).toBe('before-1990');
-    expect(ids(computeVisible(items, state({ date: '2010s' })))).toEqual(['c', 'd']);
+    expect(bucketOf(2024)).toBe('now-2020');
+    expect(bucketOf(2001)).toBe('2019-2000');
+    expect(bucketOf(1985)).toBe('1999-1980');
+    expect(bucketOf(1975)).toBe('before-1980');
+    expect(ids(computeVisible(items, state({ date: '2019-2000' })))).toEqual(['a', 'c', 'd']);
   });
   it('counts active filter values', () => {
-    expect(activeFilterCount(state({ type: new Set(['book']), date: '2010s' }))).toBe(2);
+    expect(activeFilterCount(state({ type: new Set(['book']), date: '2019-2000' }))).toBe(2);
   });
 });
 
@@ -127,6 +129,10 @@ describe('sort', () => {
       'e',
       'c',
     ]);
+    // Z › A is the exact reverse of A › Z.
+    expect(ids(computeVisible(items, state({ sort: 'title-desc' })))).toEqual(
+      ids(computeVisible(items, state({ sort: 'title' }))).reverse(),
+    );
   });
 });
 
@@ -136,12 +142,12 @@ describe('URL state', () => {
       q: 'diacritics',
       type: new Set(['book']),
       script: new Set(['Latn', 'Cyrl']),
-      date: '2010s',
+      date: '2019-2000',
       tr: false,
       sort: 'year-desc',
     });
     const qs = serializeState(s);
-    expect(qs).toBe('q=diacritics&type=book&script=Cyrl,Latn&tr=0&date=2010s&sort=year-desc');
+    expect(qs).toBe('q=diacritics&type=book&script=Cyrl,Latn&tr=0&date=2019-2000&sort=year-desc');
     expect(serializeState(parseState(qs))).toBe(qs);
   });
   it('is empty for the default state and ignores junk', () => {

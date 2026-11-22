@@ -1,12 +1,16 @@
 ---
-// One publication in the library. The same markup serves both views:
-// - grid: cover tile on its colour; title and type/format on hover (pointer) or
-//   under the tile (touch);
-// - list: a row with a small cover, title, authors, year, type, languages, format.
+// One publication in the library (Figma "Grid item" and "List item"). The same
+// markup serves both views:
+// - grid: the cover on its colour, nothing else (the text is kept for screen
+//   readers); on hover (Figma "Grid item / Hover") the tile darkens, the cover slides
+//   down, the title and type appear in white at the top and an arrow disc rises in;
+// - list: a white row with the cover tile, title, authors, publisher, type,
+//   format and year (two text lines under the title on phones).
 // Data attributes feed the client-side filters (src/scripts/library.ts).
 import Cover from './Cover.astro';
+import Icon from './Icon.astro';
 import { bgColor, textColorFor } from '../lib/color';
-import { formatsLabel, languageName, typeLabel } from '../lib/format';
+import { formatsLabel, typeLabel } from '../lib/format';
 import { publicationUrl, type Publication } from '../lib/publications';
 import { normalize } from '../scripts/library-core';
 
@@ -21,7 +25,7 @@ const bg = bgColor(d.color);
 const searchText = normalize(
   [d.title, d.subtitle, ...d.authors, ...d.publishers, d.isbn, d.issn].filter(Boolean).join(' '),
 );
-const langs = d.languages.map(languageName).join(', ');
+const publisher = d.publishers.join(', ');
 ---
 
 <li
@@ -44,19 +48,33 @@ const langs = d.languages.map(languageName).join(', ');
         pub={pub}
         priority={priority}
         widths={[300, 450, 600, 900]}
-        sizes="(min-width: 1921px) min(19vw, 480px), (min-width: 1024px) 25vw, 38vw"
+        sizes="(min-width: 1921px) min(24vw, 620px), (min-width: 1024px) 31vw, 46vw"
       />
+      <span class="peek" aria-hidden="true">
+        <span class="peek-title">{d.title}</span>
+        <span class="peek-type">{typeLabel(d.type)}</span>
+      </span>
+      <span class="arrow" aria-hidden="true">
+        <Icon name="arrow" />
+      </span>
     </div>
     <div class="caption">
-      <h2 class="display title">{d.title}</h2>
-      <p class="label meta">
-        {typeLabel(d.type)} • {formatsLabel(d.formats)}
+      <h2 class="title t-h2">{d.title}</h2>
+      <p class="authors t-paragraph">{d.authors.join(', ')}</p>
+      <p class="meta t-caption">
+        {publisher && <span class="pub">{publisher}</span>}
+        <span class="kind">
+          <span class="type">{typeLabel(d.type)}</span>
+          <span class="sep" aria-hidden="true">
+            -
+          </span>
+          <span class="formats">{formatsLabel(d.formats)}</span>
+          <span class="sep" aria-hidden="true">
+            -
+          </span>
+          <span class="year">{d.year}</span>
+        </span>
       </p>
-      <p class="col authors">{d.authors.join(', ')}</p>
-      <p class="col year">{d.year}</p>
-      <p class="col type">{typeLabel(d.type)}</p>
-      <p class="col langs">{langs || '—'}</p>
-      <p class="col formats">{formatsLabel(d.formats)}</p>
     </div>
   </a>
 </li>
@@ -68,166 +86,325 @@ const langs = d.languages.map(languageName).join(', ');
   .card a {
     position: relative;
     display: block;
-    text-decoration: none;
     color: var(--fg);
+    text-decoration: none;
+    border-radius: var(--radius-l);
   }
+
+  /* --- Tile: the cover on its colour -------------------------------------- */
   .tile {
     position: relative;
     aspect-ratio: 1;
     background: var(--c);
     color: var(--tc);
+    border-radius: var(--radius-l);
     overflow: hidden;
+    container-type: inline-size; /* cqi: hover sizes scale with the tile (Figma: 501px) */
   }
-  /* The cover fits inside the square, whatever its proportions. */
+  /* The cover fits inside the square, whatever its proportions (40px of 501). */
   .tile :global(img),
   .tile :global(.type-cover) {
     position: absolute;
-    inset: 9% 12%;
-    width: 76%;
-    height: 82%;
-    object-fit: contain;
-    filter: drop-shadow(0 6px 14px rgb(0 0 0 / 0.3));
-  }
-  .tile :global(.type-cover) {
-    aspect-ratio: auto;
-    filter: none;
-  }
-  /* Tier 1: tiles rise in as they enter the viewport (off the main thread). The
-     reveal is on the tile, not the card, so it never fights the Flip transforms. */
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .tile {
-        animation: tile-in linear both;
-        animation-timeline: view();
-        animation-range: entry 0% entry 35%;
-      }
-    }
-  }
-  :global(.is-flipping) .tile {
-    animation: none;
-  }
-  @keyframes tile-in {
-    from {
-      opacity: 0;
-      transform: translateY(24px) scale(0.97);
-    }
-  }
-  .caption {
-    padding-top: 10px;
-  }
-  .title {
-    font-size: var(--step-1);
-  }
-  .meta {
-    margin-top: 4px;
-    color: var(--muted);
-  }
-  .col {
-    display: none;
-  }
-
-  /* Grid view on pointer devices: caption overlays the tile on hover/focus. */
-  @media (hover: hover) and (pointer: fine) {
-    :global(html:not([data-view='list'])) .caption {
-      position: absolute;
-      inset: auto 0 0 0;
-      padding: 48px 16px 14px;
-      background: linear-gradient(to top, rgb(0 0 0 / 0.78), transparent);
-      color: #ffffff;
-      opacity: 0;
-      transform: translateY(6px);
-      transition:
-        opacity var(--dur-base) var(--ease-out),
-        transform var(--dur-base) var(--ease-out);
-    }
-    :global(html:not([data-view='list'])) .meta {
-      color: rgb(255 255 255 / 0.8);
-    }
-    .tile :global(img) {
-      transition:
-        transform var(--dur-slow) var(--spring),
-        filter var(--dur-slow) var(--ease-out);
-    }
-    a:hover .caption,
-    a:focus-visible .caption {
-      opacity: 1;
-      transform: none;
-    }
-    :global(html:not([data-view='list'])) a:hover .tile :global(img),
-    :global(html:not([data-view='list'])) a:focus-visible .tile :global(img) {
-      transform: translateY(-4px) scale(1.02);
-      filter: drop-shadow(0 14px 24px rgb(0 0 0 / 0.4));
-    }
-  }
-
-  /* List view: one dense row per publication. */
-  :global(html[data-view='list']) .card a {
-    display: grid;
-    grid-template-columns:
-      56px minmax(0, 2.4fr) minmax(0, 1.6fr) 4ch minmax(0, 0.9fr) minmax(0, 0.9fr)
-      minmax(0, 0.9fr);
-    gap: 16px;
-    align-items: center;
-    padding-block: 8px;
-    border-bottom: 1px solid var(--line);
-  }
-  :global(html[data-view='list']) .tile :global(img) {
     inset: 8%;
     width: 84%;
     height: 84%;
-    filter: none;
+    object-fit: contain;
   }
-  :global(html[data-view='list']) .caption {
-    display: contents;
+  .tile :global(.type-cover) {
+    aspect-ratio: auto;
   }
-  :global(html[data-view='list']) .title {
-    font-size: var(--step-0);
-    font-family: var(--font-text);
-    font-weight: 600;
-    letter-spacing: 0;
-    line-height: 1.3;
+  /* Hover (Figma "Grid item / Hover", 501px tile): a 50% multiply overlay, the cover
+     slides down 126px, title and type appear 32px from the top, and the arrow disc
+     rises to 30px from the corner. Sizes are in cqi so smaller tiles scale down. */
+  .tile::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--fg);
+    mix-blend-mode: multiply;
+    opacity: 0;
+    transition: opacity var(--dur-base) var(--ease-out);
+    pointer-events: none;
   }
-  :global(html[data-view='list']) .meta {
+  .tile :global(img) {
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  .peek {
+    position: absolute;
+    inset: 6.4cqi 6.4cqi auto;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 6.4cqi;
+    color: #ffffff;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition:
+      opacity var(--dur-base) var(--ease-out),
+      transform var(--dur-slow) var(--ease-out);
+    pointer-events: none;
+  }
+  .peek-title {
+    flex: 1;
+    min-width: 0;
+    font-size: min(var(--h2), 6.4cqi);
+    font-weight: 300;
+    line-height: 1.2;
+    text-wrap: balance;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  .peek-type {
+    font-size: min(var(--caption), 2.8cqi);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding-top: 0.45em;
+  }
+  .arrow {
+    position: absolute;
+    right: 6cqi;
+    bottom: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    padding: var(--xs);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--fg);
+    transform: translateY(calc(100% + 16px));
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    :global(html:not([data-view='list'])) a:hover .tile::after {
+      opacity: 0.5;
+    }
+    :global(html:not([data-view='list'])) a:hover .tile :global(img) {
+      transform: translateY(25cqi);
+    }
+    :global(html:not([data-view='list'])) a:hover .peek {
+      opacity: 1;
+      transform: none;
+    }
+    a:hover .arrow {
+      transform: translateY(-6cqi);
+    }
+  }
+  a:focus-visible .arrow {
+    transform: translateY(-6cqi);
+  }
+  @media (hover: none) {
+    .arrow,
+    .peek {
+      display: none;
+    }
+  }
+  /* Tier 1: below the first screen, each card (tile or row) fades and rises in as it
+     scrolls into view (off the main thread). On the card's link, not the <li>, so it
+     never fights the Flip transforms; cards already on screen are at their end state. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .card > a {
+        animation: card-in linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 60%;
+      }
+    }
+  }
+  :global(.is-flipping) .card > a {
+    animation: none;
+  }
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(32px);
+    }
+  }
+
+  /* --- Grid view: the cover only (text stays for screen readers) ---------- */
+  :global(html:not([data-view='list'])) .caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  @media (max-width: 720px) {
+    .tile :global(img),
+    .tile :global(.type-cover) {
+      inset: 9%;
+      width: 82%;
+      height: 82%;
+    }
+  }
+
+  /* --- List view: a white row ----------------------------------------------- */
+  :global(html[data-view='list']) .card a {
+    display: grid;
+    grid-template-columns: clamp(140px, 15.2vw, 243px) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--m);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  :global(html[data-view='list']) .tile {
+    border-radius: 0;
+  }
+  :global(html[data-view='list']) .tile :global(img) {
+    inset: var(--m);
+    width: calc(100% - 2 * var(--m));
+    height: calc(100% - 2 * var(--m));
+  }
+  /* List hover (Figma "List item / Desktop Hover"): the cover darkens by half and the
+     arrow rises to the centre of the tile. */
+  :global(html[data-view='list']) .peek {
     display: none;
   }
-  :global(html[data-view='list']) .col {
-    display: block;
-    color: var(--muted);
-    font-size: var(--step--1);
+  :global(html[data-view='list']) .arrow {
+    right: auto;
+    left: 50%;
+    margin-left: -32px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    :global(html[data-view='list']) a:hover .tile::after {
+      opacity: 0.5;
+    }
+    :global(html[data-view='list']) a:hover .arrow {
+      transform: translateY(calc(32px - 50cqi));
+    }
+  }
+  :global(html[data-view='list']) a:focus-visible .arrow {
+    transform: translateY(calc(32px - 50cqi));
+  }
+  /* Desktop row: title over authors | publisher, type, format | year. */
+  :global(html[data-view='list']) .caption {
+    display: grid;
+    grid-template-columns: minmax(0, 758fr) minmax(0, 371fr) minmax(0, 113fr);
+    grid-template-rows: 1fr auto auto auto;
+    column-gap: var(--m);
+    row-gap: 14px;
+    min-height: 128px;
+  }
+  :global(html[data-view='list']) .title {
+    grid-area: 1 / 1;
+  }
+  :global(html[data-view='list']) .authors {
+    grid-area: 2 / 1 / 5 / 2;
+    align-self: end;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+  :global(html[data-view='list']) .meta,
+  :global(html[data-view='list']) .kind {
+    display: contents;
+  }
+  :global(html[data-view='list']) .pub {
+    grid-area: 2 / 2;
+  }
+  :global(html[data-view='list']) .type {
+    grid-area: 3 / 2;
+  }
+  :global(html[data-view='list']) .formats {
+    grid-area: 4 / 2;
+  }
+  :global(html[data-view='list']) .year {
+    grid-area: 4 / 3;
+    font-variant-numeric: tabular-nums;
+  }
+  :global(html[data-view='list']) .sep {
+    display: none;
+  }
+  /* Lines that end in "…" clip their overflow; with trimmed text boxes that would
+     cut descenders, so the clip box gets room below without moving anything. */
+  :global(html[data-view='list']) :is(.title, .authors, .pub, .type, .formats) {
+    padding-bottom: 0.3em;
+    margin-bottom: -0.3em;
+  }
+  :global(html[data-view='list']) .pub,
+  :global(html[data-view='list']) .type,
+  :global(html[data-view='list']) .formats {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  :global(html[data-view='list']) .year {
-    font-variant-numeric: tabular-nums;
-  }
-  :global(html[data-view='list']) a:hover .title {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  /* Mobile list: two lines (title, then authors · year). */
+
+  /* Phones: a 64px colour strip with the cover, then title and two caption lines. */
   @media (max-width: 720px) {
     :global(html[data-view='list']) .card a {
-      grid-template-columns: 48px minmax(0, 1fr) auto;
-      grid-template-areas: 'thumb title year' 'thumb authors authors';
-      gap: 2px 12px;
+      grid-template-columns: 64px minmax(0, 1fr);
+      align-items: stretch;
+      gap: 0;
     }
     :global(html[data-view='list']) .tile {
-      grid-area: thumb;
+      aspect-ratio: auto;
+      min-height: 96px;
     }
+    :global(html[data-view='list']) .tile :global(img) {
+      inset: var(--s);
+      width: calc(100% - 2 * var(--s));
+      height: auto;
+      max-height: calc(100% - 2 * var(--s));
+      object-position: top;
+    }
+    :global(html[data-view='list']) .caption {
+      display: flex;
+      flex-direction: column;
+      gap: var(--xs);
+      min-height: 0;
+      padding: var(--s);
+    }
+    /* Just enough room for descenders, not for the next (clamped) line. */
     :global(html[data-view='list']) .title {
-      grid-area: title;
+      padding-bottom: 0.2em;
+      margin-bottom: calc(var(--xs) - 0.2em);
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
     }
+    /* Authors become a caption line. */
     :global(html[data-view='list']) .authors {
-      grid-area: authors;
+      display: block;
+      align-self: stretch;
+      font-size: var(--caption);
+      line-height: 1;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    :global(html[data-view='list']) .year {
-      grid-area: year;
+    :global(html[data-view='list']) .meta {
+      display: flex;
+      flex-direction: column;
+      gap: var(--xs);
     }
+    :global(html[data-view='list']) .kind {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--xxs);
+    }
+    /* Flex items don't inherit the parent's text-box trim: set it on each line. */
+    :global(html[data-view='list']) :is(.pub, .kind > span) {
+      text-box: trim-both cap alphabetic;
+    }
+    :global(html[data-view='list']) .sep {
+      display: inline;
+    }
+    :global(html[data-view='list']) .pub,
     :global(html[data-view='list']) .type,
-    :global(html[data-view='list']) .langs,
-    :global(html[data-view='list']) .formats {
-      display: none;
+    :global(html[data-view='list']) .formats,
+    :global(html[data-view='list']) .year {
+      grid-area: auto;
     }
   }
 </style>

@@ -16,6 +16,11 @@ const FILES = {
   'hex-franklin-regular.woff2': 'HEX_Franklin_v0.4-Regular.woff2',
   'hex-franklin-bold.woff2': 'HEX_Franklin_v0.4-Bold.woff2',
 };
+// Optional: used for large titles. If it's missing, those titles fall back to Regular
+// (the build still passes), so add it to the private fonts repo too.
+const OPTIONAL = {
+  'hex-franklin-light.woff2': 'HEX_Franklin_v0.4-Light.woff2',
+};
 const OUT = new URL('../public/fonts/', import.meta.url);
 const LOCAL = new URL('../assets/fonts/', import.meta.url);
 const { FONTS_BASE_URL: base, FONTS_TOKEN: token, FONTS_REQUIRED: required } = process.env;
@@ -62,6 +67,19 @@ try {
   await mkdir(OUT, { recursive: true });
   source = 'none';
   console.warn(`[fonts] ${err.message}`);
+}
+
+if (source !== 'none') {
+  for (const [out, name] of Object.entries(OPTIONAL)) {
+    const dest = new URL(out, OUT);
+    try {
+      if (base) await writeFile(dest, await download(name));
+      else if (await exists(new URL(name, LOCAL))) await copyFile(new URL(name, LOCAL), dest);
+      else throw new Error(`${name}: not in assets/fonts/`);
+    } catch (err) {
+      console.warn(`[fonts] optional ${err.message}`);
+    }
+  }
 }
 
 console.log(`[fonts] HEX Franklin source: ${source}`);

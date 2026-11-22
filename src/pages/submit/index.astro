@@ -1,5 +1,7 @@
 ---
-// Submission form (ADR-005). The form itself is shared with the correction pages.
+// Submission page (ADR-005): for direct links and visitors without JavaScript. With JS,
+// the header's "+" opens the same form in a panel (SubmitPanel.astro) instead. Styled
+// as the panel (Figma "Submission Form Panel"): a white card, 640px wide.
 import Base from '../../layouts/Base.astro';
 import SubmitForm from '../../components/SubmitForm.astro';
 ---
@@ -8,27 +10,37 @@ import SubmitForm from '../../components/SubmitForm.astro';
   title="Submit a publication"
   description="Suggest a book, magazine or website about type design for the library."
 >
-  <div class="wrap narrow">
-    <h1 class="display h1">Submit a publication</h1>
-    <p class="intro">
-      Know a publication about type design that belongs here? Tell me about it. I review every
-      submission by hand.
-    </p>
-    <SubmitForm />
+  <div class="wrap page">
+    <div class="card">
+      <h1 class="t-h2">Submit a publication</h1>
+      <p class="t-paragraph">
+        You know a publication (or more) about type design that belongs here? Tell me about it! I’ll
+        review every submission individually.
+      </p>
+      <SubmitForm id="page" />
+    </div>
   </div>
 </Base>
 
 <style>
-  .narrow {
-    max-width: 720px;
+  .page {
+    padding-top: var(--x3l);
   }
-  .h1 {
-    font-size: var(--step-3);
-    margin-top: clamp(16px, 4vw, 48px);
+  .card {
+    display: grid;
+    gap: var(--xxl);
+    max-width: 640px;
+    margin-inline: auto;
+    padding: var(--xl);
+    background: var(--surface);
   }
-  .intro {
-    margin-top: 16px;
-    font-size: var(--step-1);
-    line-height: 1.45;
+  @media (max-width: 720px) {
+    .page {
+      padding-top: var(--m);
+    }
+    .card {
+      gap: var(--l);
+      padding: var(--l);
+    }
   }
 </style>

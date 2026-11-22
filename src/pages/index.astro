@@ -2,30 +2,28 @@
 import Base from '../layouts/Base.astro';
 import Card from '../components/Card.astro';
 import LibraryControls from '../components/LibraryControls.astro';
+import LibraryTools from '../components/LibraryTools.astro';
 import { getPublished } from '../lib/publications';
 
 const pubs = await getPublished();
 ---
 
 <Base>
-  <!-- Apply the remembered view before first paint, so the list view doesn't flash. -->
+  <!-- Before first paint: apply the remembered view (no list-view flash) and start the
+       intro animation (global.css, "Intro"; boot.ts removes the class afterwards). -->
   <script is:inline slot="head">
+    document.documentElement.classList.add('is-intro');
     try {
       if (localStorage.getItem('rat:view') === 'list')
         document.documentElement.dataset.view = 'list';
     } catch (e) {}
   </script>
 
-  <div class="wrap" data-lib>
-    <div class="intro">
-      <h1 class="lede">
-        A collection of books, essays, magazines and more about type design, across cultures,
-        scripts and languages.
-      </h1>
-      <p class="count" data-count-total aria-live="polite">
-        {pubs.length} publications
-      </p>
-    </div>
+  <LibraryTools slot="header-tools" />
+
+  <div class="wrap lib" data-lib>
+    <!-- The project line is in the footer (Figma); the heading stays for screen readers. -->
+    <h1 class="visually-hidden">Read About Type: publications about type design</h1>
 
     <LibraryControls pubs={pubs} />
 
@@ -36,7 +34,7 @@ const pubs = await getPublished();
     </ul>
 
     <div class="empty" data-empty hidden>
-      <p class="display">Nothing matches.</p>
+      <p class="t-h2">Nothing matches.</p>
       <p>Try fewer filters or another search. Know a publication that fits?</p>
       <p class="empty-actions">
         <button type="button" data-empty-reset>
@@ -49,24 +47,10 @@ const pubs = await getPublished();
 </Base>
 
 <style>
-  .intro {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    justify-content: space-between;
-    gap: 12px 32px;
-    margin-bottom: clamp(20px, 3vw, 32px);
-  }
-  .lede {
-    max-width: 52ch;
-    font-size: var(--step-1);
-    font-weight: 400;
-    line-height: 1.35;
-    color: var(--muted);
-  }
-  .count {
-    font-variant-numeric: tabular-nums;
-    color: var(--muted);
+  /* 64px under the header on desktop (Figma), 16px on phones. */
+  .lib {
+    position: relative; /* the filter panel opens from its top edge */
+    padding-top: var(--x3l);
   }
   .grid {
     display: grid;
@@ -76,7 +60,8 @@ const pubs = await getPublished();
     padding: 0;
     list-style: none;
   }
-  /* Columns: 2 up to 1023px · 3 from 1024px to 1920px · 4 above (e.g. 2560px). */
+  /* Columns: 2 up to 1023px, 3 from 1024px to 1920px, 4 above (the page stops
+     growing at 2560px). */
   @media (min-width: 1024px) {
     .grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -88,32 +73,38 @@ const pubs = await getPublished();
     }
   }
   :global(html[data-view='list']) .grid {
-    display: block;
-    border-top: 1px solid var(--line);
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--m);
+  }
+  @media (max-width: 720px) {
+    .lib {
+      padding-top: var(--m);
+    }
   }
   .empty {
     padding: clamp(32px, 6vw, 80px) 0;
     text-align: center;
   }
-  .empty .display {
-    font-size: var(--step-2);
-    margin-bottom: 8px;
+  .empty .t-h2 {
+    margin-bottom: var(--xs);
   }
   .empty-actions {
     display: flex;
     justify-content: center;
-    gap: 16px;
-    margin-top: 16px;
+    gap: var(--m);
+    margin-top: var(--m);
   }
   .empty button {
     padding: 10px 18px;
     background: var(--fg);
-    color: var(--bg);
+    color: var(--surface);
     border: 0;
-    font-weight: 700;
     cursor: pointer;
   }
   .empty a {
     align-self: center;
+  }
+  .empty[hidden] {
+    display: none;
   }
 </style>

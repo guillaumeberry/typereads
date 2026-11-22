@@ -1,0 +1,222 @@
+---
+// The submission panel (Figma "Submission Form Panel", ADR-013): a modal that slides in
+// from the right (a card 8px from the edges on phones) over a dark veil, opened by the
+// header's "+" on every page. It holds the form, then a success view with a recap of
+// what was sent. Lives outside <main>, so it survives page changes; opened and wired by
+// src/scripts/submit.ts (loaded on first open, which also loads the spam check).
+// Without JavaScript, "+" goes to the /submit page instead.
+import Icon from './Icon.astro';
+import SubmitForm from './SubmitForm.astro';
+---
+
+<dialog class="submit-panel" data-submit-panel aria-labelledby="submit-panel-title">
+  <div class="view" data-view="form">
+    <div class="head">
+      <h2 class="t-h2" id="submit-panel-title">
+        Submit a publication
+      </h2>
+      <button type="button" class="close" data-panel-close aria-label="Close">
+        <Icon name="close" />
+      </button>
+    </div>
+    <p class="t-paragraph intro">
+      You know a publication (or more) about type design that belongs here? Tell me about it! I’ll
+      review every submission individually.
+    </p>
+    <SubmitForm id="panel" />
+  </div>
+
+  <div class="view" data-view="success" hidden>
+    <div class="head">
+      <h2 class="t-h2" tabindex="-1" data-success-title>
+        Yay!
+      </h2>
+      <button type="button" class="close" data-panel-close aria-label="Close">
+        <Icon name="close" />
+      </button>
+    </div>
+    <p class="t-paragraph">
+      Your suggestion was successfully submitted. Now it’s my turn to review and publish it. Thank
+      you so much for your contribution.
+    </p>
+    <div class="recap">
+      <p class="t-caption">Your submission recap</p>
+      <Icon name="down" />
+      <dl class="rows" data-recap></dl>
+    </div>
+    <button type="button" class="btn-primary t-paragraph done" data-panel-close>
+      Close that panel now
+      <span class="btn-icon" aria-hidden="true">
+        <Icon name="next" class="out" />
+        <Icon name="next" class="in" />
+      </span>
+    </button>
+  </div>
+</dialog>
+
+<style>
+  /* Desktop: 640px wide, 8px from the top, right and bottom edges, scrolling inside. */
+  .submit-panel {
+    position: fixed;
+    inset: var(--xs) var(--xs) var(--xs) auto;
+    width: min(640px, calc(100vw - 2 * var(--xs)));
+    max-width: none;
+    height: calc(100dvh - 2 * var(--xs));
+    max-height: none;
+    margin: 0;
+    padding: var(--xl);
+    background: var(--surface);
+    color: var(--fg);
+    border: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .submit-panel::backdrop {
+    background: rgb(26 26 26 / 0.8); /* Figma "Overlay": Foreground at 80% */
+  }
+  /* The page doesn't scroll behind the open panel. */
+  :global(html:has(dialog[data-submit-panel][open])) {
+    overflow: hidden;
+  }
+  .view {
+    display: grid;
+    gap: var(--xxl);
+  }
+  .view[hidden] {
+    display: none;
+  }
+  .head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--m);
+  }
+  .close {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin: -6px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--fg);
+    cursor: pointer;
+  }
+  .close :global(svg) {
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .close:hover :global(svg) {
+      transform: rotate(90deg);
+    }
+  }
+  [data-success-title]:focus {
+    outline: none;
+  }
+
+  /* Success: the recap as rows (caption label, paragraph value) between rules. */
+  .recap {
+    display: grid;
+    gap: var(--m);
+  }
+  .rows {
+    margin: 0;
+    border-top: 1px solid var(--fg);
+  }
+  .rows :global(div) {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--m);
+    padding: var(--m) 0;
+    border-bottom: 1px solid var(--fg);
+  }
+  .rows :global(dt) {
+    font-size: var(--caption);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .rows :global(dd) {
+    margin: 0;
+    font-size: var(--paragraph);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  .done {
+    justify-self: end;
+  }
+
+  /* Phones: a card 8px from every edge, as tall as its content. */
+  @media (max-width: 720px) {
+    .submit-panel {
+      inset: var(--xs) var(--xs) auto;
+      width: calc(100vw - 2 * var(--xs));
+      height: auto;
+      max-height: calc(100dvh - 2 * var(--xs));
+      padding: var(--l);
+    }
+    .view {
+      gap: var(--l);
+    }
+    .rows :global(div) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--xs);
+    }
+  }
+
+  /* In: slides from the right (drops from the top on phones), the veil fades in.
+     Out: the reverse (`is-leaving`, then the dialog closes; submit.ts). */
+  @media (prefers-reduced-motion: no-preference) {
+    .submit-panel[open] {
+      animation: submit-panel-in var(--dur-slow) var(--ease-out);
+    }
+    .submit-panel[open]::backdrop {
+      animation: submit-veil-in var(--dur-slow) var(--ease-out);
+    }
+    .submit-panel.is-leaving {
+      animation: submit-panel-out var(--dur-base) var(--ease-in-out) forwards;
+    }
+    .submit-panel.is-leaving::backdrop {
+      animation: submit-veil-out var(--dur-base) var(--ease-in-out) forwards;
+    }
+  }
+  @keyframes submit-panel-in {
+    from {
+      opacity: 0;
+      transform: translateX(48px);
+    }
+  }
+  @keyframes submit-panel-out {
+    to {
+      opacity: 0;
+      transform: translateX(48px);
+    }
+  }
+  @keyframes submit-veil-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes submit-veil-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @media (max-width: 720px) {
+    @keyframes submit-panel-in {
+      from {
+        opacity: 0;
+        transform: translateY(-24px);
+      }
+    }
+    @keyframes submit-panel-out {
+      to {
+        opacity: 0;
+        transform: translateY(-24px);
+      }
+    }
+  }
+</style>

@@ -20,7 +20,7 @@ export type Item = {
   text: string;
 };
 
-export const SORTS = ['added', 'year-desc', 'year-asc', 'title'] as const;
+export const SORTS = ['added', 'year-desc', 'year-asc', 'title', 'title-desc'] as const;
 export type Sort = (typeof SORTS)[number];
 
 /** Multi-select groups (OR within a group, AND across groups). */
@@ -110,6 +110,8 @@ export function sortItems(items: Item[], sort: Sort): Item[] {
       return list.sort((a, b) => a.year - b.year || a.i - b.i);
     case 'title':
       return list.sort(byTitle);
+    case 'title-desc':
+      return list.sort((a, b) => byTitle(b, a));
   }
 }
 

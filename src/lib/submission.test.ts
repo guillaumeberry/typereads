@@ -12,7 +12,6 @@ const valid = {
   title: 'New East Asian Type',
   authors: 'Peter Biľak, Shoko Mugikura',
   type: 'book',
-  link: 'https://www.typotheque.com/books/new-east-asian-type',
 };
 const frontMatter = (content: string) => parse(content.split('---\n')[1]);
 
@@ -42,20 +41,18 @@ describe('clean', () => {
 
 describe('parseSubmission: new publication', () => {
   it('builds a submitted entry with safe YAML', () => {
-    const r = parseSubmission(form({ ...valid, year: '2026', scripts: ['Hani', 'Jpan'] }), opts);
+    const r = parseSubmission(form({ ...valid, publisher: 'Typotheque' }), opts);
     expect(r.ok).toBe(true);
     if (!r.ok || r.kind !== 'new') return;
     expect(r.path).toBe('src/content/publications/new-east-asian-type-abc123.md');
     const d = frontMatter(r.content);
-    expect(d).toMatchObject({
+    expect(d).toEqual({
       title: 'New East Asian Type',
       slug: 'new-east-asian-type-abc123',
       status: 'submitted',
       type: 'book',
       authors: ['Peter Biľak', 'Shoko Mugikura'],
-      scripts: ['Hani', 'Jpan'],
-      year: 2026,
-      links: { publisher: valid.link },
+      publishers: ['Typotheque'],
       addedAt: '2026-11-18',
     });
   });
@@ -64,33 +61,34 @@ describe('parseSubmission: new publication', () => {
     const r = parseSubmission(form({}), opts);
     expect(r.ok).toBe(false);
     if (r.ok) return;
-    expect(Object.keys(r.errors).sort()).toEqual(['authors', 'link', 'title', 'type']);
+    expect(Object.keys(r.errors).sort()).toEqual(['authors', 'title', 'type']);
   });
 
-  it('rejects bad links, years, types and scripts', () => {
+  it('rejects unknown types', () => {
+    const r = parseSubmission(form({ ...valid, type: 'zine' }), opts);
+    expect(!r.ok && Object.keys(r.errors)).toEqual(['type']);
+  });
+
+  it('ignores fields the form no longer has', () => {
     const r = parseSubmission(
-      form({
-        ...valid,
-        link: 'javascript:alert(1)',
-        year: '1200',
-        type: 'zine',
-        scripts: 'Klingon',
-      }),
+      form({ ...valid, link: 'javascript:alert(1)', year: '1200', scripts: 'Klingon' }),
       opts,
     );
-    expect(r.ok).toBe(false);
-    if (r.ok) return;
-    expect(Object.keys(r.errors).sort()).toEqual(['link', 'scripts', 'type', 'year']);
+    if (!r.ok || r.kind !== 'new') throw new Error('expected ok');
+    const d = frontMatter(r.content);
+    expect(d.links).toBeUndefined();
+    expect(d.year).toBeUndefined();
+    expect(d.scripts).toBeUndefined();
   });
 
   it('rejects oversized fields', () => {
-    const r = parseSubmission(form({ ...valid, why: 'x'.repeat(1001) }), opts);
-    expect(!r.ok && r.errors.why).toMatch(/under 1,000/);
+    const r = parseSubmission(form({ ...valid, publisher: 'x'.repeat(201) }), opts);
+    expect(!r.ok && r.errors.publisher).toMatch(/under 200/);
   });
 
   it('cannot inject YAML keys or front matter', () => {
     const title = 'Evil\nstatus: published\n---\n<script>alert(1)</script>';
-    const r = parseSubmission(form({ ...valid, title, why: '---\nstatus: published' }), opts);
+    const r = parseSubmission(form({ ...valid, title, publisher: '---\nstatus: published' }), opts);
     if (!r.ok || r.kind !== 'new') throw new Error('expected ok');
     const d = frontMatter(r.content);
     expect(d.status).toBe('submitted');
@@ -113,14 +111,11 @@ describe('parseSubmission: new publication', () => {
     expect(!noConsent.ok && noConsent.errors.consent).toBeTruthy();
   });
 
-  it('keeps "other" out of the type field and web links as read links', () => {
+  it('keeps "other" out of the type field', () => {
     const other = parseSubmission(form({ ...valid, type: 'other' }), opts);
     if (!other.ok || other.kind !== 'new') throw new Error('expected ok');
     expect(frontMatter(other.content).type).toBeUndefined();
     expect(other.content).toContain('Type: Other.');
-    const web = parseSubmission(form({ ...valid, type: 'web' }), opts);
-    if (!web.ok || web.kind !== 'new') throw new Error('expected ok');
-    expect(frontMatter(web.content).links).toEqual({ read: valid.link });
   });
 
   it('falls back to "submission" for non-Latin titles', () => {

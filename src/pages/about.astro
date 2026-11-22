@@ -1,6 +1,11 @@
 ---
+// About (Figma "About desktop", ADR-013): a white card with a 760px column: the title,
+// the intro, the sections written in src/content/pages/about.md (Contribute, Colophon,
+// Licences and code), then the questions as an accordion and the contact line.
+// Everything is editable in the admin (Pages → About).
 import { getEntry, render } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
 import Prose from '../components/Prose.astro';
 
 const about = await getEntry('pages', 'about');
@@ -10,109 +15,229 @@ const { title, intro, faq, contact } = about.data;
 ---
 
 <Base title="About" description={intro}>
-  <div class="wrap narrow">
-    <h1 class="display h1">{title}</h1>
-    {intro && <p class="intro">{intro}</p>}
+  <a class="trigger t-caption home" href="/" data-back slot="header-back">
+    Home
+    <Icon name="back" />
+  </a>
 
-    {faq.length > 0 && (
-      <section aria-labelledby="faq">
-        <h2 id="faq" class="display h2">
-          Questions you may have
-        </h2>
-        <div class="faq">
-          {faq.map((item) => (
-            <details>
-              <summary>
-                <span>{item.question}</span>
-              </summary>
-              <div class="answer">
-                <Prose text={item.answer} />
-              </div>
-            </details>
-          ))}
+  <div class="wrap page">
+    <article class="card">
+      <div class="column">
+        <h1 class="t-h1">{title}</h1>
+        {intro && <p class="t-paragraph">{intro}</p>}
+
+        <div class="body t-paragraph">
+          <Content />
         </div>
-        {contact && (
-          <p class="contact">
-            Still have questions? Write to <a href={`mailto:${contact}`}>{contact}</a>.
-          </p>
-        )}
-      </section>
-    )}
 
-    <div class="body">
-      <Content />
-    </div>
+        {faq.length > 0 && (
+          <section class="faq" aria-labelledby="faq" data-faq>
+            <h2 id="faq" class="t-h2">
+              Questions you may still have
+            </h2>
+            <div class="items">
+              {faq.map((item, i) => (
+                <details>
+                  <summary class="t-paragraph">
+                    <span>{item.question}</span>
+                    <Icon name="down" />
+                  </summary>
+                  <div class="answer t-paragraph">
+                    <Prose text={item.answer} />
+                  </div>
+                </details>
+              ))}
+            </div>
+            {contact && (
+              <p class="t-paragraph">
+                Still have questions? Write to{' '}
+                <a class="u-link" href={`mailto:${contact}`}>
+                  {contact}
+                </a>
+              </p>
+            )}
+          </section>
+        )}
+      </div>
+    </article>
   </div>
 </Base>
 
 <style>
-  .narrow {
+  .home {
+    min-width: 108px;
+  }
+  /* 64px under the header (16px on phones), as on the other pages. */
+  .page {
+    padding-top: var(--x3l);
+  }
+  .card {
+    padding: 96px var(--l);
+    background: var(--surface);
+    border-radius: var(--radius-l);
+    color: var(--fg);
+  }
+  /* Figma: one 760px column, blocks 64px apart. */
+  .column {
+    display: grid;
+    gap: var(--x3l);
     max-width: 760px;
+    margin-inline: auto;
   }
-  .h1 {
-    font-size: var(--step-3);
-    margin-top: clamp(16px, 4vw, 48px);
+
+  /* --- The Markdown sections: an H2, then 32px, then the text ------------------ */
+  .body {
+    display: grid;
   }
-  .intro {
-    margin-top: 16px;
-    font-size: var(--step-1);
-    line-height: 1.45;
-  }
-  .h2,
   .body :global(h2) {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: var(--step-2);
-    line-height: 1.1;
-    margin: clamp(36px, 6vw, 64px) 0 16px;
+    margin: var(--x3l) 0 var(--xl);
+    font-size: var(--h2);
+    font-weight: 300;
+    line-height: 1.2;
+    text-wrap: balance;
+    text-box: trim-both cap alphabetic;
   }
+  .body :global(h2:first-child) {
+    margin-top: 0;
+  }
+  /* Paragraphs and lists are a blank line apart, like in Figma. */
+  .body :global(:is(p, ul) + :is(p, ul)) {
+    margin-top: 1.6em;
+  }
+  .body :global(p + ul) {
+    margin-top: 0;
+  }
+  .body :global(ul) {
+    margin: 0;
+    padding-left: 1.5em;
+  }
+  /* Figma trims each text block to the cap height at its top and bottom: the first
+     line after a heading and the last line before the next one (or the end). */
+  .body :global(h2 + *),
+  .answer > :global(:first-child) {
+    text-box: trim-start cap alphabetic;
+  }
+  .body :global(*:has(+ h2)),
+  .body > :global(:last-child),
+  .answer > :global(:last-child) {
+    text-box: trim-end cap alphabetic;
+  }
+  .answer > :global(:only-child) {
+    text-box: trim-both cap alphabetic;
+  }
+  .body :global(a),
+  .answer :global(a) {
+    text-decoration: none;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+    padding-bottom: 1px;
+    transition: background-size var(--dur-slow) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .body :global(a:hover),
+    .answer :global(a:hover) {
+      background-position: 100% 100%;
+      background-size: 0 1px;
+    }
+  }
+
+  /* --- Questions: an accordion between rules (Figma "Accordion") ---------------- */
   .faq {
     display: grid;
-    gap: 8px;
+    gap: var(--xl);
+  }
+  .items {
+    border-bottom: 1px solid var(--fg);
   }
   details {
-    background: var(--surface);
+    border-top: 1px solid var(--fg);
   }
   summary {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 16px 20px;
-    font-weight: 600;
+    gap: var(--m);
+    padding: var(--l) 0;
     cursor: pointer;
     list-style: none;
+    text-box: normal;
   }
   summary::-webkit-details-marker {
     display: none;
   }
-  summary::after {
-    content: '↓';
-    transition: transform var(--dur-base) var(--ease-out);
+  /* The question's line trimmed to its capitals (Figma): the row is as tall as the
+     19px icon plus 24px above and below. */
+  summary span {
+    text-box: trim-both cap alphabetic;
   }
-  details[open] summary::after {
+  summary :global(svg) {
+    flex: none;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  details[open] summary :global(svg) {
     transform: rotate(180deg);
   }
-  .answer {
-    padding: 0 20px 20px;
-    color: color-mix(in srgb, var(--fg) 85%, transparent);
+  /* Hover: no underline on the question; the arrow nudges the way it points (down to
+     open, up to close) and back, gently, while the pointer stays. */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    summary:hover :global(svg) {
+      animation: faq-nudge-down 1.2s var(--ease-in-out) infinite;
+    }
+    details[open] summary:hover :global(svg) {
+      animation-name: faq-nudge-up;
+    }
   }
-  .answer :global(p + p),
-  .answer :global(p + ul) {
-    margin-top: 12px;
+  @keyframes faq-nudge-down {
+    50% {
+      transform: translateY(4px);
+    }
+  }
+  @keyframes faq-nudge-up {
+    from,
+    to {
+      transform: rotate(180deg);
+    }
+    50% {
+      transform: rotate(180deg) translateY(4px);
+    }
+  }
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .answer {
+    display: grid;
+    gap: 1.6em;
+    padding-bottom: var(--l);
   }
   .answer :global(ul) {
     margin: 0;
-    padding-left: 1.2em;
+    padding-left: 1.5em;
   }
-  .contact {
-    margin-top: 16px;
-    color: var(--muted);
+  /* Opening and closing are animated by src/scripts/faq.ts; while an answer closes,
+     its arrow already turns back down. */
+  details.is-closing summary :global(svg) {
+    transform: none;
+    animation: none;
   }
-  .body :global(p) {
-    margin-top: 12px;
-    line-height: 1.6;
-  }
-  .body :global(a) {
-    text-underline-offset: 3px;
+
+  @media (max-width: 720px) {
+    .page {
+      padding-top: var(--m);
+    }
+    .card {
+      padding: var(--xl) var(--m);
+    }
+    .column {
+      gap: var(--xl);
+    }
+    .body :global(h2) {
+      margin: var(--xl) 0 var(--l);
+    }
+    .body :global(h2:first-child) {
+      margin-top: 0;
+    }
+    .faq {
+      gap: var(--l);
+    }
   }
 </style>

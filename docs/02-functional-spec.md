@@ -21,7 +21,7 @@
 - **Header**: logo/wordmark (→ home), _About_, _Submit_. It stays the same on every page, and the view transition keeps it still during navigation.
 - **Footer**: one-line mission, _Submit a publication_, credits, licence links, contact.
 - **Skip link** to the main content, and visible focus styles everywhere.
-- **Theme**: light by default; dark when the visitor's system prefers it (A12 in [open questions](07-open-questions.md)). Publication colours, covers and the detail panel look the same in both.
+- **Theme**: light only for now ([ADR-013](06-decisions.md#adr-013--visual-redesign-from-the-figma-file-typereadsxyz)); dark mode returns once it's designed.
 
 ---
 
@@ -43,11 +43,13 @@
 | **Grid** (default) | Cover on its publication colour · title · type · format. Hover: the cover lifts slightly. The whole card is the link.                                      |
 | **List**           | One row per publication: title · authors · year · type · languages · format. Very dense and scannable. Layout to be designed ([Q4](07-open-questions.md)). |
 
-The grid is **2 columns up to 1023 px** (phones and small screens), **3 columns from 1024 to 1920 px**, and **4 columns above 1920 px** (e.g. 2560 px). The library can use up to 2560 px of width; detail pages stay at 1680 px. The list stacks into two lines on mobile.
+The grid is **2 columns up to 1023 px** (phones and small screens), **3 columns from 1024 to 1920 px** and **4 above**; the page stops growing at 2560 px ([ADR-013](06-decisions.md#adr-013--visual-redesign-from-the-figma-file-typereadsxyz)). Detail pages stay at 1680 px until they're redesigned. On phones a list row is a colour strip with the cover, the title and two caption lines.
 
 ### Filters
 
-Filter groups, all built from publication metadata:
+Filter groups, all built from publication metadata.
+
+> **Since ADR-013 (2026-11-22)** the panel follows the Figma "Filters" design: four groups with **one choice each** (radio dots), applied at once: **Type** (All · Books · Magazines · Websites), **Format** (Physical + Digital · Physical · Digital), **Publication** (Anytime · Now › 2020 · 2019 › 2000 · 1999 › 1980) and **Sorting** (Recently added · A › Z · Z › A · Recent first · Oldest first), plus Reset. It opens under the header, attached to the Filter button, and pushes the publications down; four columns on desktop, one on phones. The Filter button shows the number of active filters, "Filter (2)". Language, script and availability are no longer in the panel (still applied from a URL, cleared by Reset). The table below is the original plan.
 
 | Group                | Field                          | Control                                                                 | Values                                                                                                                                                                                                            |
 | -------------------- | ------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -75,7 +77,7 @@ Filter groups, all built from publication metadata:
 - One field. It matches title, subtitle, authors, publishers, ISBN/ISSN and description.
 - **Accent- and case-insensitive**: "a batons rompus" finds _À bâtons rompus_. Works with any script (substring match, so Korean, Thai and so on work).
 - Debounced at about 120 ms. Also updates `?q=`.
-- Keyboard: `⌘ /` (Mac) or `Ctrl /` (Windows, Linux) focuses search and selects its text, `Esc` clears it. The hint in the field shows the right one for the platform.
+- Keyboard: `⌘ K` (Mac) or `Ctrl K` (Windows, Linux) opens the search bar and selects its text; `Esc` (or ×) clears the search and closes the bar. The tag in the field shows the right one for the platform.
 
 ### Sort
 
@@ -142,6 +144,8 @@ The About copy is editable in the CMS (a single Markdown file).
 
 ## Submit
 
+Since ADR-013 the form opens in a **panel** from the header's "+" (any page) and ends on a success view with a recap; `/submit` stays as a page for direct links and visitors without JavaScript. Link, year, languages, scripts and "why" were dropped from the form (2026-11-22): the editor looks them up when reviewing.
+
 ### Form fields
 
 | Field                        | Required         | Notes                                                                                                     |
@@ -149,12 +153,7 @@ The About copy is editable in the CMS (a single Markdown file).
 | Title                        | ✅               |                                                                                                           |
 | Author(s)                    | ✅               | Free text, comma-separated.                                                                               |
 | Type                         | ✅               | Book / Magazine / Website & post / Other.                                                                 |
-| Link                         | ✅               | The publisher, shop or web page. Validated as a URL.                                                      |
 | Publisher                    |                  |                                                                                                           |
-| Year                         |                  | Number between 1450 and next year.                                                                        |
-| Language(s)                  |                  | Free text. The editor normalises it later.                                                                |
-| Script(s) covered            |                  | Checkboxes plus "Other".                                                                                  |
-| Why it belongs here          |                  | Max 1,000 characters.                                                                                     |
 | Your name, for public credit |                  | Optional. Published **only** if the consent box is ticked.                                                |
 | Your email                   |                  | Optional. **Never published or stored in the repo.** It's only forwarded to the editor so they can reply. |
 | Consent checkbox             | ✅ if name given | "I agree my name may be shown as a contributor."                                                          |
@@ -174,6 +173,8 @@ The About copy is editable in the CMS (a single Markdown file).
 ---
 
 ## 404 — the fun twist
+
+> **Since ADR-013 (2026-11-22):** the 404 follows the Figma "404 desktop" frame instead: "404" spelled in a 12 × 6 dot matrix on a white card (the black dots fill in diagonal by diagonal), then "I'm feeling curious (and lucky)" (a random publication) and "Nah, bring me back home". The .notdef concept below is the original plan.
 
 **Concept: ".notdef".** In a font, `.notdef` is the glyph shown when a character doesn't exist: the empty box designers call _tofu_. A missing page is a missing glyph.
 
@@ -231,18 +232,18 @@ Editing a publication triggers a build, and the change is live in about 1–2 mi
 
 ### Animated moments
 
-| Moment                        | Technique (Tier 2 · _Tier 1 fallback_)                                                            | Behaviour                                                                                                                                                                                                                                                    |
-| ----------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Page → page                   | Swup + GSAP timeline on the live DOM · _instant navigation_                                       | Choreographed: outgoing content masks and slides out with a staggered exit while the header stays put; incoming content reveals line by line. Interruptible: clicking Back mid-transition reverses it.                                                       |
-| **Card → detail** (signature) | Swup + **GSAP Flip** (`data-flip-id="cover-<slug>"`) · _native cross-document VT where supported_ | The cover lifts out of the grid, scales into the hero position, and the publication colour floods the page from the cover's edges (clip-path). The title splits and rises line by line (SplitText). Back plays the exact reverse, landing on the right card. |
-| Filtering / search / sort     | **GSAP Flip** on the cards in view (others snap) · _same-document VT_                             | Cards glide to their new positions with a slight stagger by distance; leaving cards scale and fade out; arriving cards fade in. Rapid changes redirect the motion mid-flight instead of restarting it.                                                       |
-| Grid ↔ list                   | GSAP Flip (nested: card → row, cover → thumbnail) · _same-document VT_                            | Covers shrink into list thumbnails while text reflows into columns; the reverse grows them back.                                                                                                                                                             |
-| Scroll                        | **CSS scroll-driven animations** (`animation-timeline: view()`), Tier 1                           | Cards rise and fade in as they enter the viewport; subtle parallax on the detail-page cover; a reading-progress hairline on long descriptions. Runs off the main thread.                                                                                     |
-| Type moments                  | Variable-font axes (CSS) + SplitText                                                              | The wordmark breathes in weight or width on hover; the detail title reveals line by line; the About headline animates along a variable axis while scrolling. Depends on the font choice ([Q2](07-open-questions.md)).                                        |
-| Card hover / focus            | CSS transform + `linear()` spring                                                                 | Cover lifts 4 px with a soft shadow and a tiny overshoot. Optional pointer-tilt (±3°) on desktop. Hover-capable devices only.                                                                                                                                |
-| Filter sheet (mobile)         | `<dialog>` + GSAP Observer (drag) · _CSS slide_                                                   | Slides up and can be **dragged down to dismiss**, following the finger with velocity.                                                                                                                                                                        |
-| Result count                  | CSS / small JS                                                                                    | Digits roll to the new number.                                                                                                                                                                                                                               |
-| 404                           | CSS/JS                                                                                            | The numeral cycle described above.                                                                                                                                                                                                                           |
+| Moment                        | Technique (Tier 2 · _Tier 1 fallback_)                                                            | Behaviour                                                                                                                                                                                                                                                                                                                                |
+| ----------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page → page                   | Swup + GSAP timeline on the live DOM · _instant navigation_                                       | Choreographed: outgoing content masks and slides out with a staggered exit while the header stays put; incoming content reveals line by line. Interruptible: clicking Back mid-transition reverses it.                                                                                                                                   |
+| **Card → detail** (signature) | Swup + **GSAP Flip** (`data-flip-id="cover-<slug>"`) · _native cross-document VT where supported_ | The tile's coloured square grows into the detail page's coloured block while the cover flies into place on top of it (never masked, always on its colour); then the title and details fade in. Back plays the reverse, landing on the right card ([ADR-013](06-decisions.md#adr-013--visual-redesign-from-the-figma-file-typereadsxyz)). |
+| Filtering / search / sort     | **GSAP Flip** on the cards in view (others snap) · _same-document VT_                             | Cards glide to their new positions with a slight stagger by distance; leaving cards scale and fade out; arriving cards fade in. Rapid changes redirect the motion mid-flight instead of restarting it.                                                                                                                                   |
+| Grid ↔ list                   | GSAP Flip (nested: card → row, cover → thumbnail) · _same-document VT_                            | Covers shrink into list thumbnails while text reflows into columns; the reverse grows them back.                                                                                                                                                                                                                                         |
+| Scroll                        | **CSS scroll-driven animations** (`animation-timeline: view()`), Tier 1                           | Cards rise and fade in as they enter the viewport; subtle parallax on the detail-page cover; a reading-progress hairline on long descriptions. Runs off the main thread.                                                                                                                                                                 |
+| Type moments                  | Variable-font axes (CSS) + SplitText                                                              | The wordmark breathes in weight or width on hover; the detail title reveals line by line; the About headline animates along a variable axis while scrolling. Depends on the font choice ([Q2](07-open-questions.md)).                                                                                                                    |
+| Card hover / focus            | CSS transform + `linear()` spring                                                                 | Cover lifts 4 px with a soft shadow and a tiny overshoot. Optional pointer-tilt (±3°) on desktop. Hover-capable devices only.                                                                                                                                                                                                            |
+| Filter sheet (mobile)         | `<dialog>` + GSAP Observer (drag) · _CSS slide_                                                   | Slides up and can be **dragged down to dismiss**, following the finger with velocity.                                                                                                                                                                                                                                                    |
+| Result count                  | CSS / small JS                                                                                    | Digits roll to the new number.                                                                                                                                                                                                                                                                                                           |
+| 404                           | CSS/JS                                                                                            | The numeral cycle described above.                                                                                                                                                                                                                                                                                                       |
 
 ### Capability check: what each tier can do
 

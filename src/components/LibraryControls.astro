@@ -1,8 +1,14 @@
 ---
-// Search, filters, sort and view toggle. Server-rendered but hidden until the
-// library script runs (progressive enhancement: without JS, the full grid shows).
-import { AVAILABILITY, DATE_BUCKETS, FORMATS, SCRIPTS, TYPES } from '../data/taxonomies';
-import { languageName } from '../lib/format';
+// The filter panel and the search row, opened from the header buttons (LibraryTools.astro). Server-rendered but hidden
+// until the library script runs (without JS, the full grid shows).
+//
+// Filter panel (Figma "Filters", ADR-013): one choice per group (Type, Format,
+// Publication, Sorting), applied as soon as it's picked. It opens under the header,
+// attached to the Filter button, and pushes the publications down; full width, four
+// columns on desktop, one on phones. Language, script and availability filters aren't
+// in the design: they still work from a URL and are cleared by Reset.
+import Icon from './Icon.astro';
+import { DATE_BUCKETS, FORMATS, TYPES } from '../data/taxonomies';
 import type { Publication } from '../lib/publications';
 import { bucketOf } from '../scripts/library-core';
 
@@ -12,59 +18,39 @@ interface Props {
 const { pubs } = Astro.props;
 
 // Only offer values that exist in the data.
-const present = <T extends string>(values: T[]) => new Set(values);
-const types = present(pubs.map((p) => p.data.type));
-const formats = present(pubs.flatMap((p) => p.data.formats));
-const scripts = present(pubs.flatMap((p) => p.data.scripts));
-const avail = present(pubs.map((p) => p.data.availability).filter((a) => a !== 'unknown'));
-const buckets = present(pubs.map((p) => bucketOf(p.data.year)));
-const langs = [
-  ...present(
-    pubs.flatMap((p) => [...p.data.languages, ...p.data.translations.map((t) => t.language)]),
-  ),
-]
-  .map((code) => ({ code, name: languageName(code) }))
-  .sort((a, b) => a.name.localeCompare(b.name));
+const types = new Set(pubs.map((p) => p.data.type));
+const formats = new Set(pubs.flatMap((p) => p.data.formats));
+const buckets = new Set(pubs.map((p) => bucketOf(p.data.year)));
+const PLURAL: Record<string, string> = { book: 'Books', magazine: 'Magazines', web: 'Websites' };
 
-type Option = { value: string; label: string; glyph?: string };
-type GroupDef = { id: string; legend: string; options: Option[]; kind: 'checkbox' | 'radio' };
-const groups: GroupDef[] = [
+type Option = { value: string; label: string };
+type Group = { id: string; legend: string; hideLegend?: boolean; options: Option[] };
+const groups: Group[] = [
   {
     id: 'type',
     legend: 'Type',
-    kind: 'checkbox',
-    options: Object.entries(TYPES)
-      .filter(([v]) => types.has(v as never))
-      .map(([value, label]) => ({ value, label })),
+    options: [
+      { value: '', label: 'All' },
+      ...Object.entries(TYPES)
+        .filter(([v]) => types.has(v as never))
+        .map(([value, label]) => ({ value, label: PLURAL[value] ?? label })),
+    ],
   },
   {
     id: 'format',
     legend: 'Format',
-    kind: 'checkbox',
-    options: Object.entries(FORMATS)
-      .filter(([v]) => formats.has(v as never))
-      .map(([value, label]) => ({ value, label })),
-  },
-  {
-    id: 'lang',
-    legend: 'Language',
-    kind: 'checkbox',
-    options: langs.map((l) => ({ value: l.code, label: l.name })),
-  },
-  {
-    id: 'script',
-    legend: 'Script covered',
-    kind: 'checkbox',
-    options: Object.entries(SCRIPTS)
-      .filter(([v]) => scripts.has(v as never))
-      .map(([value, s]) => ({ value, label: s.label, glyph: s.glyph })),
+    options: [
+      { value: '', label: 'Physical + Digital' },
+      ...Object.entries(FORMATS)
+        .filter(([v]) => formats.has(v as never))
+        .map(([value, label]) => ({ value, label })),
+    ],
   },
   {
     id: 'date',
-    legend: 'Published',
-    kind: 'radio',
+    legend: 'Publication',
     options: [
-      { value: '', label: 'Any time' },
+      { value: '', label: 'Anytime' },
       ...DATE_BUCKETS.filter((b) => buckets.has(b.id)).map((b) => ({
         value: b.id,
         label: b.label,
@@ -72,450 +58,457 @@ const groups: GroupDef[] = [
     ],
   },
   {
-    id: 'avail',
-    legend: 'Availability',
-    kind: 'checkbox',
-    options: Object.entries(AVAILABILITY)
-      .filter(([v]) => avail.has(v as never))
-      .map(([value, label]) => ({ value, label })),
+    id: 'sort',
+    legend: 'Sorting',
+    hideLegend: true, // on phones; the column heading shows on desktop
+    options: [
+      { value: 'added', label: 'Recently added' },
+      { value: 'title', label: 'A › Z' },
+      { value: 'title-desc', label: 'Z › A' },
+      { value: 'year-desc', label: 'Recent first' },
+      { value: 'year-asc', label: 'Oldest first' },
+    ],
   },
-].filter((g) => g.options.length > (g.kind === 'radio' ? 1 : 0)) as GroupDef[];
+];
 ---
 
 <div class="controls" data-controls hidden>
-  <div class="toolbar">
-    <label class="search">
-      <span class="visually-hidden">Search publications</span>
-      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-        <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
-        <path d="m11 11 3.5 3.5" stroke="currentColor" stroke-width="1.6"></path>
-      </svg>
+  <div
+    class="panel"
+    id="filters"
+    data-panel
+    role="region"
+    aria-label="Filter and sort"
+    tabindex="-1"
+    hidden
+  >
+    <form data-filter-form>
+      <div class="groups">
+        <span class="rule rule-1" aria-hidden="true"></span>
+        <span class="rule rule-2" aria-hidden="true"></span>
+        {groups.map((g) => (
+          <div class="group" data-group={g.id} role="radiogroup" aria-labelledby={`legend-${g.id}`}>
+            <p
+              class:list={['legend', 't-caption', { 'phone-hidden': g.hideLegend }]}
+              id={`legend-${g.id}`}
+            >
+              {g.legend}
+            </p>
+            <div class="options">
+              {g.options.map((o, i) => (
+                <label class="opt">
+                  <input type="radio" name={g.id} value={o.value} checked={i === 0} />
+                  <span class="t-caption">{o.label}</span>
+                  <Icon name="radio" />
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <button type="button" class="reset t-caption" data-reset>
+        <Icon name="close" />
+        <span>Reset</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Search (Figma "Search field"): a white bar laid over the header, a bordered field
+       with the shortcut tag, and × to clear and close. -->
+  <div class="search-row" id="search-row" data-search-row role="search" hidden>
+    <label class="field">
+      <span class="visually-hidden">Search {pubs.length} publications</span>
       <input
         type="search"
         name="q"
         data-q
-        placeholder={`Search ${pubs.length} publications`}
+        placeholder="Search"
         autocomplete="off"
         spellcheck="false"
         enterkeyhint="search"
       />
-      <kbd aria-hidden="true" data-shortcut>
-        ⌘ /
+      <kbd class="t-caption shortcut" aria-hidden="true" data-shortcut>
+        ⌘ K
       </kbd>
     </label>
-    <button
-      type="button"
-      class="btn"
-      data-filters-toggle
-      aria-expanded="false"
-      aria-controls="filters"
-    >
-      Filters <span class="badge" data-badge hidden></span>
+    <button type="button" class="close" data-search-close aria-label="Close search">
+      <Icon name="close" />
     </button>
-    <label class="sort">
-      <span class="visually-hidden">Sort by</span>
-      <select data-sort>
-        <option value="added">Recently added</option>
-        <option value="year-desc">Newest first</option>
-        <option value="year-asc">Oldest first</option>
-        <option value="title">Title A→Z</option>
-      </select>
-    </label>
-    <div class="view" role="group" aria-label="View">
-      <button type="button" class="btn" data-view="grid" aria-pressed="true">
-        Grid
-      </button>
-      <button type="button" class="btn" data-view="list" aria-pressed="false">
-        List
-      </button>
-    </div>
   </div>
 
-  <dialog id="filters" class="panel" data-panel aria-labelledby="filters-title">
-    <form method="dialog" data-filter-form>
-      <div class="panel-head">
-        <h2 id="filters-title" class="display">
-          Filters
-        </h2>
-        <button type="submit" class="close" aria-label="Close filters">
-          ×
-        </button>
-      </div>
-      <div class="groups">
-        {groups.map((g) => (
-          <fieldset data-group={g.id}>
-            <legend class="label">{g.legend}</legend>
-            <div class="options">
-              {g.options.map((o) => (
-                <label class="opt">
-                  <input
-                    type={g.kind}
-                    name={g.id}
-                    value={o.value}
-                    checked={g.kind === 'radio' && !o.value}
-                  />
-                  <span class="chip">
-                    {o.glyph && (
-                      <span class="glyph" aria-hidden="true">
-                        {o.glyph}
-                      </span>
-                    )}
-                    {o.label}
-                    {o.value && <span class="n" data-count />}
-                  </span>
-                </label>
-              ))}
-            </div>
-            {g.id === 'lang' && (
-              <label class="switch">
-                <input type="checkbox" name="tr" checked />
-                <span>Include translations</span>
-              </label>
-            )}
-          </fieldset>
-        ))}
-      </div>
-      <div class="panel-foot">
-        <button type="button" class="btn link" data-reset>
-          Reset all
-        </button>
-        <button type="submit" class="btn primary" data-show>
-          Show results
-        </button>
-      </div>
-    </form>
-  </dialog>
-
-  <div class="status">
-    <ul class="active" data-active role="list" aria-label="Active filters"></ul>
+  <!-- Not shown (the Filter button carries the number of filters): screen readers
+       still hear the result count after each change. -->
+  <div class="visually-hidden" data-status>
+    <p data-count-total aria-live="polite">
+      {pubs.length} publications
+    </p>
+    <ul data-active hidden></ul>
   </div>
 </div>
 
 <style>
   .controls {
-    margin-bottom: clamp(16px, 2.5vw, 28px);
+    display: grid;
+    gap: var(--s);
   }
-  .controls[hidden] {
+  .controls[hidden],
+  .search-row[hidden],
+  .panel[hidden] {
     display: none;
   }
-  .toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-  }
-  .search {
-    position: relative;
-    flex: 1 1 260px;
-    display: flex;
-    align-items: center;
-  }
-  .search svg {
+
+  /* --- Search bar (Figma "Search field") ------------------------------------ */
+  /* Laid over the header: from the header's top padding (32px; 16px on phones) to
+     its bottom edge, the full content width. .lib starts at the header's bottom
+     (140px; 104px on phones), so the bar sits 108px (88px) above it. */
+  .search-row {
     position: absolute;
-    left: 12px;
-    color: var(--muted);
-    pointer-events: none;
-  }
-  .search input {
-    width: 100%;
-    height: 40px;
-    padding: 0 40px 0 36px;
+    top: -108px;
+    left: var(--gutter);
+    right: var(--gutter);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--l);
+    height: 108px;
+    padding: var(--l);
     background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
   }
-  .search input:focus-visible {
-    outline-offset: 0;
-    border-color: var(--fg);
+  .field {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--m);
+    height: 100%;
+    padding: 0 var(--m);
+    border: 1px solid var(--fg);
   }
-  .search kbd {
-    position: absolute;
-    right: 10px;
-    padding: 0 6px;
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    color: var(--muted);
-    font: inherit;
-    font-size: var(--step--1);
+  .field input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    background: none;
+    border: 0;
+    font-size: var(--paragraph);
+    -webkit-appearance: none;
+    appearance: none;
   }
-  .search input:focus ~ kbd,
-  .search input:not(:placeholder-shown) ~ kbd {
+  .field input:focus {
+    outline: none;
+  }
+  /* Focus: the border thickens (black, on-brand) instead of the blue ring, which would
+     show every time the bar opens since the field takes focus. */
+  .field:has(input:focus) {
+    box-shadow: inset 0 0 0 1px var(--fg);
+  }
+  /* The placeholder in the Caption style: "SEARCH". */
+  .field input::placeholder {
+    color: var(--fg);
+    opacity: 1;
+    font-size: var(--caption);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .field input::-webkit-search-cancel-button {
     display: none;
   }
-  /* No keyboard shortcut hint on touch screens. */
+  .shortcut {
+    flex: none;
+    display: flex;
+    align-items: center;
+    height: 21px;
+    padding: 0 var(--xxs);
+    border: 1px solid var(--fg);
+    border-radius: 2px;
+    font-family: inherit;
+  }
+  .field input:not(:placeholder-shown) ~ .shortcut {
+    display: none;
+  }
   @media (hover: none) {
-    .search kbd {
+    .shortcut {
       display: none;
     }
   }
-  .btn,
-  .sort select {
-    height: 40px;
-    padding: 0 14px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .btn:hover,
-  .sort select:hover {
-    border-color: var(--muted);
-  }
-  .btn[aria-expanded='true'],
-  .btn[aria-pressed='true'] {
-    background: var(--fg);
-    color: var(--bg);
-    border-color: var(--fg);
-  }
-  .badge[hidden] {
-    display: none;
-  }
-  .badge {
-    display: inline-grid;
-    place-items: center;
-    min-width: 20px;
-    height: 20px;
-    margin-left: 4px;
-    padding: 0 5px;
-    border-radius: 10px;
-    background: var(--accent);
-    color: var(--on-accent);
-    font-size: var(--step--1);
-    font-weight: 700;
-  }
-  .view {
-    display: flex;
-  }
-  .view .btn + .btn {
-    margin-left: -1px;
-  }
-
-  /* Filter panel: inline under the toolbar on desktop (non-modal dialog). */
-  .panel {
-    position: static;
-    width: auto;
-    max-width: none;
-    margin: 12px 0 0;
-    padding: 0;
-    background: var(--surface);
-    color: var(--fg);
-    border: 1px solid var(--line);
-  }
-  .panel-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px 0;
-  }
-  .panel-head h2 {
-    font-size: var(--step-1);
-  }
   .close {
-    width: 40px;
-    height: 40px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin: -6px;
+    padding: 0;
     background: none;
     border: 0;
-    font-size: 1.6rem;
-    line-height: 1;
+    color: var(--fg);
     cursor: pointer;
   }
+  .close :global(svg) {
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .close:hover :global(svg) {
+      transform: rotate(90deg);
+    }
+  }
+  @media (max-width: 720px) {
+    .search-row {
+      top: -88px;
+      height: 72px;
+      gap: var(--s);
+      padding: var(--s);
+    }
+    .field input::placeholder {
+      font-size: var(--caption);
+    }
+  }
+  /* It drops in from the top and lifts away when closed. */
+  @media (prefers-reduced-motion: no-preference) {
+    .search-row:not([hidden]) {
+      animation: bar-in var(--dur-slow) var(--ease-out) both;
+    }
+    .search-row.is-leaving {
+      animation: bar-out var(--dur-base) var(--ease-in-out) both;
+    }
+  }
+  @keyframes bar-in {
+    from {
+      opacity: 0;
+      transform: translateY(-16px);
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      clip-path: inset(0);
+    }
+  }
+  @keyframes bar-out {
+    to {
+      opacity: 0;
+      transform: translateY(-16px);
+      clip-path: inset(0 0 100% 0);
+    }
+  }
+
+  /* --- Filter panel ------------------------------------------------------- */
+  /* In the page flow, so it pushes the publications down. It starts 16px under the
+     header, where the Filter button (dropped 16px, LibraryTools.astro) meets it, and
+     the grid follows 64px below (16px on phones), as in Figma. */
+  .panel {
+    margin-top: calc(var(--m) - var(--x3l));
+    padding: var(--l);
+    background: var(--surface);
+    color: var(--fg);
+  }
+  .controls:has(.panel:not([hidden])) {
+    margin-bottom: var(--x3l);
+  }
+  .panel:focus {
+    outline: none;
+  }
+
+  /* Desktop: four columns; a rule under the headings and under the options. */
   .groups {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px 32px;
-    padding: 12px 20px 20px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    column-gap: var(--x3l);
   }
-  fieldset {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    min-width: 0;
+  /* Each group is placed explicitly (column n, rows 1–2), so it shares those rows with
+     the full-width rules instead of being pushed below them by auto-placement. */
+  .group {
+    display: grid;
+    grid-row: 1 / span 2;
+    grid-template-rows: subgrid;
   }
-  legend {
-    margin-bottom: 8px;
-    color: var(--muted);
+  .group:nth-of-type(1) {
+    grid-column: 1;
+  }
+  .group:nth-of-type(2) {
+    grid-column: 2;
+  }
+  .group:nth-of-type(3) {
+    grid-column: 3;
+  }
+  .group:nth-of-type(4) {
+    grid-column: 4;
+  }
+  .legend {
+    padding-bottom: var(--l);
   }
   .options {
+    display: grid;
+    align-content: start;
+    gap: var(--m);
+    padding: var(--xl) 0 var(--l);
+  }
+  .rule {
+    grid-column: 1 / -1;
+    align-self: end;
+    border-bottom: 1px solid var(--fg);
+  }
+  .rule-1 {
+    grid-row: 1;
+  }
+  .rule-2 {
+    grid-row: 2;
+  }
+
+  /* An option: its name, then a radio dot (filled when chosen). */
+  .opt {
+    position: relative;
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--m);
+    cursor: pointer;
   }
   .opt input {
     position: absolute;
     opacity: 0;
     pointer-events: none;
   }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 36px;
-    padding: 0 12px;
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    cursor: pointer;
-    transition:
-      background var(--dur-fast),
-      color var(--dur-fast),
-      transform var(--dur-fast) var(--spring);
+  /* Figma: 19px radio icons; the sort options are 20px apart (the others 16px). */
+  .opt :global(svg) {
+    width: 19px;
+    height: 19px;
   }
-  .chip:active {
-    transform: scale(0.95);
+  [data-group='sort'] .options {
+    gap: 20px;
   }
-  .opt input:checked + .chip {
-    background: var(--fg);
-    color: var(--bg);
-    border-color: var(--fg);
+  .opt :global(.dot) {
+    transform: scale(0);
+    transform-origin: center;
+    transform-box: fill-box;
+    transition: transform var(--dur-base) var(--ease-out);
   }
-  .opt input:focus-visible + .chip {
+  .opt input:checked ~ :global(svg .dot) {
+    transform: scale(1);
+  }
+  .opt input:checked ~ :global(svg .ring) {
+    opacity: 0;
+  }
+  /* Hover: the site's link underline (Figma "Link") draws in under the option's name
+     and Reset, and slides away when the pointer leaves. */
+  .opt span,
+  .reset span {
+    padding-bottom: 3px;
+    background: linear-gradient(currentColor, currentColor) 100% 100% / 0 1px no-repeat;
+    transition: background-size var(--dur-slow) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .opt:hover span,
+    .reset:hover span {
+      background-position: 0 100%;
+      background-size: 100% 1px;
+    }
+  }
+  .opt:has(input:focus-visible) {
     outline: 2px solid var(--focus);
-    outline-offset: 2px;
+    outline-offset: 4px;
   }
-  .opt input:disabled + .chip {
+  /* Choices with no results under the other filters are dimmed, never hidden. */
+  .opt:has(input:disabled) {
     opacity: 0.35;
     cursor: not-allowed;
   }
-  .glyph {
-    font-size: 1.1em;
-    font-weight: 700;
-  }
-  .n {
-    font-size: var(--step--1);
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .opt input:checked + .chip .n {
-    color: inherit;
-    opacity: 0.7;
-  }
-  .switch {
+
+  /* A block-level row (no line box under it), so the panel's height matches Figma. */
+  .reset {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-    font-size: var(--step--1);
-    color: var(--muted);
-  }
-  .switch input {
-    accent-color: var(--fg);
-  }
-  .panel-foot {
-    display: none;
-  }
-  .status {
-    margin-top: 12px;
-  }
-  .active {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 0;
+    gap: var(--xs);
+    margin-top: var(--xl);
     padding: 0;
-    list-style: none;
-  }
-  .active:empty {
-    display: none;
-  }
-  .active :global(button) {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    min-height: 32px;
-    padding: 0 12px;
-    background: var(--fg);
-    color: var(--bg);
-    border: 0;
-    border-radius: 16px;
-    cursor: pointer;
-    font-size: var(--step--1);
-  }
-  .active :global(.reset) {
     background: none;
-    color: var(--fg);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    border: 0;
+    cursor: pointer;
   }
 
-  /* Mobile: the panel becomes a modal bottom sheet. */
+  /* --- Phones: one column, each group closed by a rule -------------------- */
   @media (max-width: 720px) {
-    .sort,
-    .view {
-      flex: 1;
+    /* Phones: the panel starts right under the header (the 16px page padding is
+       taken back) and the grid follows 16px below. */
+    .panel {
+      margin-top: calc(-1 * var(--m));
+      padding: var(--m);
     }
-    .sort select {
-      width: 100%;
+    .controls:has(.panel:not([hidden])) {
+      margin-bottom: var(--m);
     }
-    .view .btn {
-      flex: 1;
-    }
-    .panel:modal {
-      position: fixed;
-      inset: auto 0 0 0;
-      width: 100%;
-      max-height: 85vh;
-      margin: 0;
-      border-radius: 12px 12px 0 0;
-      overflow: auto;
-      overscroll-behavior: contain;
-    }
-    .panel:modal .panel-head {
-      position: relative;
-      padding-top: 20px;
-      touch-action: none;
-      cursor: grab;
-    }
-    .panel:modal .panel-head::before {
-      content: '';
-      position: absolute;
-      top: 8px;
-      left: 50%;
-      width: 40px;
-      height: 4px;
-      margin-left: -20px;
-      border-radius: 2px;
-      background: var(--line);
-    }
-    .panel::backdrop {
-      background: rgb(0 0 0 / 0.6);
+    [data-group='sort'] .options {
+      gap: var(--xs);
     }
     .groups {
-      grid-template-columns: 1fr;
-    }
-    .chip {
-      min-height: 44px;
-    }
-    .panel-foot {
-      position: sticky;
-      bottom: 0;
       display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
-      background: var(--surface);
-      border-top: 1px solid var(--line);
+      flex-direction: column;
+      gap: var(--m);
     }
-    .primary {
-      flex: 1;
-      background: var(--fg);
-      color: var(--bg);
-      border-color: var(--fg);
-      font-weight: 700;
+    .group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--xs);
+      padding-bottom: var(--m);
+      border-bottom: 1px solid var(--fg);
     }
-    .link {
-      background: none;
-      border: 0;
-      text-decoration: underline;
+    .legend {
+      padding: 0;
+    }
+    .legend.phone-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .options {
+      gap: var(--xs);
+      padding: 0;
+    }
+    .rule {
+      display: none;
+    }
+    .reset {
+      margin-top: var(--m);
     }
   }
-  @media (prefers-reduced-motion: no-preference) and (max-width: 720px) {
-    .panel:modal {
-      animation: sheet-in var(--dur-slow) var(--ease-out);
+
+  /* The panel unrolls from the Filter button down as it opens (the publications glide
+     down with it, library.ts) and rolls back up as it closes. */
+  @media (prefers-reduced-motion: no-preference) {
+    .panel:not([hidden]) {
+      animation: panel-in var(--dur-slow) var(--ease-out) both;
+    }
+    .panel.is-leaving {
+      animation: panel-out var(--dur-base) var(--ease-in-out) both;
+    }
+    .panel:not([hidden]) .groups,
+    .panel:not([hidden]) .reset {
+      animation: panel-content-in var(--dur-slow) var(--ease-out) 120ms both;
     }
   }
-  @keyframes sheet-in {
+  @keyframes panel-in {
     from {
-      transform: translateY(100%);
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      clip-path: inset(0);
+    }
+  }
+  @keyframes panel-out {
+    from {
+      clip-path: inset(0);
+    }
+    to {
+      clip-path: inset(0 0 100% 0);
+      opacity: 0.6;
+    }
+  }
+  @keyframes panel-content-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
     }
   }
 </style>

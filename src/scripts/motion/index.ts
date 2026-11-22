@@ -8,11 +8,8 @@ import SwupPreloadPlugin from '@swup/preload-plugin';
 import SwupScrollPlugin from '@swup/scroll-plugin';
 import SwupHeadPlugin from '@swup/head-plugin';
 import { gsap } from 'gsap';
-import { SplitText } from 'gsap/SplitText';
 import type { Animate } from '../library';
 import { flipAnimate } from './flip';
-
-gsap.registerPlugin(SplitText);
 
 type Core = {
   mount(): void;
@@ -33,17 +30,6 @@ const inView = (el: Element, margin = 0) => {
   return r.bottom > -margin && r.top < innerHeight + margin && r.width > 0;
 };
 const center = (r: DOMRect) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-/** Distance from a point to the farthest corner of a box (for clip-path circles). */
-const farthest = (x: number, y: number, w: number, h: number) =>
-  Math.max(
-    ...[
-      [0, 0],
-      [w, 0],
-      [0, h],
-      [w, h],
-    ].map(([a, b]) => Math.hypot(a! - x, b! - y)),
-  );
-
 /** The rectangle the image actually occupies (covers use object-fit: contain). */
 function displayedRect(img: HTMLImageElement): DOMRect {
   const r = img.getBoundingClientRect();
@@ -55,28 +41,57 @@ function displayedRect(img: HTMLImageElement): DOMRect {
   return new DOMRect(r.left + (r.width - w) / 2, r.top + (r.height - h) / 2, w, h);
 }
 
+// The signature transition (card <-> detail) uses two fixed layers outside <main>,
+// so they survive the page swap: a "block" in the publication's colour whose visible
+// box morphs between the grid tile and the detail page's coloured block (clip-path
+// on a viewport-sized layer: no layout animation), and a copy of the cover that flies
+// on top of it. The cover is never masked and always sits on its colour.
+const RADIUS = 6;
+function clipFor(r: DOMRect) {
+  const top = Math.max(r.top, 0);
+  const left = Math.max(r.left, 0);
+  const right = Math.max(innerWidth - r.right, 0);
+  const bottom = Math.max(innerHeight - r.bottom, 0);
+  return `inset(${top}px ${right}px ${bottom}px ${left}px round ${RADIUS}px)`;
+}
+function makeBlock(color: string, r: DOMRect): HTMLElement {
+  const el = document.createElement('div');
+  el.setAttribute('aria-hidden', 'true');
+  Object.assign(el.style, {
+    position: 'fixed',
+    inset: '0',
+    zIndex: '39',
+    pointerEvents: 'none',
+    background: color,
+    clipPath: clipFor(r),
+    willChange: 'clip-path',
+  });
+  document.body.append(el);
+  return el;
+}
+
 type Ghost = { el: HTMLImageElement; rect: DOMRect };
-/** A fixed copy of a cover that flies between the two pages (lives outside #main). */
-function makeGhost(img: HTMLImageElement): Ghost {
+/** A copy of a cover that flies between the two pages. It lives inside the colour
+ *  block (viewport-sized, so its coordinates are the viewport's), whose clip-path
+ *  frames it: the cover never shows outside its coloured background. */
+function makeGhost(img: HTMLImageElement, block: HTMLElement): Ghost {
   const rect = displayedRect(img);
   const el = document.createElement('img');
   el.src = img.currentSrc || img.src;
   el.alt = '';
   el.setAttribute('aria-hidden', 'true');
   Object.assign(el.style, {
-    position: 'fixed',
+    position: 'absolute',
     left: `${rect.left}px`,
     top: `${rect.top}px`,
     width: `${rect.width}px`,
     height: `${rect.height}px`,
     margin: '0',
-    zIndex: '40',
     pointerEvents: 'none',
     transformOrigin: '0 0',
     willChange: 'transform',
-    filter: 'drop-shadow(0 14px 28px rgb(0 0 0 / 0.35))',
   });
-  document.body.append(el);
+  block.append(el);
   return { el, rect };
 }
 const flyTo = (g: Ghost, target: DOMRect) => ({
@@ -85,7 +100,7 @@ const flyTo = (g: Ghost, target: DOMRect) => ({
   scale: target.width / g.rect.width,
 });
 /** Stagger by distance from a point: a ripple outwards from the clicked card. */
-const ripple = (from: DOMRect, k = 0.00045) => {
+const ripple = (from: DOMRect, k = 0.0004) => {
   const c = center(from);
   return (_: number, el: Element) => {
     const p = center(el.getBoundingClientRect());
@@ -102,18 +117,23 @@ const imageReady = (img: HTMLImageElement, timeout: number) =>
         setTimeout(done, timeout);
       });
 
+// Gentle, unhurried motion (matches the CSS tokens: soft ease-out, no overshoot).
+const MORPH = { duration: 1, ease: 'power3.inOut' };
+const FADE_IN = { duration: 0.7, ease: 'power3.out' };
+const FADE_OUT = { duration: 0.4, ease: 'power2.inOut' };
+// Going back to the library plays 30% faster (time scale 1 / 0.7).
+const BACK_SPEED = 1 / 0.7;
+const timeline = (back: boolean) => gsap.timeline().timeScale(back ? BACK_SPEED : 1);
+
 export function start(core: Core) {
   core.setAnimate(flipAnimate);
 
   let ghost: Ghost | null = null;
-  let overlay: HTMLElement | null = null;
+  let block: HTMLElement | null = null;
   let tl: gsap.core.Timeline | null = null;
   let hidden: HTMLElement[] = [];
   let mode: 'toDetail' | 'toLibrary' | 'other' = 'other';
   let slug = '';
-  // The detail sheet's colour and visible box, captured while its styles still apply
-  // (the head plugin swaps page stylesheets right before the content is replaced).
-  let sheetBox: { rect: DOMRect; color: string } | null = null;
   // Scroll position of each page when it was left, so the library can be restored
   // *before* the reverse transition measures where the card is.
   const scrollMemory = new Map<string, number>();
@@ -124,18 +144,34 @@ export function start(core: Core) {
     hidden.push(el);
   };
   const TOUCHED =
-    '#main, .intro, [data-controls], .card, .card .caption, .card .tile, [data-detail], [data-detail] .head, [data-detail] .panel, [data-detail] .subtitle, [data-detail] .title';
+    '#main, [data-controls], [data-lib-tools], [data-header-back], .card, .card .tile, [data-detail], [data-detail] [data-hero], [data-detail] .head, [data-detail] .subtitle, [data-detail] .panel';
   function cleanup() {
     tl?.kill();
     tl = null;
     ghost?.el.remove();
     ghost = null;
-    overlay?.remove();
-    overlay = null;
+    block?.remove();
+    block = null;
     hidden.forEach((h) => (h.style.opacity = ''));
     hidden = [];
-    gsap.set($$(TOUCHED), { clearProps: 'opacity,transform,clipPath' });
+    gsap.set($$(TOUCHED), { clearProps: 'opacity,transform' });
   }
+  const chrome = () => [$('[data-controls]'), $('[data-lib-tools]'), $('[data-header-back]')];
+  // The header buttons one by one (List/Search/Filter on the library, "Home" on a
+  // publication) plus the library controls, for their entrance.
+  const chromeItems = () =>
+    [
+      ...$$('[data-lib-tools] > :not(.blank)'),
+      ...$$('[data-header-back] > *'),
+      $('[data-controls]'),
+    ].filter(Boolean) as HTMLElement[];
+  const chromeIn = (t: gsap.core.Timeline, at: number) =>
+    t.fromTo(
+      chromeItems(),
+      { opacity: 0, x: 16 },
+      { opacity: 1, x: 0, ...FADE_IN, stagger: 0.08 },
+      at,
+    );
 
   const js = new SwupJsPlugin({
     animations: [
@@ -157,170 +193,123 @@ export function start(core: Core) {
                 ? 'toLibrary'
                 : 'other';
           if (reduced()) return;
-          tl = gsap.timeline();
+          tl = timeline(mode === 'toLibrary');
 
           if (mode === 'toDetail') {
+            // The tile's colour and cover lift out of the page; the rest fades away.
             slug = slugOf(to);
             const card = $(`.card[data-id="${CSS.escape(slug)}"]`);
-            const img = card?.querySelector<HTMLImageElement>('.tile img');
-            if (card && img?.naturalWidth && inView(img)) {
-              ghost = makeGhost(img);
-              hide(img);
+            const tile = card?.querySelector<HTMLElement>('.tile');
+            const img = tile?.querySelector<HTMLImageElement>('img');
+            if (card && tile && img?.naturalWidth && inView(tile)) {
+              block = makeBlock(
+                getComputedStyle(tile).backgroundColor,
+                tile.getBoundingClientRect(),
+              );
+              ghost = makeGhost(img, block);
+              hide(tile);
               const others = $$('.card:not([hidden])').filter((c) => c !== card && inView(c));
-              tl.to(
-                others,
-                {
-                  opacity: 0,
-                  y: 24,
-                  scale: 0.96,
-                  duration: 0.32,
-                  ease: 'power2.in',
-                  stagger: ripple(ghost.rect),
-                },
+              tl.to(others, { opacity: 0, y: 12, ...FADE_OUT, stagger: ripple(ghost.rect) }, 0).to(
+                [...chrome(), card.querySelector('.caption')].filter(Boolean),
+                { opacity: 0, ...FADE_OUT },
                 0,
-              )
-                .to(
-                  [$('.intro'), $('[data-controls]'), card.querySelector('.caption')].filter(
-                    Boolean,
-                  ),
-                  { opacity: 0, y: -10, duration: 0.25, ease: 'power2.in' },
-                  0,
-                )
-                .to(ghost.el, { scale: 1.04, y: -6, duration: 0.3, ease: 'power2.out' }, 0);
+              );
             } else {
-              tl.to('#main', { opacity: 0, y: -12, duration: 0.25, ease: 'power2.in' });
+              tl.to('#main', { opacity: 0, y: -8, ...FADE_OUT });
             }
           } else if (mode === 'toLibrary') {
+            // Text and details fade first; then the coloured block and its cover are
+            // taken over by the fixed layers, so nothing changes on screen.
             slug = slugOf(from);
-            const sheet = $('[data-detail]');
-            sheetBox = sheet
-              ? {
-                  rect: sheet.getBoundingClientRect(),
-                  color: getComputedStyle(sheet).backgroundColor,
-                }
-              : null;
-            const img = $<HTMLImageElement>('[data-detail] .hero-cover img');
-            if (img?.naturalWidth && inView(img)) {
-              ghost = makeGhost(img);
-              hide(img);
+            const hero = $('[data-detail] [data-hero]');
+            const img = hero?.querySelector<HTMLImageElement>('.hero-cover img');
+            tl.to(
+              [
+                ...$$('[data-detail] .head, [data-detail] .subtitle, [data-detail] .panel'),
+                ...chrome(),
+              ].filter(Boolean),
+              { opacity: 0, y: 8, ...FADE_OUT },
+            );
+            await tl;
+            if (hero && img?.naturalWidth && inView(img)) {
+              block = makeBlock(
+                getComputedStyle(hero).backgroundColor,
+                hero.getBoundingClientRect(),
+              );
+              ghost = makeGhost(img, block);
+              hide(hero);
             }
-            tl.to($$('[data-detail] .panel, [data-detail] .head'), {
-              opacity: 0,
-              y: 12,
-              duration: 0.22,
-              stagger: 0.03,
-              ease: 'power2.in',
-            });
+            tl = timeline(true);
+            if (!block) tl.to('#main', { opacity: 0, ...FADE_OUT });
           } else {
-            tl.to('#main', { opacity: 0, y: -12, duration: 0.25, ease: 'power2.in' });
+            tl.to('#main', { opacity: 0, y: -8, ...FADE_OUT });
           }
           await tl;
         },
         in: async () => {
           if (reduced()) return;
-          tl = gsap.timeline();
+          tl = timeline(mode === 'toLibrary');
 
-          if (mode === 'toDetail' && ghost) {
+          if (mode === 'toDetail' && ghost && block) {
             const g = ghost;
-            const sheet = $('[data-detail]')!;
-            const hero = $<HTMLImageElement>('[data-detail] .hero-cover img');
-            const title = $('[data-detail] .title');
-            const target = hero?.getBoundingClientRect();
-            const sr = sheet.getBoundingClientRect();
-            const gc = center(g.el.getBoundingClientRect());
-            const cx = gc.x - sr.left;
-            const cy = gc.y - sr.top;
-            const R = farthest(cx, cy, sr.width, Math.min(sr.height, innerHeight - sr.top + 200));
-            const split = title ? SplitText.create(title, { type: 'lines', mask: 'lines' }) : null;
-            if (title) gsap.set(title, { opacity: 1 });
-            tl.fromTo(
-              sheet,
-              { clipPath: `circle(0px at ${cx}px ${cy}px)` },
-              {
-                clipPath: `circle(${R}px at ${cx}px ${cy}px)`,
-                duration: 0.8,
-                ease: 'power3.inOut',
-              },
-              0,
-            );
-            if (target) tl.to(g.el, { ...flyTo(g, target), duration: 0.85, ease: 'expo.inOut' }, 0);
-            if (split)
-              tl.from(
-                split.lines,
-                { yPercent: 110, duration: 0.8, ease: 'expo.out', stagger: 0.07 },
-                0.4,
-              );
-            tl.fromTo(
-              $$('[data-detail] .panel, [data-detail] .subtitle, [data-detail] .back'),
-              { opacity: 0, y: 16 },
-              { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: 'power2.out' },
-              0.5,
-            );
+            const hero = $('[data-detail] [data-hero]');
+            const heroImg = $<HTMLImageElement>('[data-detail] .hero-cover img');
+            const target = heroImg?.getBoundingClientRect();
+            if (hero)
+              tl.to(block, { clipPath: clipFor(hero.getBoundingClientRect()), ...MORPH }, 0);
+            if (target) tl.to(g.el, { ...flyTo(g, target), ...MORPH }, 0);
             await tl;
-            split?.revert();
-            // Land: swap the low-res ghost for the hero image once it has loaded.
-            if (hero) {
-              await imageReady(hero, 1200);
-              hero.style.opacity = '';
-              hidden = hidden.filter((h) => h !== hero);
-              await gsap.to(g.el, { opacity: 0, duration: 0.2 });
-            }
-          } else if (mode === 'toLibrary' && ghost && overlay) {
+            // The real block takes over (same place, same colour) once its cover image
+            // has loaded, so the copy is never swapped for an empty frame; then the
+            // title, the details and the header buttons settle in.
+            if (heroImg) await imageReady(heroImg, 1500);
+            for (const el of [hero, heroImg]) if (el) el.style.opacity = '';
+            hidden = hidden.filter((h) => h !== hero && h !== heroImg);
+            block.remove();
+            block = null;
+            ghost = null;
+            tl = gsap.timeline();
+            tl.fromTo(
+              $$('[data-detail] .head, [data-detail] .subtitle'),
+              { opacity: 0, y: 16 },
+              { opacity: 1, y: 0, ...FADE_IN, stagger: 0.06 },
+              0,
+            ).fromTo(
+              $$('[data-detail] .panel'),
+              { opacity: 0, y: 24 },
+              { opacity: 1, y: 0, ...FADE_IN },
+              0.1,
+            );
+            chromeIn(tl, 0.1);
+            await tl;
+          } else if (mode === 'toLibrary' && ghost && block) {
             const g = ghost;
-            const ov = overlay;
+            const b = block;
             const card = $(`.card[data-id="${CSS.escape(slug)}"]`);
-            const img = card?.querySelector<HTMLImageElement>('.tile img');
-            if (card && img && !card.hidden) {
-              if (!inView(card, -40)) card.scrollIntoView({ block: 'center' });
-              const cr = displayedRect(img);
-              hide(img);
-              const or = ov.getBoundingClientRect();
-              const tc = center(card.querySelector('.tile')!.getBoundingClientRect());
-              const ox = tc.x - or.left;
-              const oy = tc.y - or.top;
-              const R = farthest(ox, oy, or.width, or.height);
+            const tile = card?.querySelector<HTMLElement>('.tile');
+            const img = tile?.querySelector<HTMLImageElement>('img');
+            if (card && tile && img && !card.hidden) {
+              if (!inView(tile, -40)) card.scrollIntoView({ block: 'center' });
+              card.style.opacity = '';
+              hide(tile);
               const visible = $$('.card:not([hidden])').filter((c) => c !== card && inView(c));
-              tl.fromTo(
-                ov,
-                { clipPath: `circle(${R}px at ${ox}px ${oy}px)` },
-                { clipPath: `circle(0px at ${ox}px ${oy}px)`, duration: 0.7, ease: 'power3.inOut' },
-                0,
-              )
-                .to(g.el, { ...flyTo(g, cr), duration: 0.75, ease: 'expo.inOut' }, 0)
+              tl.to(b, { clipPath: clipFor(tile.getBoundingClientRect()), ...MORPH }, 0)
+                .to(g.el, { ...flyTo(g, displayedRect(img)), ...MORPH }, 0)
                 .fromTo(
                   visible,
-                  { opacity: 0, y: 24, scale: 0.96 },
-                  {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 0.5,
-                    ease: 'power2.out',
-                    stagger: ripple(cr),
-                  },
-                  0.2,
-                )
-                .fromTo(
-                  [$('.intro'), $('[data-controls]'), card, card.querySelector('.caption')].filter(
-                    Boolean,
-                  ),
-                  { opacity: 0 },
-                  { opacity: 1, duration: 0.4 },
+                  { opacity: 0, y: 12 },
+                  { opacity: 1, y: 0, ...FADE_IN, stagger: ripple(tile.getBoundingClientRect()) },
                   0.35,
                 );
+              // The List/Search/Filter buttons come back one by one.
+              chromeIn(tl, 0.45);
             } else {
-              tl.to([g.el, ov, ...$$('.card, .intro, [data-controls]')], {
-                opacity: 0,
-                duration: 0.3,
-              }).set($$('.card, .intro, [data-controls]'), { opacity: 1 });
+              tl.to(b, { opacity: 0, ...FADE_OUT }).to($$('.card'), { opacity: 1, ...FADE_IN });
+              chromeIn(tl, 0.2);
             }
             await tl;
           } else {
-            tl.fromTo(
-              '#main',
-              { opacity: 0, y: 16 },
-              { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
-            );
+            tl.fromTo('#main', { opacity: 0, y: 12 }, { opacity: 1, y: 0, ...FADE_IN });
             await tl;
           }
           cleanup();
@@ -330,7 +319,9 @@ export function start(core: Core) {
   });
 
   const swup: Swup = new Swup({
-    containers: ['#main'],
+    // The header persists; only its slots (the detail page's "Home", the homepage's
+    // buttons) are swapped.
+    containers: ['#main', '[data-header-back]', '[data-header-tools]'],
     animateHistoryBrowsing: true,
     // Links that must load normally: the CMS, machine files, and "←" when it goes
     // back in history (boot.ts handles that click; otherwise Swup would push "/"
@@ -352,38 +343,18 @@ export function start(core: Core) {
     ],
   });
 
-  // Leaving a detail page: keep its colour as an overlay that will shrink into the card.
-  swup.hooks.before('content:replace', () => {
-    core.unmount();
-    if (mode === 'toLibrary' && ghost && sheetBox && !reduced()) {
-      const r = sheetBox.rect;
-      const top = Math.max(r.top, 0);
-      const bottom = Math.min(r.bottom, innerHeight);
-      overlay = document.createElement('div');
-      Object.assign(overlay.style, {
-        position: 'fixed',
-        left: `${r.left}px`,
-        top: `${top}px`,
-        width: `${r.width}px`,
-        height: `${Math.max(bottom - top, 0)}px`,
-        zIndex: '35',
-        pointerEvents: 'none',
-        background: sheetBox.color,
-      });
-      document.body.append(overlay);
-    }
-    sheetBox = null;
-  });
+  swup.hooks.before('content:replace', () => core.unmount());
 
   // For the signature transitions we set the scroll ourselves (synchronously, before
   // measuring); the scroll plugin would only scroll one frame later.
-  const signature = () => (mode === 'toDetail' || mode === 'toLibrary') && !!ghost && !reduced();
+  const signature = () => (mode === 'toDetail' || mode === 'toLibrary') && !!block && !reduced();
   swup.hooks.before('content:scroll', (visit) => {
     if (signature()) visit.scroll.reset = false;
   });
 
   // New content is in the DOM, before its first paint: start its scripts, set the
-  // scroll, pre-hide what will animate in.
+  // scroll, pre-hide what will animate in (the fixed layers cover the rest, so the
+  // page never flashes its background).
   swup.hooks.on('content:replace', (visit) => {
     core.mount();
     if (signature()) {
@@ -392,21 +363,20 @@ export function start(core: Core) {
         behavior: 'instant',
       });
     }
-    if (reduced()) return;
-    if (mode === 'toDetail' && ghost) {
+    if (reduced() || !block) return;
+    if (mode === 'toDetail') {
+      hide($('[data-detail] [data-hero]'));
       hide($('[data-detail] .hero-cover img'));
-      gsap.set($('[data-detail]'), { clipPath: 'circle(0px at 50% 50%)' });
       gsap.set(
-        $$(
-          '[data-detail] .panel, [data-detail] .subtitle, [data-detail] .back, [data-detail] .title',
-        ),
-        {
-          opacity: 0,
-        },
+        [
+          ...$$('[data-detail] .head, [data-detail] .subtitle, [data-detail] .panel'),
+          ...chromeItems(),
+        ],
+        { opacity: 0 },
       );
     }
-    if (mode === 'toLibrary' && ghost) {
-      gsap.set([...$$('.card'), $('.intro'), $('[data-controls]')].filter(Boolean), { opacity: 0 });
+    if (mode === 'toLibrary') {
+      gsap.set([...$$('.card'), ...chromeItems()], { opacity: 0 });
     }
   });
 
@@ -427,50 +397,4 @@ export function start(core: Core) {
     target?.focus({ preventScroll: true });
   });
   swup.hooks.on('visit:abort', cleanup);
-
-  enableSheetDrag();
-}
-
-/** Mobile filter sheet: drag the handle down to dismiss it, following the finger. */
-function enableSheetDrag() {
-  let panel: HTMLDialogElement | null = null;
-  let startY = 0;
-  let dy = 0;
-  let t0 = 0;
-  document.addEventListener('pointerdown', (e) => {
-    const head = (e.target as Element).closest<HTMLElement>('[data-panel] .panel-head');
-    const p = head?.closest('dialog');
-    if (!head || !p?.matches(':modal') || (e.target as Element).closest('button')) return;
-    panel = p;
-    startY = e.clientY;
-    dy = 0;
-    t0 = performance.now();
-    head.setPointerCapture(e.pointerId);
-  });
-  document.addEventListener('pointermove', (e) => {
-    if (!panel) return;
-    dy = Math.max(0, e.clientY - startY);
-    gsap.set(panel, { y: dy });
-  });
-  const end = () => {
-    if (!panel) return;
-    const p = panel;
-    panel = null;
-    const velocity = dy / Math.max(performance.now() - t0, 1);
-    if (dy > 120 || (dy > 30 && velocity > 0.6)) {
-      gsap.to(p, {
-        y: p.offsetHeight,
-        duration: 0.22,
-        ease: 'power2.in',
-        onComplete: () => {
-          p.close();
-          gsap.set(p, { clearProps: 'transform' });
-        },
-      });
-    } else {
-      gsap.to(p, { y: 0, duration: 0.35, ease: 'back.out(2)', clearProps: 'transform' });
-    }
-  };
-  document.addEventListener('pointerup', end);
-  document.addEventListener('pointercancel', end);
 }

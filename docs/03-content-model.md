@@ -132,15 +132,14 @@ Only scripts that appear in published data are shown as filter options. (_Indige
 
 ISO 639-1 codes, displayed with their **native name** via `Intl.DisplayNames` (no hand-maintained list): `fr` → Français, `ko` → 한국어, `de` → Deutsch.
 
-### Publication date ranges (proposal, see [Q5](07-open-questions.md))
+### Publication date ranges (Figma filter panel, ADR-013; answers [Q5](07-open-questions.md))
 
-| Bucket      | Years       |
-| ----------- | ----------- |
-| 2020s       | 2020 – now  |
-| 2010s       | 2010 – 2019 |
-| 2000s       | 2000 – 2009 |
-| 1990s       | 1990 – 1999 |
-| Before 1990 | ≤ 1989      |
+| Bucket (URL id)             | Years       |
+| --------------------------- | ----------- |
+| Now › 2020 (`now-2020`)     | 2020 – now  |
+| 2019 › 2000 (`2019-2000`)   | 2000 – 2019 |
+| 1999 › 1980 (`1999-1980`)   | 1980 – 1999 |
+| Before 1980 (`before-1980`) | ≤ 1979      |
 
 Buckets with no publications are hidden. An alternative is a dual-handle year slider: nicer for big ranges, but more JS and harder on mobile. Presets are recommended for V1.
 
