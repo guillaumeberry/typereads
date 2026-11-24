@@ -286,7 +286,7 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
                   class="slide"
                   aria-roledescription="slide"
                   aria-label={`${i + 1} of ${gallery.length}: ${g.label}`}
-                  data-caption={`${d.title} — ${g.label}`}
+                  data-caption={g.label}
                 >
                   <Cover
                     pub={pub}
@@ -309,7 +309,7 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
                 <Icon name="arrow-right" />
               </button>
               <p class="caption t-caption" aria-live="polite" data-gallery-caption>
-                {`${d.title} — ${gallery[0]!.label}`}
+                {gallery[0]!.label}
               </p>
               <button type="button" class="step" aria-label="Next cover" data-next>
                 <Icon name="arrow-right" />
