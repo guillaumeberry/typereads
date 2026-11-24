@@ -20,7 +20,7 @@ pages: 240
 links:
   publisher: https://www.editions205.fr/products/dossier-scriptorium
 cover: ./covers/dossier-scriptorium-de-toulouse.webp
-color: '#3c4368'
+color: '#1a3231'
 addedAt: 2026-11-24
 ---
 
