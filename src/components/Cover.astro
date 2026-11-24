@@ -2,7 +2,9 @@
 // A publication cover on its colour, or a typographic cover when no image exists,
 // so there is never a broken image.
 import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import type { Publication } from '../lib/publications';
+import { mainCover } from '../lib/editions';
 
 interface Props {
   pub: Publication;
@@ -12,9 +14,13 @@ interface Props {
   /** Above the fold: load eagerly with high priority. */
   priority?: boolean;
   alt?: string;
+  /** A specific cover (an edition's, in the detail page's gallery). Default: the
+   *  newest edition or issue cover, else the publication's own (ADR-014). */
+  image?: ImageMetadata;
 }
-const { pub, sizes, widths, priority = false, alt = '' } = Astro.props;
-const { cover, title } = pub.data;
+const { pub, sizes, widths, priority = false, alt = '', image } = Astro.props;
+const { title } = pub.data;
+const cover = image ?? mainCover(pub.data);
 ---
 
 {cover ? (

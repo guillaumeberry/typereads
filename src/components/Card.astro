@@ -13,6 +13,7 @@ import { bgColor, textColorFor } from '../lib/color';
 import { formatsLabel, typeLabel } from '../lib/format';
 import { publicationUrl, type Publication } from '../lib/publications';
 import { normalize } from '../scripts/library-core';
+import { allYears } from '../lib/editions';
 
 interface Props {
   pub: Publication;
@@ -23,7 +24,9 @@ const { pub, index, priority = false } = Astro.props;
 const d = pub.data;
 const bg = bgColor(d.color);
 const searchText = normalize(
-  [d.title, d.subtitle, ...d.authors, ...d.publishers, d.isbn, d.issn].filter(Boolean).join(' '),
+  [d.title, d.subtitle, d.series, ...d.authors, ...d.publishers, d.isbn, d.issn]
+    .filter(Boolean)
+    .join(' '),
 );
 const publisher = d.publishers.join(', ');
 ---
@@ -38,7 +41,9 @@ const publisher = d.publishers.join(', ');
   data-langs={d.languages.join(' ')}
   data-tlangs={d.translations.map((t) => t.language).join(' ')}
   data-scripts={d.scripts.join(' ')}
+  data-added={d.addedAt.getTime()}
   data-year={d.year}
+  data-years={allYears(d).join(' ')}
   data-avail={d.availability}
   data-s={searchText}
 >

@@ -62,7 +62,9 @@ export function init(root: HTMLElement, animate: Animate = instant) {
       langs: words(d.langs),
       tlangs: words(d.tlangs),
       scripts: words(d.scripts),
+      added: Number(d.added),
       year: Number(d.year),
+      years: words(d.years).map(Number),
       avail: d.avail!,
       text: d.s ?? '',
     };

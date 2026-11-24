@@ -81,12 +81,15 @@ Filter groups, all built from publication metadata.
 
 ### Sort
 
-| Option                   | Field                            | Default |
-| ------------------------ | -------------------------------- | ------- |
-| Recently added           | `addedAt` ↓                      | ✅      |
-| Publication date, newest | `year`/`date` ↓                  |         |
-| Publication date, oldest | `year`/`date` ↑                  |         |
-| Title A→Z                | `title` (locale-aware collation) |         |
+In the panel's order (Figma "Filters"). Since 2026-11-24 the default is **Recent first** (Q13); the server renders the cards in that order, so the page doesn't reorder when the script loads.
+
+| Option         | Field                                          | Default |
+| -------------- | ---------------------------------------------- | ------- |
+| Recent first   | `year` ↓ (first publication), then `addedAt` ↓ | ✅      |
+| Oldest first   | `year` ↑                                       |         |
+| Recently added | `addedAt` ↓                                    |         |
+| A › Z          | `title` (locale-aware collation)               |         |
+| Z › A          | `title`, reversed                              |         |
 
 ### State and persistence
 
@@ -98,7 +101,7 @@ Filter groups, all built from publication metadata.
 
 ### Without JavaScript
 
-Everything is server-rendered. With JS off, all publications show in grid view, sorted by recently added, and every link works. Filters, search and the view toggle appear only when JS is available (progressive enhancement).
+Everything is server-rendered. With JS off, all publications show in grid view, sorted recent first (newest publication year), and every link works. Filters, search and the view toggle appear only when JS is available (progressive enhancement).
 
 ---
 

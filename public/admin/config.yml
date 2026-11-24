@@ -180,7 +180,7 @@ collections:
           value_type: int,
           min: 1450,
           max: 2100,
-          hint: 'First publication of this edition (start year for ongoing magazines and websites).',
+          hint: 'First publication (start year for ongoing magazines and websites). Later editions and issues go below.',
         }
       - {
           name: date,
@@ -189,6 +189,73 @@ collections:
           required: false,
           time_format: false,
           date_format: 'YYYY-MM-DD',
+          hint: 'Shown as month and year (the day is not shown). Leave empty, or pick 1 January, when only the year is known.',
+        }
+      # Editions, issues and series (ADR-014; content.config.ts and docs/03 match).
+      - name: editions
+        label: 'Later editions'
+        widget: list
+        required: false
+        summary: '{{fields.label}} · {{fields.year}}'
+        hint: 'Books: one item per later edition (2nd, 3rd…). The fields above describe the first edition. The newest cover is the one shown.'
+        fields:
+          - {
+              name: label,
+              label: Edition,
+              widget: string,
+              hint: 'E.g. 2nd edition, Revised edition',
+            }
+          - { name: year, label: Year, widget: number, value_type: int, min: 1450, max: 2100 }
+          - {
+              name: date,
+              label: 'Full date',
+              widget: datetime,
+              required: false,
+              time_format: false,
+              date_format: 'YYYY-MM-DD',
+            }
+          - {
+              name: publisher,
+              label: Publisher,
+              widget: string,
+              required: false,
+              hint: 'Only if it changed',
+            }
+          - name: isbn
+            label: ISBN
+            widget: string
+            required: false
+            pattern:
+              [
+                '^(97[89]\d{10}|\d{9}[\dX])$',
+                'ISBN-13 starting with 978/979, or ISBN-10, digits only',
+              ]
+          - { name: pages, label: Pages, widget: number, value_type: int, required: false, min: 1 }
+          - { name: cover, label: Cover, widget: image, required: false }
+      - name: issues
+        label: Issues
+        widget: list
+        required: false
+        summary: '{{fields.label}} · {{fields.year}}'
+        hint: 'Magazines: one item per issue. The newest cover is the one shown.'
+        fields:
+          - { name: label, label: Issue, widget: string, hint: 'E.g. No. 12, Issue 3: Arabic' }
+          - { name: year, label: Year, widget: number, value_type: int, min: 1450, max: 2100 }
+          - {
+              name: date,
+              label: 'Full date',
+              widget: datetime,
+              required: false,
+              time_format: false,
+              date_format: 'YYYY-MM-DD',
+            }
+          - { name: cover, label: Cover, widget: image, required: false }
+      - {
+          name: series,
+          label: 'Part of (series)',
+          widget: string,
+          required: false,
+          hint: 'For a themed issue that has its own entry: the magazine it belongs to, e.g. Slanted.',
         }
       - name: availability
         label: Availability

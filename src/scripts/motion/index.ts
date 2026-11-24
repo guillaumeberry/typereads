@@ -18,6 +18,9 @@ type Core = {
   backGoesBack(el?: Element | null): boolean;
 };
 
+// The main cover on the detail page: with editions or issues, the one shown among
+// several (scripts/covers.ts hides the others).
+const HERO_IMG = '.hero-cover > :not([hidden]) img';
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const path = (url: string) => new URL(url, location.origin).pathname;
 const isDetail = (url: string) => /^\/publications\/[^/]+$/.test(path(url));
@@ -233,7 +236,7 @@ export function start(core: Core) {
             // taken over by the fixed layers, so nothing changes on screen.
             slug = slugOf(from);
             const hero = $('[data-detail] [data-hero]');
-            const img = hero?.querySelector<HTMLImageElement>('.hero-cover img');
+            const img = hero?.querySelector<HTMLImageElement>(HERO_IMG);
             tl.to(
               [
                 ...$$('[data-detail] .head, [data-detail] .subtitle, [data-detail] .panel'),
@@ -264,7 +267,7 @@ export function start(core: Core) {
           if (mode === 'toDetail' && ghost && block) {
             const g = ghost;
             const hero = $('[data-detail] [data-hero]');
-            const heroImg = $<HTMLImageElement>('[data-detail] .hero-cover img');
+            const heroImg = $<HTMLImageElement>(`[data-detail] ${HERO_IMG}`);
             const target = heroImg?.getBoundingClientRect();
             if (hero) tl.fromTo(...morphTo(block, hero.getBoundingClientRect()), 0);
             // A target with no size yet (image box not laid out): fade the copy
@@ -379,7 +382,7 @@ export function start(core: Core) {
     if (reduced() || !block) return;
     if (mode === 'toDetail') {
       hide($('[data-detail] [data-hero]'));
-      hide($('[data-detail] .hero-cover img'));
+      hide($(`[data-detail] ${HERO_IMG}`));
       gsap.set(
         [
           ...$$('[data-detail] .head, [data-detail] .subtitle, [data-detail] .panel'),

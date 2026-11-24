@@ -5,8 +5,10 @@ import { DATE_BUCKETS } from '../data/taxonomies';
 
 export type Item = {
   id: string;
-  /** Server order (= "Recently added"). */
+  /** Server order (= the default sort, "Recent first"). */
   i: number;
+  /** When it was added to the library (ms), for "Recently added". */
+  added: number;
   title: string;
   type: string;
   formats: string[];
@@ -14,7 +16,10 @@ export type Item = {
   /** Languages of translated editions. */
   tlangs: string[];
   scripts: string[];
+  /** First publication: the year sorts use. */
   year: number;
+  /** Every year with an edition or issue (ADR-014), for the date filter. */
+  years: number[];
   avail: string;
   /** Normalised searchable text; descriptions are appended once loaded. */
   text: string;
@@ -22,6 +27,8 @@ export type Item = {
 
 export const SORTS = ['added', 'year-desc', 'year-asc', 'title', 'title-desc'] as const;
 export type Sort = (typeof SORTS)[number];
+/** The default sort, left out of the URL; the server renders cards in this order. */
+export const DEFAULT_SORT: Sort = 'year-desc';
 
 /** Multi-select groups (OR within a group, AND across groups). */
 export const MULTI = ['type', 'format', 'lang', 'script', 'avail'] as const;
@@ -50,7 +57,7 @@ export const emptyState = (): State => ({
   script: new Set(),
   date: '',
   avail: new Set(),
-  sort: 'added',
+  sort: DEFAULT_SORT,
 });
 
 /** Lower-case, collapse spaces, strip Latin accents: "À bâtons" → "a batons". Any script works. */
@@ -74,12 +81,12 @@ export function valuesOf(item: Item, group: Group, state: Pick<State, 'tr'>): st
     case 'avail':
       return [item.avail];
     case 'date':
-      return [bucketOf(item.year)];
+      return [...new Set(item.years.map(bucketOf))];
   }
 }
 
 function matchesGroup(item: Item, state: State, group: Group): boolean {
-  if (group === 'date') return !state.date || bucketOf(item.year) === state.date;
+  if (group === 'date') return !state.date || item.years.some((y) => bucketOf(y) === state.date);
   const wanted = state[group];
   return wanted.size === 0 || valuesOf(item, group, state).some((v) => wanted.has(v));
 }
@@ -103,7 +110,7 @@ export function sortItems(items: Item[], sort: Sort): Item[] {
   const list = [...items];
   switch (sort) {
     case 'added':
-      return list.sort((a, b) => a.i - b.i);
+      return list.sort((a, b) => b.added - a.added || a.i - b.i);
     case 'year-desc':
       return list.sort((a, b) => b.year - a.year || a.i - b.i);
     case 'year-asc':
@@ -160,7 +167,7 @@ export function parseState(search: string): State {
     script: list(p.get('script')),
     date: p.get('date') ?? '',
     avail: list(p.get('avail')),
-    sort: sort && SORTS.includes(sort) ? sort : 'added',
+    sort: sort && SORTS.includes(sort) ? sort : DEFAULT_SORT,
   };
 }
 
@@ -174,6 +181,6 @@ export function serializeState(s: State): string {
   if (!s.tr) p.set('tr', '0');
   if (s.date) p.set('date', s.date);
   if (s.avail.size) p.set('avail', [...s.avail].sort().join(','));
-  if (s.sort !== 'added') p.set('sort', s.sort);
+  if (s.sort !== DEFAULT_SORT) p.set('sort', s.sort);
   return p.toString().replace(/%2C/g, ',');
 }

@@ -57,6 +57,23 @@ export function mount() {
       stop?.();
     });
   }
+  // Detail page cover thumbnails (editions, issues): loaded only there (not core budget).
+  const covers = document.querySelector<HTMLElement>('#main [data-covers]');
+  if (covers && document.querySelector('#main [data-thumb]')) {
+    let stop: (() => void) | undefined;
+    let gone = false;
+    import('./covers')
+      .then((m) => {
+        if (!gone) stop = m.init(covers);
+      })
+      .catch(() => {
+        /* offline: the thumbnails still link to the full images */
+      });
+    cleanups.push(() => {
+      gone = true;
+      stop?.();
+    });
+  }
   // The submission form's script is loaded only where there's a form (not core budget).
   // Only a form in the page (/submit, /submit/fix/…): the panel's own form is wired
   // when the panel first opens (openPanel below).

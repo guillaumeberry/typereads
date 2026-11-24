@@ -6,7 +6,13 @@ export const GET: APIRoute = async ({ site }) => {
   const pubs = await getPublished();
   const day = (d: Date) => d.toISOString().slice(0, 10);
   const urls = [
-    { loc: '/', lastmod: pubs[0] ? day(pubs[0].data.addedAt) : undefined },
+    // The homepage changes when a publication is added: the latest addedAt.
+    {
+      loc: '/',
+      lastmod: pubs.length
+        ? day(new Date(Math.max(...pubs.map((p) => p.data.addedAt.getTime()))))
+        : undefined,
+    },
     { loc: '/about' },
     { loc: '/submit' },
     ...pubs.map((p) => ({ loc: publicationUrl(p), lastmod: day(p.data.addedAt) })),

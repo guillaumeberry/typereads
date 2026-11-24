@@ -12,6 +12,7 @@ import {
   availabilityLabel,
   dateLabel,
   formatsLabel,
+  isoDate,
   languageName,
   scriptLabel,
   typeLabel,
@@ -19,6 +20,7 @@ import {
 import { getPublished, type Publication } from '../../lib/publications';
 import { SCRIPTS } from '../../data/taxonomies';
 import { publicationTitle, siteIds, SITE_NAME, summarize } from '../../lib/seo';
+import { coverGallery, mainCover, releasesOf } from '../../lib/editions';
 
 export async function getStaticPaths() {
   const pubs = await getPublished();
@@ -31,28 +33,56 @@ const { Content } = await render(pub);
 const bg = bgColor(d.color);
 const tc = textColorFor(bg);
 
+// Editions and issues (ADR-014): the newest cover leads; the others sit in a strip of
+// thumbnails under it (newest first) that swaps the main cover (scripts/covers.ts).
+const cover = mainCover(d);
+const releases = releasesOf(d);
+const hasEditions = d.editions.length > 0;
+const gallery = coverGallery(d);
+// Without JavaScript a thumbnail links to its full image.
+const fullImages = await Promise.all(
+  gallery.map((g) => getImage({ src: g.cover, width: 1000, format: 'webp' })),
+);
+const releaseLine = (r: (typeof releases)[number]) =>
+  [`${r.label}, ${dateLabel(r.year, r.date)}`, r.publisher].filter(Boolean).join(' · ');
+
 // Metadata rows (Figma "Detail desktop/mobile page"), only those with a value.
-type Row = { label: string; value?: string | string[] };
+// Labels follow the count: "Author" for one, "Authors" for several. `lines` puts
+// each value on its own line (editions, issues) instead of a comma list.
+type Row = { label: string; value?: string | string[]; lines?: boolean };
+const label = (word: string, n: number) => (n > 1 ? `${word}s` : word);
 const rows: Row[] = [
-  { label: 'Author(s)', value: d.authors },
-  { label: 'Publisher(s)', value: d.publishers },
-  { label: 'Format(s)', value: formatsLabel(d.formats) },
-  { label: 'Language(s)', value: d.languages.map(languageName) },
+  { label: label('Author', d.authors.length), value: d.authors },
+  { label: label('Publisher', d.publishers.length), value: d.publishers },
+  { label: 'Part of', value: d.series },
+  { label: label('Format', d.formats.length), value: formatsLabel(d.formats) },
+  { label: label('Language', d.languages.length), value: d.languages.map(languageName) },
   {
-    label: 'Translation(s)',
+    label: label('Translation', d.translations.length),
     value: d.translations.map((t) =>
       [languageName(t.language), t.title].filter(Boolean).join(': '),
     ),
   },
-  { label: 'Publication date', value: dateLabel(d.year, d.date) },
-  { label: 'Script(s)', value: d.scripts.map(scriptLabel) },
+  hasEditions
+    ? { label: 'Editions', value: releases.map(releaseLine), lines: true }
+    : { label: 'Publication date', value: dateLabel(d.year, d.date) },
+  ...(!hasEditions && d.issues.length
+    ? [{ label: label('Issue', d.issues.length), value: releases.map(releaseLine), lines: true }]
+    : []),
+  { label: label('Script', d.scripts.length), value: d.scripts.map(scriptLabel) },
   { label: 'Availability', value: availabilityLabel(d.availability) },
   { label: 'Pages', value: d.pages ? String(d.pages) : undefined },
 ].filter((r) => (Array.isArray(r.value) ? r.value.length > 0 : Boolean(r.value)));
-const ids = [
-  { label: 'ISBN', value: d.isbn },
+// With several editions, each ISBN is named after its edition.
+const isbns = hasEditions
+  ? releases.filter((r) => r.isbn).map((r) => `${r.isbn} (${r.label})`)
+  : d.isbn
+    ? [d.isbn]
+    : [];
+const ids: Row[] = [
+  { label: label('ISBN', isbns.length), value: isbns, lines: true },
   { label: 'ISSN', value: d.issn },
-].filter((r) => Boolean(r.value));
+].filter((r) => (Array.isArray(r.value) ? r.value.length > 0 : Boolean(r.value)));
 
 const links = [
   { label: 'Publisher website', href: d.links?.publisher },
@@ -63,7 +93,7 @@ const [primary, ...secondary] = links;
 const hasBody = Boolean(pub.body?.trim());
 
 // Social preview and structured data.
-const og = d.cover ? await getImage({ src: d.cover, width: 1200, format: 'jpeg' }) : undefined;
+const og = cover ? await getImage({ src: cover, width: 1200, format: 'jpeg' }) : undefined;
 const pageUrl = new URL(`/publications/${d.slug}`, Astro.site).href;
 const schemaType =
   d.type === 'book' ? 'Book' : d.type === 'magazine' ? 'Periodical' : 'CreativeWork';
@@ -94,12 +124,35 @@ const publication = {
   ...(d.publishers.length && {
     publisher: d.publishers.map((name) => ({ '@type': 'Organization', name })),
   }),
-  datePublished: d.date ? d.date.toISOString().slice(0, 10) : String(d.year),
+  datePublished: isoDate(d.year, d.date),
   ...(d.languages.length && { inLanguage: d.languages }),
   ...(d.isbn && { isbn: d.isbn }),
   ...(d.issn && { issn: d.issn }),
   ...(d.pages && { numberOfPages: d.pages }),
   ...(og && { image: new URL(og.src, Astro.site).href }),
+  // Editions as examples of the work; issues as its parts (ADR-014).
+  ...(hasEditions && {
+    workExample: releases.map((r) => ({
+      '@type': schemaType,
+      name: d.title,
+      bookEdition: r.label,
+      datePublished: isoDate(r.year, r.date),
+      ...(r.isbn && { isbn: r.isbn }),
+      ...(r.pages && { numberOfPages: r.pages }),
+      ...(r.publisher && { publisher: { '@type': 'Organization', name: r.publisher } }),
+    })),
+  }),
+  ...(!hasEditions &&
+    d.issues.length && {
+      hasPart: releases.map((r) => ({
+        '@type': 'PublicationIssue',
+        name: r.label,
+        datePublished: isoDate(r.year, r.date),
+      })),
+    }),
+  ...(d.series && {
+    isPartOf: [{ '@id': site.website }, { '@type': 'Periodical', name: d.series }],
+  }),
   ...(links[0] && { sameAs: links.map((l) => l.href) }),
 };
 const jsonLd = {
@@ -124,7 +177,7 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
   ogTitle={d.title}
   description={description}
   image={og?.src}
-  imageAlt={d.cover ? `Cover of ${d.title}` : undefined}
+  imageAlt={cover ? `Cover of ${d.title}` : undefined}
   ogType={d.type === 'book' ? 'book' : 'website'}
   jsonLd={jsonLd}
 >
@@ -144,15 +197,47 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
         </header>
         {d.subtitle && <p class="subtitle t-paragraph">{d.subtitle}</p>}
         <div class="hero">
-          <div class="hero-cover">
-            <Cover
-              pub={pub}
-              priority
-              alt={`Cover of ${d.title}`}
-              widths={[360, 500, 720, 1000, 1300]}
-              sizes="(min-width: 721px) 500px, 82vw"
-            />
+          <div class="hero-cover" data-covers>
+            {gallery.length ? (
+              gallery.map((g, i) => (
+                <div class="slot" data-cover={i} hidden={i > 0}>
+                  <Cover
+                    pub={pub}
+                    image={g.cover}
+                    priority={i === 0}
+                    alt={`Cover of ${d.title} (${g.label})`}
+                    widths={[360, 500, 720, 1000, 1300]}
+                    sizes="(min-width: 721px) 500px, 82vw"
+                  />
+                </div>
+              ))
+            ) : (
+              <Cover
+                pub={pub}
+                priority
+                alt={`Cover of ${d.title}`}
+                widths={[360, 500, 720, 1000, 1300]}
+                sizes="(min-width: 721px) 500px, 82vw"
+              />
+            )}
           </div>
+          {gallery.length > 0 && (
+            <ul class="thumbs" role="list" aria-label="Covers">
+              {gallery.map((g, i) => (
+                <li>
+                  <a
+                    class="thumb"
+                    href={fullImages[i]!.src}
+                    data-thumb={i}
+                    aria-current={i === 0 ? 'true' : undefined}
+                  >
+                    <Cover pub={pub} image={g.cover} widths={[96, 192]} sizes="64px" />
+                    <span class="t-caption">{g.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
@@ -161,7 +246,13 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
           {rows.map((r) => (
             <div class="row">
               <dt class="t-caption">{r.label}</dt>
-              <dd class="t-paragraph">{Array.isArray(r.value) ? r.value.join(', ') : r.value}</dd>
+              <dd class="t-paragraph">
+                {r.lines && Array.isArray(r.value)
+                  ? r.value.map((v) => <span class="line">{v}</span>)
+                  : Array.isArray(r.value)
+                    ? r.value.join(', ')
+                    : r.value}
+              </dd>
             </div>
           ))}
           {hasBody && (
@@ -175,7 +266,11 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
           {ids.map((r) => (
             <div class="row">
               <dt class="t-caption">{r.label}</dt>
-              <dd class="t-paragraph">{r.value}</dd>
+              <dd class="t-paragraph">
+                {Array.isArray(r.value)
+                  ? r.value.map((v) => <span class="line">{v}</span>)
+                  : r.value}
+              </dd>
             </div>
           ))}
           <div class="row actions">
@@ -255,7 +350,9 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
   }
   .hero {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--xl);
     padding: 0 96px 96px;
   }
   /* The cover at a fixed height (644px in Figma), its width from its proportions. */
@@ -269,6 +366,56 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
   }
   .hero-cover :global(.type-cover) {
     aspect-ratio: 2 / 3;
+  }
+  .slot[hidden] {
+    display: none;
+  }
+
+  /* --- Other covers (editions, issues; ADR-014): thumbnails that swap the main one. */
+  .thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .thumb {
+    display: grid;
+    justify-items: center;
+    gap: var(--xs);
+    color: inherit;
+    text-decoration: none;
+    opacity: 0.6;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  .thumb :global(img),
+  .thumb :global(.type-cover) {
+    display: block;
+    width: auto;
+    height: 64px;
+    object-fit: contain;
+  }
+  .thumb[aria-current='true'] {
+    opacity: 1;
+  }
+  .thumb[aria-current='true'] :global(img) {
+    outline: 1px solid currentColor;
+    outline-offset: 4px;
+  }
+  @media (hover: hover) {
+    .thumb:hover {
+      opacity: 1;
+    }
+  }
+  .thumb:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+  /* Editions, issues and ISBNs: one per line. */
+  .line {
+    display: block;
   }
 
   /* --- The details on white ------------------------------------------------ */
@@ -369,6 +516,13 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
        the cover before that (it flew to a 0 × 0 target in a short block). */
     .hero-cover {
       width: 100%;
+    }
+    .hero {
+      gap: var(--l);
+    }
+    .thumb :global(img),
+    .thumb :global(.type-cover) {
+      height: 48px;
     }
     .hero-cover :global(img),
     .hero-cover :global(.type-cover) {

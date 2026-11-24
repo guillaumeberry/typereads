@@ -14,6 +14,8 @@ import {
 
 const item = (o: Partial<Item> & Pick<Item, 'id'>): Item => ({
   i: 0,
+  // Added in list order: a first, so "Recently added" gives e, d, c, b, a.
+  added: o.i ?? 0,
   title: o.id,
   type: 'book',
   formats: ['physical'],
@@ -24,6 +26,7 @@ const item = (o: Partial<Item> & Pick<Item, 'id'>): Item => ({
   avail: 'unknown',
   text: normalize(o.title ?? o.id),
   ...o,
+  years: o.years ?? [o.year ?? 2020],
 });
 
 const items: Item[] = [
@@ -73,7 +76,8 @@ describe('filters', () => {
     expect(ids(computeVisible(items, s2))).toEqual(['c']);
   });
   it('includes translations in the language filter unless turned off', () => {
-    expect(ids(computeVisible(items, state({ lang: new Set(['fr']) })))).toEqual(['a', 'e']);
+    // Default sort: Recent first.
+    expect(ids(computeVisible(items, state({ lang: new Set(['fr']) })))).toEqual(['e', 'a']);
     expect(ids(computeVisible(items, state({ lang: new Set(['fr']), tr: false })))).toEqual(['a']);
   });
   it('filters by date bucket', () => {
@@ -81,7 +85,18 @@ describe('filters', () => {
     expect(bucketOf(2001)).toBe('2019-2000');
     expect(bucketOf(1985)).toBe('1999-1980');
     expect(bucketOf(1975)).toBe('before-1980');
-    expect(ids(computeVisible(items, state({ date: '2019-2000' })))).toEqual(['a', 'c', 'd']);
+    expect(ids(computeVisible(items, state({ date: '2019-2000' })))).toEqual(['d', 'c', 'a']);
+  });
+  it('matches a period with any edition or issue year (ADR-014)', () => {
+    const book = item({ id: 'z', year: 2014, years: [2014, 2024] });
+    expect(ids(computeVisible([book], state({ date: 'now-2020' })))).toEqual(['z']);
+    expect(ids(computeVisible([book], state({ date: '2019-2000' })))).toEqual(['z']);
+    expect(ids(computeVisible([book], state({ date: '1999-1980' })))).toEqual([]);
+    // Counted once per period, and still sorted by its first year.
+    expect(Object.fromEntries(computeCounts([book], state()).date)).toEqual({
+      'now-2020': 1,
+      '2019-2000': 1,
+    });
   });
   it('counts active filter values', () => {
     expect(activeFilterCount(state({ type: new Set(['book']), date: '2019-2000' }))).toBe(2);
@@ -106,8 +121,12 @@ describe('faceted counts', () => {
 });
 
 describe('sort', () => {
-  it('defaults to recently added (server order)', () => {
-    expect(ids(computeVisible(items, state()))).toEqual(['a', 'b', 'c', 'd', 'e']);
+  it('defaults to recent first (newest publication year)', () => {
+    expect(state().sort).toBe('year-desc');
+    expect(ids(computeVisible(items, state()))).toEqual(['e', 'b', 'd', 'c', 'a']);
+  });
+  it('sorts recently added by the date added, not the server order', () => {
+    expect(ids(computeVisible(items, state({ sort: 'added' })))).toEqual(['e', 'd', 'c', 'b', 'a']);
   });
   it('sorts by year both ways and by title', () => {
     expect(ids(computeVisible(items, state({ sort: 'year-desc' })))).toEqual([
@@ -144,16 +163,16 @@ describe('URL state', () => {
       script: new Set(['Latn', 'Cyrl']),
       date: '2019-2000',
       tr: false,
-      sort: 'year-desc',
+      sort: 'added',
     });
     const qs = serializeState(s);
-    expect(qs).toBe('q=diacritics&type=book&script=Cyrl,Latn&tr=0&date=2019-2000&sort=year-desc');
+    expect(qs).toBe('q=diacritics&type=book&script=Cyrl,Latn&tr=0&date=2019-2000&sort=added');
     expect(serializeState(parseState(qs))).toBe(qs);
   });
   it('is empty for the default state and ignores junk', () => {
     expect(serializeState(state())).toBe('');
     const s = parseState('?sort=nonsense&type=,,book');
-    expect(s.sort).toBe('added');
+    expect(s.sort).toBe('year-desc');
     expect([...s.type]).toEqual(['book']);
   });
 });

@@ -18,13 +18,19 @@ export function languageName(code: string): string {
   }
 }
 
-/** "September 23, 2023" when the full date is known, otherwise the year. */
+/**
+ * Is the month known? The admin's date field always stores a full date, so
+ * 1 January stands for "only the year is known" (the imported entries use it so).
+ */
+export const monthKnown = (date?: Date): date is Date =>
+  !!date && !(date.getUTCMonth() === 0 && date.getUTCDate() === 1);
+
+/** "December 2022" when the month is known, otherwise the year: "2022". No day. */
 export const dateLabel = (year: number, date?: Date) =>
-  date
-    ? date.toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        timeZone: 'UTC',
-      })
+  monthKnown(date)
+    ? date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })
     : String(year);
+
+/** For JSON-LD `datePublished`: the full date when the month is known, else the year. */
+export const isoDate = (year: number, date?: Date) =>
+  monthKnown(date) ? date.toISOString().slice(0, 10) : String(year);

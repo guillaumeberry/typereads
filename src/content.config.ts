@@ -82,6 +82,31 @@ const publications = defineCollection({
         scripts: listOf(z.enum(keysOf(SCRIPTS)), REQUIRE_ENRICHMENT),
         year: z.number().int().min(1450).max(2100),
         date: opt(z.coerce.date()),
+        // Later editions of a book and issues of a magazine (ADR-014): one entry per
+        // work. The newest cover is the one shown; every year feeds the date filter.
+        editions: listOf(
+          z.object({
+            label: z.string().min(1),
+            year: z.number().int().min(1450).max(2100),
+            date: opt(z.coerce.date()),
+            publisher: opt(z.string()),
+            isbn: opt(z.string().refine(isValidIsbn, 'Not a valid ISBN-10/13')),
+            pages: opt(z.number().int().positive()),
+            cover: opt(image()),
+          }),
+          false,
+        ),
+        issues: listOf(
+          z.object({
+            label: z.string().min(1),
+            year: z.number().int().min(1450).max(2100),
+            date: opt(z.coerce.date()),
+            cover: opt(image()),
+          }),
+          false,
+        ),
+        // A themed issue with its own entry: the magazine it belongs to.
+        series: opt(z.string()),
         availability: z.preprocess((v) => blank(v) ?? 'unknown', z.enum(keysOf(AVAILABILITY))),
         isbn: opt(
           z

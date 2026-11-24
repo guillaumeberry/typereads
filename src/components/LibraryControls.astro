@@ -11,6 +11,7 @@ import Icon from './Icon.astro';
 import { DATE_BUCKETS, FORMATS, TYPES } from '../data/taxonomies';
 import type { Publication } from '../lib/publications';
 import { bucketOf } from '../scripts/library-core';
+import { allYears } from '../lib/editions';
 
 interface Props {
   pubs: Publication[];
@@ -20,7 +21,8 @@ const { pubs } = Astro.props;
 // Only offer values that exist in the data.
 const types = new Set(pubs.map((p) => p.data.type));
 const formats = new Set(pubs.flatMap((p) => p.data.formats));
-const buckets = new Set(pubs.map((p) => bucketOf(p.data.year)));
+// Every edition and issue year counts (ADR-014).
+const buckets = new Set(pubs.flatMap((p) => allYears(p.data).map(bucketOf)));
 const PLURAL: Record<string, string> = { book: 'Books', magazine: 'Magazines', web: 'Websites' };
 
 type Option = { value: string; label: string };
@@ -62,11 +64,11 @@ const groups: Group[] = [
     legend: 'Sorting',
     hideLegend: true, // on phones; the column heading shows on desktop
     options: [
+      { value: 'year-desc', label: 'Recent first' },
+      { value: 'year-asc', label: 'Oldest first' },
       { value: 'added', label: 'Recently added' },
       { value: 'title', label: 'A › Z' },
       { value: 'title-desc', label: 'Z › A' },
-      { value: 'year-desc', label: 'Recent first' },
-      { value: 'year-asc', label: 'Oldest first' },
     ],
   },
 ];
