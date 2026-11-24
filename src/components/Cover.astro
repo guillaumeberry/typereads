@@ -14,8 +14,8 @@ interface Props {
   /** Above the fold: load eagerly with high priority. */
   priority?: boolean;
   alt?: string;
-  /** A specific cover (an edition's, in the detail page's gallery). Default: the
-   *  newest edition or issue cover, else the publication's own (ADR-014). */
+  /** A specific cover (an edition's, in the detail page's carousel). Default: the
+   *  publication's own, else the newest edition or issue cover (ADR-014). */
   image?: ImageMetadata;
 }
 const { pub, sizes, widths, priority = false, alt = '', image } = Astro.props;

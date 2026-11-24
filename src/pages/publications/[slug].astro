@@ -33,8 +33,8 @@ const { Content } = await render(pub);
 const bg = bgColor(d.color);
 const tc = textColorFor(bg);
 
-// Editions and issues (ADR-014): the newest cover leads; every cover (newest first)
-// is in the carousel at the end of the details (Figma "Detail desktop page").
+// Editions and issues (ADR-014): the publication's own cover leads; the edition or
+// issue covers (newest first) are in the carousel at the end of the details.
 const cover = mainCover(d);
 const releases = releasesOf(d);
 const hasEditions = d.editions.length > 0;
@@ -292,8 +292,8 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
                     pub={pub}
                     image={g.cover}
                     alt={`Cover of ${d.title}, ${g.label}`}
-                    widths={[360, 640, 1000, 1300]}
-                    sizes="(min-width: 721px) 640px, 80vw"
+                    widths={[400, 760, 1140, 1520]}
+                    sizes="(min-width: 761px) 760px, calc(100vw - 64px)"
                   />
                 </li>
               ))}
@@ -406,12 +406,13 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
     outline: 2px solid var(--focus);
     outline-offset: 4px;
   }
+  /* Each image as wide as the column, no background. The slides stretch to the
+     tallest one (flex), so the strip keeps one height while you browse and nothing
+     below it moves; shorter images are centred in that height. */
   .slide {
+    display: flex;
     flex: 0 0 var(--col);
-    aspect-ratio: 1;
-    padding: calc(var(--col) * 0.08);
-    background: var(--c);
-    color: var(--tc);
+    align-items: center;
     scroll-snap-align: start;
   }
   .slide :global(picture) {
@@ -421,8 +422,7 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
   .slide :global(.type-cover) {
     display: block;
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    height: auto;
   }
   .nav {
     display: grid;

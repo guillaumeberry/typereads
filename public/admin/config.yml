@@ -197,7 +197,7 @@ collections:
         widget: list
         required: false
         summary: '{{fields.label}} · {{fields.year}}'
-        hint: 'Books: one item per later edition (2nd, 3rd…). The fields above describe the first edition. The newest cover is the one shown.'
+        hint: 'Books: one item per later edition (2nd, 3rd…). The fields above describe the first edition; its cover stays the main one. Edition covers go in the carousel at the end of the page.'
         fields:
           - {
               name: label,
@@ -237,7 +237,7 @@ collections:
         widget: list
         required: false
         summary: '{{fields.label}} · {{fields.year}}'
-        hint: 'Magazines: one item per issue. The newest cover is the one shown.'
+        hint: 'Magazines: one item per issue. The main Cover stays at the top; issue covers go in the carousel at the end of the page.'
         fields:
           - { name: label, label: Issue, widget: string, hint: 'E.g. No. 12, Issue 3: Arabic' }
           - { name: year, label: Year, widget: number, value_type: int, min: 1450, max: 2100 }

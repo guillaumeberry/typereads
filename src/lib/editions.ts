@@ -51,10 +51,13 @@ export function releasesOf<C>(w: Work<C>): Release<C>[] {
   return chronological(w.issues);
 }
 
-/** The cover to show: the newest edition or issue that has one, else `cover`. */
+/** The cover to show (card, top of the detail page, share image): the publication's
+ *  own cover; without one, the newest edition or issue cover. */
 export function mainCover<C>(w: Work<C>): C | undefined {
-  const withCover = releasesOf(w).filter((r) => r.cover !== undefined);
-  return withCover.at(-1)?.cover ?? w.cover;
+  if (w.cover !== undefined) return w.cover;
+  return releasesOf(w)
+    .filter((r) => r.cover !== undefined)
+    .at(-1)?.cover;
 }
 
 /** Every year the work was published in, for the date filter (first year first). */
@@ -65,16 +68,14 @@ export const allYears = <C>(w: Work<C>) => [
 export type GalleryItem<C> = { cover: C; label: string };
 
 /**
- * Every cover, newest first, labelled ("2nd edition, 2019"). A magazine's own cover
- * comes last, labelled "Since 2010" (its start year). Empty below two covers (no gallery).
+ * The edition or issue covers, newest first, labelled ("2nd edition, 2019"), for the
+ * carousel. Empty when none differs from the main cover (no carousel then).
  */
 export function coverGallery<C>(w: Work<C>): GalleryItem<C>[] {
   const items: GalleryItem<C>[] = releasesOf(w)
     .filter((r) => r.cover !== undefined)
     .reverse()
     .map((r) => ({ cover: r.cover as C, label: `${r.label}, ${r.year}` }));
-  if (w.cover !== undefined && !items.some((i) => i.cover === w.cover)) {
-    items.push({ cover: w.cover, label: `Since ${w.year}` });
-  }
-  return items.length > 1 ? items : [];
+  const main = mainCover(w);
+  return items.some((i) => i.cover !== main) ? items : [];
 }

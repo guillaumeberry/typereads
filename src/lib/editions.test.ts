@@ -25,15 +25,15 @@ describe('books with editions', () => {
     ]);
     expect(releasesOf(book)[0]).toMatchObject({ year: 2014, isbn: '111', cover: 'first.png' });
   });
-  it('shows the newest cover', () => {
-    expect(mainCover(book)).toBe('third.png');
+  it('shows its own cover, not an edition cover', () => {
+    expect(mainCover(book)).toBe('first.png');
   });
-  it('skips editions without a cover', () => {
-    const b = work({ editions: [{ label: '2nd edition', year: 2020 }] });
-    expect(mainCover(b)).toBe('first.png');
+  it('falls back to the newest edition cover without one', () => {
+    expect(mainCover({ ...book, cover: undefined })).toBe('third.png');
   });
   it('orders by full date within a year', () => {
     const b = work({
+      cover: undefined,
       editions: [
         { label: 'Late', year: 2020, date: new Date('2020-11-01'), cover: 'late.png' },
         { label: 'Early', year: 2020, date: new Date('2020-02-01'), cover: 'early.png' },
@@ -65,15 +65,15 @@ describe('magazines with issues', () => {
   it('lists the issues only', () => {
     expect(releasesOf(mag).map((r) => r.label)).toEqual(['No. 1', 'No. 2']);
   });
-  it('shows the newest issue cover', () => {
-    expect(mainCover(mag)).toBe('n2.png');
+  it('shows the magazine cover, not an issue cover', () => {
+    expect(mainCover(mag)).toBe('logo.png');
   });
-  it('puts the magazine cover last in the gallery', () => {
-    expect(coverGallery(mag).map((g) => g.label)).toEqual([
-      'No. 2, 2011',
-      'No. 1, 2010',
-      'Since 2010',
-    ]);
+  it('lists the issue covers only in the gallery, newest first', () => {
+    expect(coverGallery(mag).map((g) => g.label)).toEqual(['No. 2, 2011', 'No. 1, 2010']);
+  });
+  it('has no gallery when the only other cover is the main one', () => {
+    const b = work({ editions: [{ label: '2nd edition', year: 2020 }] });
+    expect(coverGallery(b)).toEqual([]);
   });
 });
 
