@@ -33,16 +33,12 @@ const { Content } = await render(pub);
 const bg = bgColor(d.color);
 const tc = textColorFor(bg);
 
-// Editions and issues (ADR-014): the newest cover leads; the others sit in a strip of
-// thumbnails under it (newest first) that swaps the main cover (scripts/covers.ts).
+// Editions and issues (ADR-014): the newest cover leads; every cover (newest first)
+// is in the carousel at the end of the details (Figma "Detail desktop page").
 const cover = mainCover(d);
 const releases = releasesOf(d);
 const hasEditions = d.editions.length > 0;
 const gallery = coverGallery(d);
-// Without JavaScript a thumbnail links to its full image.
-const fullImages = await Promise.all(
-  gallery.map((g) => getImage({ src: g.cover, width: 1000, format: 'webp' })),
-);
 const releaseLine = (r: (typeof releases)[number]) =>
   [`${r.label}, ${dateLabel(r.year, r.date)}`, r.publisher].filter(Boolean).join(' · ');
 
@@ -197,47 +193,15 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
         </header>
         {d.subtitle && <p class="subtitle t-paragraph">{d.subtitle}</p>}
         <div class="hero">
-          <div class="hero-cover" data-covers>
-            {gallery.length ? (
-              gallery.map((g, i) => (
-                <div class="slot" data-cover={i} hidden={i > 0}>
-                  <Cover
-                    pub={pub}
-                    image={g.cover}
-                    priority={i === 0}
-                    alt={`Cover of ${d.title} (${g.label})`}
-                    widths={[360, 500, 720, 1000, 1300]}
-                    sizes="(min-width: 721px) 500px, 82vw"
-                  />
-                </div>
-              ))
-            ) : (
-              <Cover
-                pub={pub}
-                priority
-                alt={`Cover of ${d.title}`}
-                widths={[360, 500, 720, 1000, 1300]}
-                sizes="(min-width: 721px) 500px, 82vw"
-              />
-            )}
+          <div class="hero-cover">
+            <Cover
+              pub={pub}
+              priority
+              alt={`Cover of ${d.title}`}
+              widths={[360, 500, 720, 1000, 1300]}
+              sizes="(min-width: 721px) 500px, 82vw"
+            />
           </div>
-          {gallery.length > 0 && (
-            <ul class="thumbs" role="list" aria-label="Covers">
-              {gallery.map((g, i) => (
-                <li>
-                  <a
-                    class="thumb"
-                    href={fullImages[i]!.src}
-                    data-thumb={i}
-                    aria-current={i === 0 ? 'true' : undefined}
-                  >
-                    <Cover pub={pub} image={g.cover} widths={[96, 192]} sizes="64px" />
-                    <span class="t-caption">{g.label}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
       </div>
 
@@ -306,6 +270,53 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
             </div>
           )}
         </dl>
+
+        {gallery.length > 0 && (
+          <section
+            class="gallery"
+            aria-roledescription="carousel"
+            aria-label={`Covers of ${d.title}`}
+            data-gallery
+          >
+            {/* Scrolls and snaps natively (swipe, trackpad, arrow keys once focused); the
+                buttons and caption are added by scripts/covers.ts. */}
+            <ul class="strip" role="list" tabindex="0" aria-label="Covers" data-strip>
+              {gallery.map((g, i) => (
+                <li
+                  class="slide"
+                  aria-roledescription="slide"
+                  aria-label={`${i + 1} of ${gallery.length}: ${g.label}`}
+                  data-caption={`${d.title} — ${g.label}`}
+                >
+                  <Cover
+                    pub={pub}
+                    image={g.cover}
+                    alt={`Cover of ${d.title}, ${g.label}`}
+                    widths={[360, 640, 1000, 1300]}
+                    sizes="(min-width: 721px) 640px, 80vw"
+                  />
+                </li>
+              ))}
+            </ul>
+            <div class="nav" hidden data-gallery-nav>
+              <button
+                type="button"
+                class="step prev"
+                aria-label="Previous cover"
+                data-prev
+                disabled
+              >
+                <Icon name="arrow-right" />
+              </button>
+              <p class="caption t-caption" aria-live="polite" data-gallery-caption>
+                {`${d.title} — ${gallery[0]!.label}`}
+              </p>
+              <button type="button" class="step" aria-label="Next cover" data-next>
+                <Icon name="arrow-right" />
+              </button>
+            </div>
+          </section>
+        )}
       </div>
     </article>
   </div>
@@ -350,9 +361,7 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
   }
   .hero {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--xl);
+    justify-content: center;
     padding: 0 96px 96px;
   }
   /* The cover at a fixed height (644px in Figma), its width from its proportions. */
@@ -367,52 +376,102 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
   .hero-cover :global(.type-cover) {
     aspect-ratio: 2 / 3;
   }
-  .slot[hidden] {
+  /* --- Carousel (Figma "Detail desktop page"): square slides as wide as the
+     column, the next one peeking in up to the card's edge; then ← caption →. */
+  .gallery {
+    --col: min(760px, 100cqi);
+    --bleed: calc((100cqi - var(--col)) / 2 + var(--pad));
+    display: grid;
+    gap: var(--xl);
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--xl) 0;
+    border-bottom: 1px solid var(--fg);
+  }
+  .strip {
+    display: flex;
+    gap: var(--m);
+    margin: 0 calc(-1 * var(--bleed)) 0 0;
+    padding: 0 var(--bleed) 0 0; /* lets the last slide reach the column's start */
+    list-style: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .strip::-webkit-scrollbar {
     display: none;
   }
-
-  /* --- Other covers (editions, issues; ADR-014): thumbnails that swap the main one. */
-  .thumbs {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--m);
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  .strip:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
   }
-  .thumb {
-    display: grid;
-    justify-items: center;
-    gap: var(--xs);
-    color: inherit;
-    text-decoration: none;
-    opacity: 0.6;
-    transition: opacity var(--dur-fast) var(--ease-out);
+  .slide {
+    flex: 0 0 var(--col);
+    aspect-ratio: 1;
+    padding: calc(var(--col) * 0.08);
+    background: var(--c);
+    color: var(--tc);
+    scroll-snap-align: start;
   }
-  .thumb :global(img),
-  .thumb :global(.type-cover) {
+  .slide :global(picture) {
+    display: contents;
+  }
+  .slide :global(img),
+  .slide :global(.type-cover) {
     display: block;
-    width: auto;
-    height: 64px;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
   }
-  .thumb[aria-current='true'] {
-    opacity: 1;
+  .nav {
+    display: grid;
+    grid-template-columns: 53px minmax(0, 1fr) 53px;
+    align-items: center;
+    gap: var(--m);
   }
-  .thumb[aria-current='true'] :global(img) {
-    outline: 1px solid currentColor;
-    outline-offset: 4px;
+  .nav[hidden] {
+    display: none;
+  }
+  .caption {
+    margin: 0;
+    text-align: center;
+  }
+  /* Figma "Icons S" in a 53px bordered square; at either end the arrow is hidden. */
+  .step {
+    display: grid;
+    place-items: center;
+    width: 53px;
+    height: 53px;
+    padding: 0;
+    background: none;
+    color: var(--fg);
+    border: 1px solid var(--fg);
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .prev :global(svg) {
+    transform: scaleX(-1);
+  }
+  .step:disabled {
+    cursor: default;
+  }
+  .step:disabled :global(svg) {
+    visibility: hidden;
   }
   @media (hover: hover) {
-    .thumb:hover {
-      opacity: 1;
+    .step:not(:disabled):hover {
+      background: var(--fg);
+      color: var(--surface);
     }
   }
-  .thumb:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 4px;
+  .step:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
   }
+
   /* Editions, issues and ISBNs: one per line. */
   .line {
     display: block;
@@ -420,7 +479,9 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
 
   /* --- The details on white ------------------------------------------------ */
   .panel {
-    padding: 96px var(--l);
+    --pad: var(--l);
+    container-type: inline-size; /* the carousel bleeds to the card's right edge */
+    padding: 96px var(--pad);
     background: var(--surface);
     color: var(--fg);
   }
@@ -517,20 +578,21 @@ const description = pub.body?.trim() ? summarize(pub.body) : undefined;
     .hero-cover {
       width: 100%;
     }
-    .hero {
-      gap: var(--l);
-    }
-    .thumb :global(img),
-    .thumb :global(.type-cover) {
-      height: 48px;
-    }
+
     .hero-cover :global(img),
     .hero-cover :global(.type-cover) {
       width: 100%;
       height: auto;
     }
     .panel {
-      padding: var(--l) var(--m);
+      --pad: var(--m);
+      padding: var(--l) var(--pad);
+    }
+    /* No rule under the last row on phones: the carousel draws its own above. */
+    .gallery {
+      gap: var(--l);
+      padding: var(--l) 0;
+      border-top: 1px solid var(--fg);
     }
     .meta {
       border-bottom: 0;

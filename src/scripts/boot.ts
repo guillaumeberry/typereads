@@ -57,9 +57,9 @@ export function mount() {
       stop?.();
     });
   }
-  // Detail page cover thumbnails (editions, issues): loaded only there (not core budget).
-  const covers = document.querySelector<HTMLElement>('#main [data-covers]');
-  if (covers && document.querySelector('#main [data-thumb]')) {
+  // Detail page carousel of covers (editions, issues): loaded only there (not core budget).
+  const covers = document.querySelector<HTMLElement>('#main [data-gallery]');
+  if (covers) {
     let stop: (() => void) | undefined;
     let gone = false;
     import('./covers')
@@ -67,7 +67,7 @@ export function mount() {
         if (!gone) stop = m.init(covers);
       })
       .catch(() => {
-        /* offline: the thumbnails still link to the full images */
+        /* offline: the strip still scrolls by itself */
       });
     cleanups.push(() => {
       gone = true;

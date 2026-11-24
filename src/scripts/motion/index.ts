@@ -18,9 +18,8 @@ type Core = {
   backGoesBack(el?: Element | null): boolean;
 };
 
-// The main cover on the detail page: with editions or issues, the one shown among
-// several (scripts/covers.ts hides the others).
-const HERO_IMG = '.hero-cover > :not([hidden]) img';
+// The main cover on the detail page (the newest edition or issue cover).
+const HERO_IMG = '.hero-cover img';
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const path = (url: string) => new URL(url, location.origin).pathname;
 const isDetail = (url: string) => /^\/publications\/[^/]+$/.test(path(url));

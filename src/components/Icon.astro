@@ -16,6 +16,7 @@ interface Props {
     | 'radio'
     | 'dropdown'
     | 'next'
+    | 'arrow-right'
     | 'down';
   class?: string;
 }
@@ -52,6 +53,7 @@ const box = { plus: 48, arrow: 48, 'plus-small': 20, radio: 20 }[name as string]
   {name === 'up' && <path d="M10 2l5 6h-3a2 2 0 0 0-2 2v7H9v-7a2 2 0 0 0-2-2H4l5-6z" />}
   {name === 'dropdown' && <path d="M10 6a2 2 0 0 0 2 2h3l-5 6H9L4 8h3a2 2 0 0 0 2-2V5h1z" />}
   {name === 'next' && <path d="M6 9a2 2 0 0 0 2-2V4l6 5v1l-6 5v-3a2 2 0 0 0-2-2H5V9z" />}
+  {name === 'arrow-right' && <path d="M17 10l-6 5v-3a2 2 0 0 0-2-2H2V9h7a2 2 0 0 0 2-2V4l6 5z" />}
   {name === 'down' && <path d="M10 9a2 2 0 0 0 2 2h3l-5 6H9l-5-6h3a2 2 0 0 0 2-2V2h1z" />}
   {name === 'radio' && (
     <>
